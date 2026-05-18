@@ -123,6 +123,11 @@ const CadastroProfissional = () => {
                         Cadastrar Profissional
                     </Button>
                 </form>
+                <Box sx={{ mt: 5, pt: 3, borderTop: '1px solid #f1f5f9' }}>
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                        Já possui uma conta? <Button onClick={() => navigate('/')} sx={{ fontWeight: 800, textTransform: 'none', color: '#32B5FE' }}>Fazer Login</Button>
+                    </Typography>
+                </Box>
             </Paper>
         </Box>
     );

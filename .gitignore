@@ -1,0 +1,11 @@
+# Bloqueia as pastas de dependências de ambos os lados
+backend/node_modules/
+frontend/node_modules/
+
+# Bloqueia arquivos de ambiente com senhas
+.env
+backend/.env
+
+# Bloqueia pastas de build
+frontend/build/
+frontend/dist/

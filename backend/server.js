@@ -6,9 +6,11 @@ require('dotenv').config();
 const app = express();
 
 // Importação corrigida (authData contém .router e .verifyToken)
-const authData = require('./routes/auth');
-const agendamentosRoutes = require('./routes/agendamentos');
+const { router: authRoutes } = require('./routes/auth');
+const clinicaRoutes = require('./routes/clinica');
 const profissionalRoutes = require('./routes/profissional');
+const pacienteRoutes = require('./routes/paciente');
+const agendamentoRoutes = require('./routes/agendamentos');
 
 
 // Middlewares
@@ -17,9 +19,11 @@ app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
 // Rotas
-app.use('/api/auth', authData.router); // Roteador de login
-app.use('/api/agendamentos', agendamentosRoutes); // Roteador de agendamentos
+app.use('/api/auth', authRoutes);
 app.use('/api/profissional', profissionalRoutes);
+app.use('/api/paciente', pacienteRoutes);
+app.use('/api/agendamentos', agendamentoRoutes);
+app.use('/api/clinica', clinicaRoutes);
 
 // Teste de conexão
 app.get('/api/status', (req, res) => {

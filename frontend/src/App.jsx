@@ -23,13 +23,13 @@ import MeusAgendamentos from './pages/Paciente/MeusAgendamentos';
 import ProntuarioPaciente from './pages/Paciente/ProntuarioPaciente';
 import FinanceiroPaciente from './pages/Paciente/FinanceiroPaciente';
 
-// Páginas Funcionais do Profissional (Novas)
+// Páginas Funcionais do Profissional 
 import AgendaMedica from './pages/Profissional/AgendaMedica';
 import ConfiguracoesPerfil from './pages/Profissional/ConfiguracoesPerfil';
 import FinanceiroProfissional from './pages/Profissional/FinanceiroProfissional';
+import AtendimentoMedico from './pages/Profissional/AtendimentoMedico'; // Importada
 
-// Outros
-//import Profissionais from './pages/Profissionais';
+// Páginas Funcionais da Clinica
 import GerenciamentoClinica from './pages/Clinica/GerenciamentoClinica';
 import MedicosUnidade from './pages/Clinica/MedicosUnidade';
 import FinanceiroClinica from './pages/Clinica/FinanceiroClinica';
@@ -106,7 +106,7 @@ function SystemLayout({ userType, onLogout }) {
                userType === 'usuarios_cpf' ? <DashboardPaciente /> :
                userType === 'profissionais' ? <DashboardMedico /> :
                userType === 'usuarios_cnpj' ? <DashboardClinica /> : 
-               <Profissionais /> 
+               <Navigate to="/" replace /> 
             } />
 
             {/* ROTAS ESPECÍFICAS DO PACIENTE */}
@@ -125,7 +125,7 @@ function SystemLayout({ userType, onLogout }) {
                 <Route path="agenda-medica" element={<AgendaMedica />} />
                 <Route path="configuracao" element={<ConfiguracoesPerfil />} />
                 <Route path="financeiro" element={<FinanceiroProfissional />} />
-                {/* Você pode adicionar a rota de pacientes aqui futuramente */}
+                <Route path="atendimento" element={<AtendimentoMedico />} /> 
               </>
             )}
 

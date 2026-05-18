@@ -3,13 +3,15 @@ import api from '../../services/api';
 import { 
     Box, Typography, Paper, Grid, Avatar, Chip, Button, 
     IconButton, CircularProgress, TextField, MenuItem, 
-    InputAdornment, Tooltip, Divider, Badge
+    InputAdornment, Tooltip, Divider, Badge,
+    Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import { 
     Search, FilterX, MapPin, Play, FileText, 
     History, MoreHorizontal, Calendar as CalIcon, 
     User, ChevronRight, Activity, Clock
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AgendaMedica = () => {
     const [agenda, setAgenda] = useState([]);
@@ -19,6 +21,13 @@ const AgendaMedica = () => {
     const [filtroData, setFiltroData] = useState('');
     const [filtroStatus, setFiltroStatus] = useState('Todos');
     const [buscaNome, setBuscaNome] = useState('');
+    
+    const navigate = useNavigate();
+
+    // Estados do Modal de Histórico
+    const [openHistorico, setOpenHistorico] = useState(false);
+    const [dadosHistorico, setDadosHistorico] = useState([]);
+    const [loadingHist, setLoadingHist] = useState(false);
 
     const carregarAgenda = useCallback(async () => {
         setLoading(true);
@@ -42,6 +51,20 @@ const AgendaMedica = () => {
         return () => clearTimeout(delayDebounce);
     }, [carregarAgenda]);
 
+    const verHistorico = async (idPaciente) => {
+        setLoadingHist(true);
+        setOpenHistorico(true);
+        try {
+            const response = await api.get(`/profissional/historico-paciente/${idPaciente}`);
+            setDadosHistorico(response.data);
+        } catch (error) {
+            alert("Erro ao carregar histórico");
+            setOpenHistorico(false);
+        } finally {
+            setLoadingHist(false);
+        }
+    };
+
     const limparFiltros = () => {
         setFiltroData('');
         setFiltroStatus('Todos');
@@ -51,7 +74,7 @@ const AgendaMedica = () => {
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F1F5F9', minHeight: '100vh' }}>
             
-            {/* HEADER COM STATUS DO DIA */}
+            {/* HEADER */}
             <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1.5px' }}>
@@ -63,12 +86,12 @@ const AgendaMedica = () => {
                     </Box>
                 </Box>
                 
-                <Button variant="contained" startIcon={<CalIcon size={20}/>} sx={{ bgcolor: '#0F172A', '&:hover': { bgcolor: '#32B5FE' },  borderRadius: 3, px: 3, fontWeight: 800, textTransform: 'none', display: { xs: 'none', md: 'flex' }, color: '#FFFFFF' }}>
+                <Button variant="contained" startIcon={<CalIcon size={20}/>} sx={{ bgcolor: '#0F172A', '&:hover': { bgcolor: '#32B5FE' }, borderRadius: 3, px: 3, fontWeight: 800, textTransform: 'none', display: { xs: 'none', md: 'flex' }, color: '#FFFFFF' }}>
                     Ver Agenda Completa
                 </Button>
             </Box>
 
-            {/* BARRA DE FILTROS ESTILIZADA */}
+            {/* BARRA DE FILTROS */}
             <Paper elevation={0} sx={{ p: 2, mb: 4, borderRadius: 4, border: '1px solid #E2E8F0', display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', bgcolor: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)' }}>
                 <TextField
                     placeholder="Buscar por nome do paciente..."
@@ -93,6 +116,7 @@ const AgendaMedica = () => {
                     <MenuItem value="Todos">Todos Status</MenuItem>
                     <MenuItem value="Confirmado">Confirmados</MenuItem>
                     <MenuItem value="Pendente">Pendentes</MenuItem>
+                    <MenuItem value="Finalizado">Finalizados</MenuItem>
                 </TextField>
 
                 <TextField
@@ -109,13 +133,13 @@ const AgendaMedica = () => {
                 </IconButton>
             </Paper>
 
-            {/* LISTA DE CARDS OPERACIONAIS */}
+            {/* LISTA DE CARDS */}
             <Grid container spacing={3}>
                 {loading ? (
-                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress color="inherit" /></Box>
+                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress color="primary" /></Box>
                 ) : agenda.length === 0 ? (
                     <Box sx={{ width: '100%', textAlign: 'center', py: 10 }}>
-                        <Typography variant="h6" color="text.secondary" fontWeight={700}>Nenhum paciente encontrado para os filtros aplicados.</Typography>
+                        <Typography variant="h6" color="text.secondary" fontWeight={700}>Nenhum agendamento encontrado.</Typography>
                     </Box>
                 ) : (
                     agenda.map((item) => (
@@ -126,7 +150,6 @@ const AgendaMedica = () => {
                             }} elevation={0}>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
                                     
-                                    {/* BLOCO DE HORÁRIO */}
                                     <Box sx={{ 
                                         width: { xs: '100%', md: 160 }, bgcolor: '#F8FAF9', borderRight: { md: '1px solid #E2E8F0' },
                                         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 3
@@ -136,11 +159,10 @@ const AgendaMedica = () => {
                                         <Chip label={item.tipo} size="small" sx={{ mt: 1.5, fontWeight: 800, fontSize: '0.6rem', bgcolor: '#E2E8F0' }} />
                                     </Box>
 
-                                    {/* BLOCO DE INFORMAÇÕES */}
                                     <Box sx={{ flex: 1, p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                                             <Badge overlap="circular" anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} variant="dot" color={item.status === 'Confirmado' ? 'success' : 'warning'}>
-                                                <Avatar sx={{ width: 64, height: 64, bgcolor: '#0F172A', fontWeight: 900, fontSize: '1.5rem', border: '3px solid #F1F5F9' }}>
+                                                <Avatar sx={{ width: 64, height: 64, bgcolor: '#0F172A', fontWeight: 900, fontSize: '1.5rem' }}>
                                                     {item.paciente[0]}
                                                 </Avatar>
                                             </Badge>
@@ -150,46 +172,30 @@ const AgendaMedica = () => {
                                                     <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B', fontWeight: 700 }}>
                                                         <MapPin size={14}/> {item.clinica}
                                                     </Typography>
-                                                    <Typography variant="caption" sx={{ color: item.status === 'Confirmado' ? '#16A34A' : '#D97706', fontWeight: 800 }}>
+                                                    <Typography variant="caption" sx={{ color: item.status === 'Finalizado' ? '#32B5FE' : item.status === 'Confirmado' ? '#16A34A' : '#D97706', fontWeight: 800 }}>
                                                         ● {item.status.toUpperCase()}
                                                     </Typography>
                                                 </Box>
                                             </Box>
                                         </Box>
 
-                                        {/* AÇÕES DE PRONTUÁRIO E ATENDIMENTO */}
                                         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                                            <Tooltip title="Ver Histórico Médico">
-                                                <Button 
-                                                    variant="outlined" 
-                                                    size="small"
-                                                    startIcon={<History size={18}/>}
-                                                    sx={{ borderRadius: 3, fontWeight: 700, border: '2px solid #E2E8F0', color: '#475569', textTransform: 'none' }}
-                                                >
-                                                    Histórico
-                                                </Button>
-                                            </Tooltip>
-
-                                            <Tooltip title="Abrir Prontuário">
-                                                <Button 
-                                                    variant="outlined" 
-                                                    size="small"
-                                                    startIcon={<FileText size={18}/>}
-                                                    sx={{ borderRadius: 3, fontWeight: 700, border: '2px solid #E2E8F0', color: '#475569', textTransform: 'none' }}
-                                                >
-                                                    Prontuário
-                                                </Button>
-                                            </Tooltip>
-
                                             <Button 
-                                                variant="contained" 
-                                                startIcon={<Play size={18}/>}
-                                                sx={{ bgcolor: '#0F172A', '&:hover': { bgcolor: '#32B5FE' }, borderRadius: 3, px: 3, fontWeight: 800, textTransform: 'none', color: '#FFFFFF' }}
+                                                onClick={() => verHistorico(item.id_paciente)}
+                                                variant="outlined" size="small" startIcon={<History size={18}/>}
+                                                sx={{ borderRadius: 3, fontWeight: 700, border: '2px solid #E2E8F0', color: '#475569', textTransform: 'none' }}
                                             >
-                                                Atender
+                                                Histórico
                                             </Button>
 
-                                            <IconButton sx={{ bgcolor: '#F8FAF9' }}><MoreHorizontal size={20}/></IconButton>
+                                            <Button 
+                                                variant="contained" startIcon={<Play size={18}/>}
+                                                onClick={() => navigate('/dashboard/atendimento', { state: item })}
+                                                disabled={item.status === 'Finalizado'}
+                                                sx={{ bgcolor: '#0F172A', '&:hover': { bgcolor: '#32B5FE' }, borderRadius: 3, px: 3, fontWeight: 800, textTransform: 'none', color: '#FFFFFF' }}
+                                            >
+                                                {item.status === 'Finalizado' ? 'Atendido' : 'Atender'}
+                                            </Button>
                                         </Box>
                                     </Box>
                                 </Box>
@@ -198,6 +204,36 @@ const AgendaMedica = () => {
                     ))
                 )}
             </Grid>
+
+            {/* MODAL DE HISTÓRICO */}
+            <Dialog open={openHistorico} onClose={() => setOpenHistorico(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: 4 } }}>
+                <DialogTitle sx={{ fontWeight: 900, color: '#0F172A' }}>Histórico do Paciente</DialogTitle>
+                <DialogContent dividers>
+                    {loadingHist ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}><CircularProgress size={24} /></Box>
+                    ) : dadosHistorico.length === 0 ? (
+                        <Typography color="text.secondary">Nenhum atendimento anterior encontrado.</Typography>
+                    ) : (
+                        dadosHistorico.map((h, i) => (
+                            <Box key={i} sx={{ mb: 3, p: 2, bgcolor: '#F8FAFC', borderRadius: 3, border: '1px solid #E2E8F0' }}>
+                                <Typography variant="caption" fontWeight={900} color="primary">{h.data_formatada}</Typography>
+                                <Typography variant="body2" fontWeight={800} sx={{ mt: 1 }}>Evolução:</Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{h.evolucao}</Typography>
+                                {h.prescricao && (
+                                    <>
+                                        <Divider sx={{ my: 1 }} />
+                                        <Typography variant="body2" fontWeight={800} color="secondary">Prescrição:</Typography>
+                                        <Typography variant="body2" color="text.secondary">{h.prescricao}</Typography>
+                                    </>
+                                )}
+                            </Box>
+                        ))
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={() => setOpenHistorico(false)} sx={{ fontWeight: 800, color: '#0F172A' }}>Fechar</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

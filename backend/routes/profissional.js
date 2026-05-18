@@ -39,6 +39,7 @@ router.get('/agenda', verifyToken, async (req, res) => {
         let query = `
             SELECT 
                 a.id, 
+                a.id_paciente,
                 DATE_FORMAT(a.data_agendamento, '%d/%m/%Y') as data_formatada, 
                 TIME_FORMAT(a.horario, '%H:%i') as horario, 
                 a.status, 
@@ -53,7 +54,6 @@ router.get('/agenda', verifyToken, async (req, res) => {
 
         const queryParams = [req.userId];
 
-        // Filtro por Data
         if (data) {
             query += ` AND a.data_agendamento = ? `;
             queryParams.push(data);
@@ -61,13 +61,11 @@ router.get('/agenda', verifyToken, async (req, res) => {
             query += ` AND a.data_agendamento >= CURDATE() `;
         }
 
-        // Filtro por Status (Confirmado, Pendente, etc)
         if (status && status !== 'Todos') {
             query += ` AND a.status = ? `;
             queryParams.push(status.toLowerCase());
         }
 
-        // Filtro por Nome do Paciente (Busca Parcial)
         if (busca) {
             query += ` AND p.nome LIKE ? `;
             queryParams.push(`%${busca}%`);
@@ -79,6 +77,7 @@ router.get('/agenda', verifyToken, async (req, res) => {
         
         res.json(rows.map(row => ({
             id: row.id,
+            id_paciente: row.id_paciente, // <--- ADICIONADO: Agora o frontend vai receber o ID
             hora: row.horario,
             data: row.data_formatada,
             paciente: row.paciente_nome || "Paciente não identificado",
@@ -88,6 +87,76 @@ router.get('/agenda', verifyToken, async (req, res) => {
         })));
     } catch (error) {
         res.status(500).json({ error: "Erro ao filtrar agenda" });
+    }
+});
+
+// Rota para finalizar o atendimento e gerar o prontuário
+router.post('/finalizar-atendimento', verifyToken, async (req, res) => {
+    const { id_agendamento, id_paciente, evolucao, prescricao } = req.body;
+    
+    try {
+        // 1. Inserir os dados na tabela de prontuários
+        await pool.query(
+            'INSERT INTO prontuarios (id_agendamento, id_paciente, id_profissional, evolucao, prescricao) VALUES (?, ?, ?, ?, ?)',
+            [id_agendamento, id_paciente, req.userId, evolucao, prescricao]
+        );
+
+        // 2. Atualizar o status do agendamento para 'Finalizado'
+        await pool.query(
+            'UPDATE agendamentos SET status = ? WHERE id = ?', 
+            ['Finalizado', id_agendamento]
+        );
+
+        res.json({ message: "Atendimento finalizado e registrado com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao finalizar atendimento:", error);
+        res.status(500).json({ error: "Erro interno ao salvar prontuário." });
+    }
+});
+
+// Buscar histórico de prontuários de um paciente específico
+router.get('/historico-paciente/:id_paciente', verifyToken, async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                p.evolucao, 
+                p.prescricao, 
+                DATE_FORMAT(p.data_atendimento, '%d/%m/%Y %H:%i') as data_formatada
+            FROM prontuarios p
+            WHERE p.id_paciente = ?
+            ORDER BY p.data_atendimento DESC
+        `;
+        const [rows] = await pool.query(query, [req.params.id_paciente]);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao buscar histórico" });
+    }
+});
+
+router.get('/meu-prontuario', verifyToken, async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                p.id,
+                p.evolucao as notas,
+                p.prescricao,
+                DATE_FORMAT(p.data_atendimento, '%d/%m/%Y') as data,
+                prof.nome as medico,
+                'Especialidade' as especialidade, 
+                c.nome_fantasia as clinica
+            FROM prontuarios p
+            JOIN profissionais prof ON p.id_profissional = prof.id
+            LEFT JOIN agendamentos a ON p.id_agendamento = a.id
+            LEFT JOIN usuarios_cnpj c ON a.id_clinica = c.id
+            WHERE p.id_paciente = ?
+            ORDER BY p.data_atendimento DESC
+        `;
+        // O req.userId vem do verifyToken
+        const [rows] = await pool.query(query, [req.userId]);
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erro ao buscar prontuário" });
     }
 });
 

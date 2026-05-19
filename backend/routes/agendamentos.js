@@ -1,6 +1,10 @@
 const router = require('express').Router();
 const pool = require('../config/db');
-const { verifyToken } = require('./auth'); // Importa o middleware do auth.js
+const { verifyToken } = require('./auth');
+
+// Adicione estas linhas no topo do arquivo
+const { MercadoPagoConfig, Preference } = require('mercadopago');
+const client = new MercadoPagoConfig({ accessToken: 'APP_USR-8023357430156573-070213-ea790c5ea47494f7376c78501bda5942-307618485' });
 
 // 1. LISTAR TODOS OS PROFISSIONAIS
 // Retorna os dados necessários para o paciente escolher o médico no agendamento
@@ -38,22 +42,44 @@ router.get('/vinculos/clinicas/:profissionalId', async (req, res) => {
     }
 });
 
-// 3. CRIAR NOVO AGENDAMENTO
-// Rota utilizada no formulário de "Novo Agendamento"
+// 3. PAGAMENTO E CRIAÇÃO DO AGENDAMENTO (AJUSTE)
 router.post('/agendar', verifyToken, async (req, res) => {
     try {
-        const { id_profissional, id_clinica, data_agendamento, horario } = req.body;
-        const id_paciente = req.userId; // ID extraído do Token JWT via verifyToken
+        const { id_profissional, id_clinica, data_agendamento, horario, valor_consulta, nome_medico } = req.body;
+        const id_paciente = req.userId;
 
-        const query = `
-            INSERT INTO agendamentos (id_paciente, id_profissional, id_clinica, data_agendamento, horario, status)
-            VALUES (?, ?, ?, ?, ?, 'Confirmado')
-        `;
-        await pool.query(query, [id_paciente, id_profissional, id_clinica, data_agendamento, horario]);
-        res.status(201).json({ message: "Agendamento confirmado!" });
+        // 1. Cria a preferência no Mercado Pago
+        const preference = new Preference(client);
+        
+        const response = await preference.create({
+            body: {
+                items: [
+                    {
+                        title: `Consulta com ${nome_medico}`,
+                        quantity: 1,
+                        unit_price: Number(valor_consulta),
+                        currency_id: 'BRL',
+                    }
+                ],
+                // CORREÇÃO: Defina todas as chaves obrigatórias aqui
+                back_urls: {
+                    success: 'http://localhost:3000/dashboard/meus-agendamentos',
+                    failure: 'http://localhost:3000/agendamento-erro',
+                    pending: 'http://localhost:3000/agendamento-pendente'
+                },
+                // Se usar 'approved', é OBRIGATÓRIO ter a URL de success definida acima
+                auto_return: 'approved', 
+                binary_mode: true // Opcional: força apenas pagamentos aprovados ou rejeitados
+            }
+        });
+
+        // 2. Retorna o link para o front-end
+        res.json({ init_point: response.init_point });
+
     } catch (error) {
-        console.error("Erro ao salvar agendamento:", error);
-        res.status(500).json({ error: "Erro ao processar agendamento" });
+        console.error("Erro ao criar preferência de pagamento:", error);
+        // Exibindo o erro detalhado que o Mercado Pago te enviou
+        res.status(500).json({ error: error.message });
     }
 });
 

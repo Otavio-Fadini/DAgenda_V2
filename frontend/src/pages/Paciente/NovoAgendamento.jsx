@@ -1,17 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { 
-    Box, Typography, Paper, Grid, MenuItem, TextField, 
-    Button, Stepper, Step, StepLabel, Avatar, CardActionArea, 
-    Divider, FormControlLabel, Switch, Chip, Stack, CircularProgress,
-    InputBase, alpha, IconButton
+    Box, Typography, Paper, Grid, MenuItem, TextField, Button, Stepper, Step, 
+    StepLabel, Avatar, CardActionArea, Divider, FormControlLabel, Switch, 
+    Chip, Stack, CircularProgress, InputBase, alpha, IconButton, Fade, Zoom
 } from '@mui/material';
 import { 
-    Calendar, User, Building2, Clock, ChevronRight, 
-    ChevronLeft, CheckCircle2, Search, DollarSign, MapPin, Star, ShieldCheck,
-    LocateFixed, Navigation2, Info, Plus, Minus, Car, Wifi
+    Search, MapPin, ShieldCheck, Star, ChevronLeft, ChevronRight, 
+    Building2, User, Clock, Car, Wifi, LocateFixed, Calendar as CalendarIcon,
+    CheckCircle2, ArrowRight, Sparkles, Map as MapIcon, CreditCard, QrCode, Lock
 } from 'lucide-react';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+
+// MAPA REAL
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Correção de ícone do marcador
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const RecenterMap = ({ center }) => {
+    const map = useMap();
+    useEffect(() => { map.setView(center, map.getZoom()); }, [center]);
+    return null;
+};
 
 const NovoAgendamento = () => {
     const navigate = useNavigate();
@@ -20,20 +38,21 @@ const NovoAgendamento = () => {
     const [profissionais, setProfissionais] = useState([]);
     const [profissionaisFiltrados, setProfissionaisFiltrados] = useState([]);
     const [clinicas, setClinicas] = useState([]);
-    
-    // Filtros de busca
+    const [mapCenter, setMapCenter] = useState([-22.4331, -47.3581]);
+
     const [busca, setBusca] = useState('');
     const [dataFiltro, setDataFiltro] = useState('');
     const [apenasConvenio, setApenasConvenio] = useState(false);
+    
+    // Controle do tipo de pagamento na UI
+    const [metodoPagamento, setMetodoPagamento] = useState('pix');
 
     const [agendamento, setAgendamento] = useState({ 
-        id_profissional: '', nome_medico: '', id_clinica: '', nome_clinica: '', data_agendamento: '', horario: '' 
+        id_profissional: '', nome_medico: '', valor_consulta: '', id_clinica: '', nome_clinica: '', data_agendamento: '', horario: '' 
     });
 
-    const steps = ['Especialista', 'Unidade', 'Agendamento'];
-
     useEffect(() => {
-        const carregarMedicos = async () => {
+        const load = async () => {
             setLoading(true);
             try {
                 const res = await api.get('/agendamentos/profissionais');
@@ -42,25 +61,21 @@ const NovoAgendamento = () => {
             } catch (err) { console.error(err); }
             finally { setLoading(false); }
         };
-        carregarMedicos();
+        load();
     }, []);
 
-    // Lógica de Filtro Global
     useEffect(() => {
-        const resultado = profissionais.filter(p => {
+        const filtered = profissionais.filter(p => {
             const matchTexto = p.nome.toLowerCase().includes(busca.toLowerCase()) || 
                                p.especialidade.toLowerCase().includes(busca.toLowerCase());
-            
-            // Lógica de Convênio (Backend retorna 1 para sim, 0 para não)
             const matchConvenio = apenasConvenio ? Number(p.atende_convenio) === 1 : true;
-            
             return matchTexto && matchConvenio;
         });
-        setProfissionaisFiltrados(resultado);
+        setProfissionaisFiltrados(filtered);
     }, [busca, apenasConvenio, profissionais]);
 
-    const selecionarMedico = async (id, nome) => {
-        setAgendamento({ ...agendamento, id_profissional: id, nome_medico: nome });
+    const selectMedico = async (id, nome, valor) => {
+        setAgendamento({ ...agendamento, id_profissional: id, nome_medico: nome, valor_consulta: valor });
         try {
             const res = await api.get(`/agendamentos/vinculos/clinicas/${id}`);
             setClinicas(res.data);
@@ -68,347 +83,375 @@ const NovoAgendamento = () => {
         } catch (err) { console.error(err); }
     };
 
-    const finalizarAgendamento = async () => {
+    const processarPagamentoEAgendar = async () => {
+        setLoading(true);
         try {
-            await api.post('/agendamentos/agendar', {
+            const response = await api.post('/agendamentos/agendar', {
                 id_profissional: agendamento.id_profissional,
                 id_clinica: agendamento.id_clinica,
                 data_agendamento: agendamento.data_agendamento,
-                horario: agendamento.horario
+                horario: agendamento.horario,
+                metodo_pagamento: metodoPagamento,
+                valor_consulta: agendamento.valor_consulta,
+                nome_medico: agendamento.nome_medico
             });
-            navigate('/dashboard/meus-agendamentos');
-        } catch (err) { alert("Erro ao agendar."); }
+
+            // O front-end recebe o link e faz a mágica acontecer
+            if (response.data && response.data.init_point) {
+                window.location.href = response.data.init_point;
+            } else {
+                navigate('/dashboard/meus-agendamentos');
+            }
+        } catch (err) { 
+            alert("Erro ao processar. Verifique sua conexão."); 
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F1F5F9', minHeight: '100vh' }}>
-            <Box sx={{ maxWidth: '1200px', mx: 'auto' }}>
-                
-                {/* CABEÇALHO */}
-                <Box sx={{ mb: 6, textAlign: 'center' }}>
-                    <Typography variant="h3" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-2px' }}>
-                        DAGENDA<span style={{ color: '#32B5FE' }}>PRO</span>
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" fontWeight={800} sx={{ mt: 1, letterSpacing: 2, textTransform: 'uppercase' }}>
-                        Seu portal de saúde inteligente
-                    </Typography>
-                </Box>
 
-                <Stepper activeStep={activeStep} centered sx={{ mb: 8, '& .MuiStepIcon-root.Mui-active': { color: '#32B5FE' } }}>
-                    {steps.map((label) => (
-                        <Step key={label}><StepLabel sx={{ '& .MuiStepLabel-label': { fontWeight: 800, fontSize: '0.8rem' } }}>{label}</StepLabel></Step>
+        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', overflow: 'hidden' }}>
+            
+            {/* TOP BAR MINIMALISTA */}
+            <Box sx={{ px: 4, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#FFF', borderBottom: '1px solid #E2E8F0', zIndex: 10 }}>
+                <Stepper activeStep={activeStep} sx={{ width: 1400, '& .MuiStepLabel-label': { fontWeight: 700, fontSize: '1rem' } }}>
+                    {['Especialista', 'Localização', 'Confirmar', 'Pagamento'].map(label => (
+                        <Step key={label}><StepLabel>{label}</StepLabel></Step>
                     ))}
                 </Stepper>
 
-                {/* BARRA DE FILTRO MULTI-ACTION (ESTILO BUSCA INTELIGENTE) */}
+                <Button variant="outlined" onClick={() => navigate(-1)} sx={{ borderRadius: '50px', textTransform: 'none', fontWeight: 700, color: '#FFFFFF', bgcolor: '#0F172A', '&:hover': { bgcolor: '#32B5FE' } }}>  
+                    Cancelar
+                </Button>
+            </Box>
+
+            <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                
+                {/* PASSO 0: GRID DE PROFISSIONAIS MODERNO */}
                 {activeStep === 0 && (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 8 }}>
-                        <Paper elevation={0} sx={{ 
-                            display: 'flex', alignItems: 'center', p: '8px', borderRadius: '100px',
-                            border: '1px solid', borderColor: alpha('#E2E8F0', 0.8), bgcolor: '#FFFFFF', width: '100%', maxWidth: 1000,
-                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.08)'
-                        }}>
-                            {/* BUSCA POR NOME/ESPEC */}
-                            <Box sx={{ flex: 1.5, px: 4, py: 1 }}>
-                                <Typography variant="caption" fontWeight={900} color="#32B5FE" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>Especialista</Typography>
-                                <InputBase 
-                                    fullWidth placeholder="Ex: Dr. Silva ou Cardiologia" 
-                                    value={busca} onChange={(e) => setBusca(e.target.value)}
-                                    sx={{ fontWeight: 700, color: '#0F172A', fontSize: '1rem', mt: -0.5 }}
-                                />
+                    <Fade in={activeStep === 0}>
+                        <Box sx={{ height: '100%', overflowY: 'auto', p: 6 }}>
+                            <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+                                <Box sx={{ mb: 6 }}>
+                                    <Typography variant="h3" fontWeight={900} sx={{ color: '#0F172A', mb: 1, letterSpacing: '-2px' }}>Bem-vindo ao Agendamento</Typography>
+                                    <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>Escolha um especialista para iniciar seu atendimento.</Typography>
+                                </Box>
+
+                                {/* FILTRO HIGH-TECH */}
+                                <Paper elevation={5} sx={{ 
+                                    p: 1.5, mb: 8, borderRadius: 2, display: 'flex', alignItems: 'center', 
+                                    border: '1px solid #E2E8F0', bgcolor: alpha('#FFF', 0.8), backdropFilter: 'blur(10px)'
+                                }}>
+                                    <Box sx={{ flex: 2, px: 3 }}>
+                                        <Stack 
+                                            direction="row" 
+                                            spacing={2} 
+                                            sx={{ 
+                                            bgcolor: '#eceef1', 
+                                            p: 1.5, 
+                                            borderRadius: 1.5,
+                                            display: 'flex',
+                                            alignItems: 'center', 
+                                            justifyContent: 'center' 
+                                            }}
+                                        >
+                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <Search size={22} color="#32B5FE" />
+                                            </Box>
+                                            
+                                            <InputBase 
+                                            fullWidth 
+                                            placeholder="Procure por nome ou especialidade..." 
+                                            value={busca} 
+                                            onChange={e => setBusca(e.target.value)} 
+                                            sx={{ 
+                                                fontWeight: 600, 
+                                                fontSize: '1.1rem',
+                                                '& input': {
+                                                padding: 0,
+                                                display: 'flex',
+                                                alignItems: 'center'
+                                                }
+                                            }} 
+                                            />
+                                        </Stack>
+                                    </Box>
+                                    <Divider orientation="vertical" flexItem sx={{ height: 40, mx: 2 }} />
+                                    <Box sx={{ flex: 1 }}>
+                                        <FormControlLabel 
+                                            control={<Switch checked={apenasConvenio} onChange={e => setApenasConvenio(e.target.checked)} />} 
+                                            label={<Typography variant="subtitle2" fontWeight={800} color="#64748B">CONVÊNIO</Typography>} 
+                                        />
+                                    </Box>
+                                    <Button variant="contained" sx={{ borderRadius: 1, px: 6, py: 1.5, color: '#FFFFFF', bgcolor: '#0F172A', fontWeight: 900, fontSize: '0.9rem', '&:hover': { bgcolor: '#32B5FE' } }}>Buscar</Button>
+                                </Paper>
+
+                                <Grid container spacing={4}>
+                                    {loading ? (
+                                        <Box sx={{ width: '100%', textAlign: 'center', py: 10 }}><CircularProgress color="primary" /></Box>
+                                    ) : (
+                                        profissionaisFiltrados.map(prof => (
+                                            <Grid item xs={12} md={4} key={prof.id}>
+                                                <Zoom in={true}>
+                                                    <Paper elevation={5} sx={{ 
+                                                        borderRadius: 2, border: '1px solid #E2E8F0', overflow: 'hidden', transition: '0.4s cubic-bezier(0.4, 0, 0.2, 1)', 
+                                                        '&:hover': { transform: 'translateY(-12px)', borderColor: '#32B5FE'}, bgcolor: '#FFFFFF' 
+                                                    }}>
+                                                        <CardActionArea onClick={() => selectMedico(prof.id, prof.nome, prof.valor_consulta)} sx={{ p: 4 }}>
+                                                            <Stack spacing={3}>
+                                                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                                    <Avatar src={prof.foto_perfil} sx={{ width: 90, height: 90, borderRadius: 2, border: '4px solid #F8FAFC' }}>{prof.nome[0]}</Avatar>
+                                                                    <Chip label="Verificado" size="small" icon={<ShieldCheck size={14} color="white" />} sx={{ bgcolor: '#0F172A', color: '#FFF', fontWeight: 800, fontSize: '0.65rem' }} />
+                                                                </Box>
+                                                                <Box>
+                                                                    <Typography variant="h5" fontWeight={900} color="#0F172A">{prof.nome}</Typography>
+                                                                    <Typography variant="subtitle1" color="#32B5FE" fontWeight={800} sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>{prof.especialidade}</Typography>
+                                                                </Box>
+                                                                <Stack direction="row" spacing={1} alignItems="center">
+                                                                    <Star size={16} fill="#FACC15" color="#FACC15" />
+                                                                    <Typography variant="body2" fontWeight={800} color="#0F172A">4.9</Typography>
+                                                                    <Typography variant="body2" color="text.secondary">(120 avaliações)</Typography>
+                                                                </Stack>
+                                                                <Divider />
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                    <Box>
+                                                                        <Typography variant="caption" color="text.secondary" fontWeight={800}>SESSÃO</Typography>
+                                                                        <Typography variant="h5" fontWeight={900} color="#10B981">R$ {prof.valor_consulta || '0,00'}</Typography>
+                                                                    </Box>
+                                                                    <IconButton sx={{ bgcolor: '#F1F5F9', color: '#0F172A', '&:hover': { bgcolor: '#32B5FE', color: '#FFF' } }}>
+                                                                        <ChevronRight />
+                                                                    </IconButton>
+                                                                </Box>
+                                                            </Stack>
+                                                        </CardActionArea>
+                                                    </Paper>
+                                                </Zoom>
+                                            </Grid>
+                                        ))
+                                    )}
+                                </Grid>
                             </Box>
-                            
-                            <Divider orientation="vertical" flexItem sx={{ mx: 1, height: 40, alignSelf: 'center', bgcolor: alpha('#E2E8F0', 0.5) }} />
-
-                            {/* BUSCA POR DATA */}
-                            <Box sx={{ flex: 1, px: 4, py: 1 }}>
-                                <Typography variant="caption" fontWeight={900} color="#32B5FE" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>Quando?</Typography>
-                                <InputBase 
-                                    type="date" fullWidth
-                                    value={dataFiltro} onChange={(e) => setDataFiltro(e.target.value)}
-                                    sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.9rem', mt: -0.5 }}
-                                />
-                            </Box>
-
-                            <Divider orientation="vertical" flexItem sx={{ mx: 1, height: 40, alignSelf: 'center', bgcolor: alpha('#E2E8F0', 0.5) }} />
-
-                            {/* FILTRO CONVÊNIO */}
-                            <Box sx={{ flex: 0.8, px: 4, display: 'flex', alignItems: 'center' }}>
-                                <FormControlLabel
-                                    control={<Switch size="small" checked={apenasConvenio} onChange={(e) => setApenasConvenio(e.target.checked)} color="primary" />}
-                                    label={<Typography variant="caption" fontWeight={900}>CONVÊNIO</Typography>}
-                                />
-                            </Box>
-
-                            <Button 
-                                variant="contained" 
-                                sx={{ 
-                                    minWidth: 56, width: 56, height: 56, borderRadius: '50%', 
-                                    bgcolor: '#0F172A', color: '#FFFFFF', boxShadow: '0 10px 15px rgba(0,0,0,0.2)',
-                                    '&:hover': { bgcolor: '#32B5FE', transform: 'scale(1.05)' }, transition: '0.2s'
-                                }}
-                            >
-                                <Search size={22} />
-                            </Button>
-                        </Paper>
-                    </Box>
+                        </Box>
+                    </Fade>
                 )}
 
-                <Grid container spacing={4}>
-                    {/* LISTA DE PROFISSIONAIS */}
-                    {activeStep === 0 && (
-                        loading ? <Box sx={{ width: '100%', py: 10, textAlign: 'center' }}><CircularProgress /></Box> :
-                        profissionaisFiltrados.map(prof => (
-                            <Grid item xs={12} md={4} key={prof.id}>
-                                <Paper sx={{ 
-                                    borderRadius: 2, border: '1px solid #E2E8F0', overflow: 'hidden', bgcolor: '#FFFFFF',
-                                    transition: '0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
-                                    '&:hover': { transform: 'translateY(-12px)', boxShadow: '0 40px 60px rgba(15, 23, 42, 0.1)', borderColor: '#32B5FE' } 
-                                }}>
-                                    <CardActionArea onClick={() => selecionarMedico(prof.id, prof.nome)} sx={{ p: 0 }}>
-                                        <Box sx={{ p: 4 }}>
-                                            <Stack direction="row" spacing={2.5} alignItems="flex-start">
-                                                <Avatar src={prof.foto_perfil} sx={{ width: 75, height: 75, borderRadius: 3, border: '4px solid #F8FAFC' }}>{prof.nome[0]}</Avatar>
-                                                <Box>
-                                                    <Stack direction="row" spacing={1} alignItems="center">
-                                                        <Typography variant="h6" fontWeight={900} color="#0F172A">{prof.nome}</Typography>
-                                                        <ShieldCheck size={18} color="#32B5FE" fill={alpha('#32B5FE', 0.1)} />
-                                                    </Stack>
-                                                    <Typography variant="body2" color="#32B5FE" fontWeight={800}>{prof.especialidade.toUpperCase()}</Typography>
-                                                    <Stack direction="row" spacing={0.5} sx={{ mt: 1 }}>
-                                                        {[1, 2, 3, 4, 5].map((s) => <Star key={s} size={14} fill="#FACC15" color="#FACC15" />)}
-                                                        <Typography variant="caption" fontWeight={900} sx={{ ml: 1, color: '#64748B' }}>4.9</Typography>
+                {/* PASSO 1: LOCALIZAÇÃO - SPLIT VIEW REFINADA */}
+                {activeStep === 1 && (
+                    <Box sx={{ display: 'flex', height: '100%' }}>
+                        {/* LISTA LATERAL ESTILO APP */}
+                        <Box sx={{ width: 440, borderRight: '1px solid #E2E8F0', bgcolor: '#FFF', display: 'flex', flexDirection: 'column', zIndex: 5 }}>
+                            <Box sx={{ p: 4, bgcolor: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                                <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 1 }}>Onde agendar?</Typography>
+                                <Typography variant="body2" color="text.secondary" fontWeight={600}>Unidades para atendimento com {agendamento.nome_medico}</Typography>
+                            </Box>
+                            <Box sx={{ flex: 1, overflowY: 'auto' }}>
+                                {clinicas.map((c, i) => {
+                                    // Tenta usar latitude/longitude do BD, senao usa um fallback visual para não quebrar
+                                    const lat = c.latitude ? parseFloat(c.latitude) : -22.4331 + (i * 0.01);
+                                    const lng = c.longitude ? parseFloat(c.longitude) : -47.3581 + (i * 0.01);
+
+                                    return (
+                                        <CardActionArea 
+                                            key={c.id} 
+                                            onMouseEnter={() => setMapCenter([lat, lng])}
+                                            onClick={() => { setAgendamento({...agendamento, id_clinica: c.id, nome_clinica: c.nome_fantasia}); setActiveStep(2); }}
+                                            sx={{ p: 4, borderBottom: '1px solid #F1F5F9', transition: '0.2s', '&:hover': { bgcolor: alpha('#32B5FE', 0.04) } }}
+                                        >
+                                            <Stack direction="row" spacing={3} alignItems="flex-start">
+                                                <Box sx={{ p: 2, bgcolor: '#0F172A', borderRadius: 1, color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Building2 size={30} /></Box>
+                                                <Box sx={{ flex: 1 }}>
+                                                    <Typography variant="h6" fontWeight={900} color="#0F172A">{c.nome_fantasia}</Typography>
+                                                    <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ mb: 2 }}>{c.endereco || 'Centro • Araras, SP'}</Typography>
+                                                    <Stack direction="row" spacing={2}>
+                                                        <Chip label="2.4 km" size="small" icon={<LocateFixed size={12}/>} sx={{ fontWeight: 900, bgcolor: '#F1F5F9' }} />
+                                                        <Stack direction="row" spacing={1} alignItems="center" sx={{ color: '#10B981' }}>
+                                                            <Car size={16} /><Typography variant="caption" fontWeight={900}>Vagas</Typography>
+                                                        </Stack>
                                                     </Stack>
                                                 </Box>
                                             </Stack>
-                                        </Box>
-                                        <Box sx={{ bgcolor: alpha('#F1F5F9', 0.5), p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <Box>
-                                                <Typography variant="caption" color="text.secondary" fontWeight={900}>SESSÃO</Typography>
-                                                <Typography variant="h5" fontWeight={900} color="#0F172A">R$ {prof.valor_consulta || '0,00'}</Typography>
-                                            </Box>
-                                            <Button variant="contained" sx={{ borderRadius: 1, color: '#FFFFFF', bgcolor: '#0F172A', px: 3, fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#32B5FE' } }}>Ver Horários</Button>
-                                        </Box>
-                                    </CardActionArea>
-                                </Paper>
-                            </Grid>
-                        ))
-                    )}
-
-                    {/* LOCALIZAÇÃO COM MAPA HIGH-TECH */}
-                    {/* PASSO 1: UNIDADES - SPLIT VIEW REFINADA (LISTA + MAPA) */}
-                    {activeStep === 1 && (
-                        <Box sx={{ 
-                            mt: 2, 
-                            height: 'calc(100vh - 250px)', // Define uma altura fixa baseada na viewport
-                            minHeight: '600px',
-                            overflow: 'hidden' // Bloqueia a rolagem externa
-                        }}>
-                            <Grid container sx={{ 
-                                borderRadius: 4, 
-                                overflow: 'hidden', 
-                                border: '1px solid #E2E8F0', 
-                                bgcolor: '#FFFFFF', 
-                                boxShadow: '0 25px 50px -12px rgba(0,0,0,0.05)',
-                                height: '100%' // Ocupa toda a altura do container pai
-                            }}>
-                                {/* COLUNA DA ESQUERDA: LISTA DE UNIDADES */}
-                                <Grid item xs={12} md={5} sx={{ 
-                                    borderRight: '1px solid #E2E8F0', 
-                                    display: 'flex', 
-                                    flexDirection: 'column',
-                                    height: '100%' 
-                                }}>
-                                    <Box sx={{ p: 3, bgcolor: '#F8FAFC', borderBottom: '1px solid #F1F5F9' }}>
-                                        <Typography variant="h5" fontWeight={900} color="#0F172A">Onde você deseja ir?</Typography>
-                                        <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                                            {clinicas.length} unidades encontradas para {agendamento.nome_medico}
-                                        </Typography>
-                                    </Box>
-
-                                    {/* AREA DE SCROLL INTERNA (APENAS AQUI ROLA) */}
-                                    <Box sx={{ 
-                                        flex: 1, 
-                                        overflowY: 'auto', 
-                                        '&::-webkit-scrollbar': { width: '6px' },
-                                        '&::-webkit-scrollbar-thumb': { bgcolor: '#E2E8F0', borderRadius: '10px' }
-                                    }}>
-                                        <Stack spacing={0} divider={<Divider />}>
-                                            {clinicas.map(clinica => (
-                                                <CardActionArea 
-                                                    key={clinica.id} 
-                                                    onClick={() => { setAgendamento({...agendamento, id_clinica: clinica.id, nome_clinica: clinica.nome_fantasia}); setActiveStep(2); }}
-                                                    sx={{ p: 3, transition: '0.2s', '&:hover': { bgcolor: alpha('#32B5FE', 0.04) } }}
-                                                >
-                                                    <Stack direction="row" spacing={2.5} alignItems="flex-start">
-                                                        <Avatar sx={{ bgcolor: '#0F172A', borderRadius: 2, width: 48, height: 48 }}>
-                                                            <Building2 size={24} color="#FFFFFF" />
-                                                        </Avatar>
-                                                        <Box sx={{ flex: 1 }}>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                                <Typography variant="subtitle1" fontWeight={900} color="#0F172A">{clinica.nome_fantasia}</Typography>
-                                                                <Chip 
-                                                                    label="2.4km" 
-                                                                    size="small" 
-                                                                    sx={{ fontWeight: 900, bgcolor: alpha('#10B981', 0.1), color: '#10B981', borderRadius: 1 }} 
-                                                                />
-                                                            </Box>
-                                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 500 }}>
-                                                                Araras, São Paulo • Unidade Centro
-                                                            </Typography>
-                                                            
-                                                            <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B' }}>
-                                                                    <Car size={14} /><Typography variant="caption" fontWeight={800}>Vagas</Typography>
-                                                                </Box>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B' }}>
-                                                                    <Wifi size={14} /><Typography variant="caption" fontWeight={800}>Wi-Fi</Typography>
-                                                                </Box>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#32B5FE' }}>
-                                                                    <Info size={14} /><Typography variant="caption" fontWeight={800}>Ver detalhes</Typography>
-                                                                </Box>
-                                                            </Stack>
-                                                        </Box>
-                                                    </Stack>
-                                                </CardActionArea>
-                                            ))}
-                                        </Stack>
-                                    </Box>
-
-                                    <Box sx={{ p: 2, borderTop: '1px solid #F1F5F9', bgcolor: '#FFFFFF' }}>
-                                        <Button 
-                                            fullWidth 
-                                            startIcon={<ChevronLeft />} 
-                                            onClick={() => setActiveStep(0)} 
-                                            sx={{ fontWeight: 900, color: '#64748B', textTransform: 'none' }}
-                                        >
-                                            Voltar para Profissionais
-                                        </Button>
-                                    </Box>
-                                </Grid>
-
-                                {/* COLUNA DA DIREITA: MAPA HIGH-TECH (FIXO) */}
-                                <Grid item xs={12} md={7} sx={{ bgcolor: '#0F172A', position: 'relative', overflow: 'hidden', height: '100%' }}>
-                                    <Box sx={{ 
-                                        position: 'absolute', inset: 0, opacity: 0.1, 
-                                        backgroundImage: 'radial-gradient(#FFFFFF 1px, transparent 1px)', 
-                                        backgroundSize: '30px 30px' 
-                                    }} />
-                                    
-                                    <Box className="radar-circle" sx={{ 
-                                        position: 'absolute', top: '50%', left: '50%', 
-                                        transform: 'translate(-50%, -50%)', 
-                                        width: 350, height: 350, borderRadius: '50%', 
-                                        border: '1px solid rgba(50, 181, 254, 0.2)', 
-                                        animation: 'pulse 3s infinite' 
-                                    }} />
-
-                                    <Paper sx={{ 
-                                        zIndex: 2, position: 'absolute', top: 20, left: 20, 
-                                        bgcolor: alpha('#FFFFFF', 0.9), p: 1.5, borderRadius: 2, 
-                                        backdropFilter: 'blur(10px)', border: '1px solid #E2E8F0'
-                                    }}>
-                                        <Typography variant="caption" fontWeight={900} color="#0F172A" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <LocateFixed size={16} color="#32B5FE" /> LOCALIZAÇÃO ATIVA: ARARAS/SP
-                                        </Typography>
-                                    </Paper>
-
-                                    {clinicas.map((c, i) => (
-                                        <Box key={i} sx={{ position: 'absolute', top: `${30 + (i * 15)}%`, left: `${25 + (i * 20)}%`, display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
-                                            <Paper elevation={4} sx={{ px: 1.5, py: 0.5, borderRadius: 10, bgcolor: '#FFFFFF', mb: 1, border: '2px solid #32B5FE' }}>
-                                                <Typography variant="caption" fontWeight={900} color="#0F172A">{c.nome_fantasia}</Typography>
-                                            </Paper>
-                                            <MapPin size={38} fill="#EF4444" color="#FFFFFF" />
-                                        </Box>
-                                    ))}
-
-                                    <Stack sx={{ position: 'absolute', right: 20, bottom: 20, zIndex: 2 }} spacing={1}>
-                                        <Paper sx={{ p: 1, borderRadius: 2, bgcolor: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                            <IconButton size="small"><Plus size={20} /></IconButton>
-                                            <Divider />
-                                            <IconButton size="small"><Minus size={20} /></IconButton>
-                                        </Paper>
-                                    </Stack>
-                                </Grid>
-                            </Grid>
+                                        </CardActionArea>
+                                    );
+                                })}
+                            </Box>
+                            <Box sx={{ p: 3, borderTop: '1px solid #E2E8F0' }}>
+                                <Button fullWidth startIcon={<ChevronLeft />} onClick={() => setActiveStep(0)} sx={{ fontWeight: 800, color: '#64748B', py: 1.5 }}>Trocar Profissional</Button>
+                            </Box>
                         </Box>
-                    )}
 
-                    {/* CONFIRMAÇÃO FINAL */}
-                    {activeStep === 2 && (
-                        <Grid item xs={12}>
-                            <Paper sx={{ p: { xs: 4, md: 8 }, borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 50px 100px -20px rgba(0,0,0,0.12)' }}>
-                                <Grid container spacing={8}>
-                                    <Grid item xs={12} md={5}>
-                                        <Typography variant="overline" sx={{ color: '#32B5FE', fontWeight: 900, letterSpacing: 2 }}>FINALIZAÇÃO</Typography>
-                                        <Typography variant="h4" fontWeight={900} sx={{ mb: 5, color: '#0F172A' }}>Quase lá!</Typography>
-                                        
-                                        <Stack spacing={4}>
-                                            <Paper sx={{ p: 3, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0' }}>
-                                                <Stack direction="row" spacing={3}>
-                                                    <Avatar sx={{ bgcolor: '#0F172A', width: 60, height: 60, borderRadius: 2 }}>{agendamento.nome_medico[0]}</Avatar>
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.secondary" fontWeight={900}>PROFISSIONAL</Typography>
-                                                        <Typography variant="h6" fontWeight={900}>{agendamento.nome_medico}</Typography>
-                                                    </Box>
-                                                </Stack>
-                                            </Paper>
-                                            <Paper sx={{ p: 3, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0' }}>
-                                                <Stack direction="row" spacing={3}>
-                                                    <Box sx={{ p: 2, bgcolor: '#32B5FE', color: '#FFFFFF', borderRadius: 2 }}><Building2 size={24}/></Box>
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.secondary" fontWeight={900}>UNIDADE ESCOLHIDA</Typography>
-                                                        <Typography variant="h6" fontWeight={900}>{agendamento.nome_clinica}</Typography>
-                                                    </Box>
-                                                </Stack>
-                                            </Paper>
-                                        </Stack>
-                                        <Button startIcon={<ChevronLeft />} onClick={() => setActiveStep(1)} sx={{ mt: 5, fontWeight: 900, color: '#64748B' }}>Mudar Unidade</Button>
-                                    </Grid>
+                        <Box sx={{ flex: 1, zIndex: 0 }}>
+                            <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
+                                <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+                                <RecenterMap center={mapCenter} />
+                                {clinicas.map((c, i) => {
+                                    const lat = c.latitude ? parseFloat(c.latitude) : -22.4331 + (i * 0.01);
+                                    const lng = c.longitude ? parseFloat(c.longitude) : -47.3581 + (i * 0.01);
+                                    return (
+                                        <Marker key={i} position={[lat, lng]}>
+                                            <Popup>
+                                                <Box sx={{ p: 1, textAlign: 'center' }}>
+                                                    <Typography variant="subtitle2" fontWeight={900}>{c.nome_fantasia}</Typography>
+                                                    <Button fullWidth size="small" variant="contained" sx={{ mt: 1, bgcolor: '#0F172A', fontWeight: 900 }} onClick={() => { setAgendamento({...agendamento, id_clinica: c.id, nome_clinica: c.nome_fantasia}); setActiveStep(2); }}>Escolher Unidade</Button>
+                                                </Box>
+                                            </Popup>
+                                        </Marker>
+                                    );
+                                })}
+                            </MapContainer>
+                        </Box>
+                    </Box>
+                )}
+
+                {/* PASSO 2: CONFIRMAÇÃO (REVISÃO DE DADOS E DATA) */}
+                {activeStep === 2 && (
+                    <Fade in={activeStep === 2}>
+                        <Box sx={{ height: '100%', overflowY: 'auto', p: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Paper elevation={5} sx={{ maxWidth: 900, width: '100%', borderRadius: 2, overflow: 'hidden', display: 'flex', border: '1px solid #E2E8F0' }}>
+                                <Box sx={{ flex: 1, p: 6, bgcolor: '#0F172A', color: '#FFF' }}>
+                                    <Typography variant="overline" sx={{ color: '#32B5FE', fontWeight: 900, letterSpacing: 2 }}>PASSO 3</Typography>
+                                    <Typography variant="h4" fontWeight={900} sx={{ mb: 6, mt: 1, color: '#FFFFFF' }}>Defina o horário</Typography>
                                     
-                                    <Grid item xs={12} md={7}>
-                                        <Box sx={{ p: 5, bgcolor: '#F1F5F9', borderRadius: 3, border: '1px solid #E2E8F0', height: '100%' }}>
-                                            <Typography variant="h6" fontWeight={900} sx={{ mb: 4, textAlign: 'center' }}>Confirme o agendamento</Typography>
-                                            <Stack spacing={4}>
-                                                <TextField 
-                                                    fullWidth type="date" variant="standard"
-                                                    InputProps={{ disableUnderline: true, sx: { borderRadius: 5, bgcolor: '#FFFFFF', p: 3, fontWeight: 800, fontSize: '1.1rem' } }}
-                                                    onChange={(e) => setAgendamento({...agendamento, data_agendamento: e.target.value})}
-                                                />
-                                                <TextField 
-                                                    fullWidth select variant="standard" label="Horário"
-                                                    InputProps={{ disableUnderline: true, sx: { borderRadius: 5, bgcolor: '#FFFFFF', p: 3, fontWeight: 800, fontSize: '1.1rem' } }}
-                                                    onChange={(e) => setAgendamento({...agendamento, horario: e.target.value})}
-                                                >
-                                                    {['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'].map(h => <MenuItem key={h} value={h} sx={{ fontWeight: 800 }}>{h}</MenuItem>)}
-                                                </TextField>
-                                                <Button
-                                                    fullWidth variant="contained" size="large" 
-                                                    onClick={finalizarAgendamento}
-                                                    disabled={!agendamento.data_agendamento || !agendamento.horario}
-                                                    sx={{ borderRadius: 2, py: 3, color: '#FFFFFF', bgcolor: '#0F172A', fontWeight: 900, fontSize: '1.2rem', boxShadow: '0 20px 40px rgba(15, 23, 42, 0.3)', '&:hover': { bgcolor: '#32B5FE' } }}
-                                                >
-                                                    Confirmar e Agendar
-                                                </Button>
-                                            </Stack>
+                                    <Stack spacing={5}>
+                                        <Box sx={{ display: 'flex', gap: 3 }}>
+                                            <Avatar sx={{ bgcolor: alpha('#FFF', 0.1), width: 55, height: 55, borderRadius: 1 }}><User color="#32B5FE" /></Avatar>
+                                            <Box>
+                                                <Typography variant="caption" sx={{ opacity: 0.6, fontWeight: 800 }}>ESPECIALISTA</Typography>
+                                                <Typography variant="h6" fontWeight={800} sx={{color: '#FFFFFF'}}>{agendamento.nome_medico}</Typography>
+                                            </Box>
                                         </Box>
-                                    </Grid>
-                                </Grid>
+                                        <Box sx={{ display: 'flex', gap: 3 }}>
+                                            <Avatar sx={{ bgcolor: alpha('#FFF', 0.1), width: 55, height: 55, borderRadius: 1 }}><Building2 color="#32B5FE" /></Avatar>
+                                            <Box>
+                                                <Typography variant="caption" sx={{ opacity: 0.6, fontWeight: 800 }}>UNIDADE</Typography>
+                                                <Typography variant="h6" fontWeight={800} sx={{color: '#FFFFFF'}}>{agendamento.nome_clinica}</Typography>
+                                            </Box>
+                                        </Box>
+                                    </Stack>
+
+                                    <Button startIcon={<ChevronLeft />} onClick={() => setActiveStep(1)} sx={{ mt: 10, color: '#32B5FE', fontWeight: 900, textTransform: 'none' }}>Alterar Unidade</Button>
+                                </Box>
+
+                                <Box sx={{ flex: 1.2, p: 6, bgcolor: '#FFF' }}>
+                                    <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 4 }}>Escolha a data e o horário</Typography>
+                                    <Stack spacing={4}>
+                                        <Box>
+                                            <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ display: 'block', mb: 1 }}>DATA DA CONSULTA</Typography>
+                                            <TextField fullWidth type="date" variant="outlined" InputProps={{ sx: { borderRadius: 2, fontWeight: 700, bgcolor: '#F8FAFC' } }} onChange={e => setAgendamento({...agendamento, data_agendamento: e.target.value})} />
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ display: 'block', mb: 1 }}>HORÁRIO DISPONÍVEL</Typography>
+                                            <TextField fullWidth select variant="outlined" InputProps={{ sx: { borderRadius: 2, fontWeight: 700, bgcolor: '#F8FAFC' } }} value={agendamento.horario} onChange={e => setAgendamento({...agendamento, horario: e.target.value})}>
+                                                {['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'].map(h => <MenuItem key={h} value={h} sx={{ fontWeight: 700 }}>{h}</MenuItem>)}
+                                            </TextField>
+                                        </Box>
+                                        
+                                        <Box sx={{ pt: 4 }}>
+                                            <Button 
+                                                fullWidth variant="contained" size="large" 
+                                                onClick={() => setActiveStep(3)} // Avança para o pagamento
+                                                disabled={!agendamento.data_agendamento || !agendamento.horario}
+                                                endIcon={<ArrowRight />}
+                                                sx={{ py: 2.5, borderRadius: 2, color: '#FFFFFF', bgcolor: '#0F172A', fontWeight: 900, fontSize: '1rem', '&:hover': { bgcolor: '#32B5FE' }, boxShadow: '0 20px 40px rgba(15, 23, 42, 0.2)' }}
+                                            >
+                                                Ir para Pagamento
+                                            </Button>
+                                        </Box>
+                                    </Stack>
+                                </Box>
                             </Paper>
-                        </Grid>
-                    )}
-                </Grid>
+                        </Box>
+                    </Fade>
+                )}
+
+                {/* PASSO 3: CHECKOUT DE PAGAMENTO (INTEGRAÇÃO MERCADO PAGO) */}
+                {activeStep === 3 && (
+                    <Fade in={activeStep === 3}>
+                        <Box sx={{ height: '100%', overflowY: 'auto', p: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Paper elevation={5} sx={{ maxWidth: 1000, width: '100%', borderRadius: 3, overflow: 'hidden', display: 'flex', border: '1px solid #E2E8F0' }}>
+                                
+                                {/* Resumo do Pedido */}
+                                <Box sx={{ flex: 1, p: 6, bgcolor: '#F8FAFC', borderRight: '1px solid #E2E8F0' }}>
+                                    <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 4 }}>Resumo do Pedido</Typography>
+                                    
+                                    <Stack spacing={3} sx={{ mb: 4 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <Typography variant="body2" color="text.secondary" fontWeight={700}>Serviço</Typography>
+                                            <Typography variant="body2" fontWeight={800} color="#0F172A">Consulta Médica</Typography>
+                                        </Box>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <Typography variant="body2" color="text.secondary" fontWeight={700}>Especialista</Typography>
+                                            <Typography variant="body2" fontWeight={800} color="#0F172A">{agendamento.nome_medico}</Typography>
+                                        </Box>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <Typography variant="body2" color="text.secondary" fontWeight={700}>Data e Hora</Typography>
+                                            <Typography variant="body2" fontWeight={800} color="#0F172A">{agendamento.data_agendamento.split('-').reverse().join('/')} às {agendamento.horario}</Typography>
+                                        </Box>
+                                    </Stack>
+
+                                    <Divider sx={{ borderStyle: 'dashed', mb: 4 }} />
+
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="subtitle1" color="text.secondary" fontWeight={800}>Total a pagar</Typography>
+                                        <Typography variant="h4" fontWeight={900} color="#10B981">R$ {agendamento.valor_consulta || '0,00'}</Typography>
+                                    </Box>
+
+                                    <Button startIcon={<ChevronLeft />} onClick={() => setActiveStep(2)} sx={{ mt: 6, color: '#64748B', fontWeight: 900, textTransform: 'none' }}>Voltar e editar horário</Button>
+                                </Box>
+
+                                {/* Métodos de Pagamento */}
+                                <Box sx={{ flex: 1.3, p: 6, bgcolor: '#FFF' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 4 }}>
+                                        <Lock size={18} color="#10B981" />
+                                        <Typography variant="caption" fontWeight={900} color="#10B981" sx={{ letterSpacing: 1 }}>CHECKOUT SEGURO</Typography>
+                                    </Box>
+                                    
+                                    <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 4 }}>Como você prefere pagar?</Typography>
+
+                                    <Grid container spacing={2} sx={{ mb: 5 }}>
+                                        <Grid item xs={6}>
+                                            <Paper 
+                                                variant="outlined" 
+                                                onClick={() => setMetodoPagamento('pix')}
+                                                sx={{ p: 3, borderRadius: 2, cursor: 'pointer', border: metodoPagamento === 'pix' ? '2px solid #009EE3' : '1px solid #E2E8F0', bgcolor: metodoPagamento === 'pix' ? alpha('#009EE3', 0.05) : '#FFF', textAlign: 'center', transition: '0.2s' }}
+                                            >
+                                                <QrCode size={32} color={metodoPagamento === 'pix' ? '#009EE3' : '#64748B'} style={{ margin: '0 auto 8px' }} />
+                                                <Typography variant="subtitle2" fontWeight={800} color={metodoPagamento === 'pix' ? '#009EE3' : '#0F172A'}>Pix</Typography>
+                                                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">Aprovação imediata</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid item xs={6}>
+                                            <Paper 
+                                                variant="outlined" 
+                                                onClick={() => setMetodoPagamento('cartao')}
+                                                sx={{ p: 3, borderRadius: 2, cursor: 'pointer', border: metodoPagamento === 'cartao' ? '2px solid #009EE3' : '1px solid #E2E8F0', bgcolor: metodoPagamento === 'cartao' ? alpha('#009EE3', 0.05) : '#FFF', textAlign: 'center', transition: '0.2s' }}
+                                            >
+                                                <CreditCard size={32} color={metodoPagamento === 'cartao' ? '#009EE3' : '#64748B'} style={{ margin: '0 auto 8px' }} />
+                                                <Typography variant="subtitle2" fontWeight={800} color={metodoPagamento === 'cartao' ? '#009EE3' : '#0F172A'}>Cartão de Crédito</Typography>
+                                                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">Até 12x sem juros</Typography>
+                                            </Paper>
+                                        </Grid>
+                                    </Grid>
+
+                                    {/* Botão de Finalização (Estilo Mercado Pago) */}
+                                    <Box sx={{ pt: 2 }}>
+                                        <Button 
+                                            fullWidth variant="contained" size="large" 
+                                            onClick={processarPagamentoEAgendar}
+                                            sx={{ py: 2.5, borderRadius: 2, color: '#FFFFFF', bgcolor: '#009EE3', fontWeight: 900, fontSize: '1rem', '&:hover': { bgcolor: '#008ACA' }, boxShadow: '0 15px 30px rgba(0, 158, 227, 0.3)' }}
+                                        >
+                                            Pagar com Mercado Pago
+                                        </Button>
+                                        <Typography variant="caption" textAlign="center" display="block" color="text.secondary" fontWeight={600} sx={{ mt: 3 }}>
+                                            Ao clicar, você será redirecionado para o ambiente seguro do Mercado Pago.
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Paper>
+                        </Box>
+                    </Fade>
+                )}
             </Box>
-            
-            {/* ESTILO DE ANIMAÇÃO DO RADAR */}
-            <style>
-                {`
-                    @keyframes pulse {
-                        0% { transform: scale(1); opacity: 0.8; }
-                        100% { transform: scale(1.5); opacity: 0; }
-                    }
-                `}
-            </style>
         </Box>
     );
 };

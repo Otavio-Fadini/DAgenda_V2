@@ -87,7 +87,7 @@ const FinanceiroPaciente = () => {
             </Grid>
 
             {/* TABELA DE EXTRATO */}
-            <Paper elevation={3} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', bgcolor: 'white', overflow: 'hidden' }}>
+            <Paper elevation={3} sx={{ borderRadius: 2, border: '1px solid #e2e8f0', bgcolor: 'white', overflow: 'hidden' }}>
                 <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 2, bgcolor: '#fcfcfd' }}>
                     <FileSpreadsheet size={20} color="#32B5FE" />
                     <Typography variant="subtitle1" fontWeight={800} color="#0f172a">Extrato Detalhado</Typography>

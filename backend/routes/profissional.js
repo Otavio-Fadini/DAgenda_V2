@@ -95,24 +95,33 @@ router.post('/finalizar-atendimento', verifyToken, async (req, res) => {
     const { id_agendamento, id_paciente, evolucao, prescricao } = req.body;
     
     try {
-        // 1. Inserir os dados na tabela de prontuários
+        // VERIFICAÇÃO DE DUPLICIDADE
+        const [check] = await pool.query(
+            'SELECT id FROM prontuarios WHERE id_agendamento = ?', 
+            [id_agendamento]
+        );
+
+        if (check.length > 0) {
+            return res.status(400).json({ message: "Este atendimento já foi finalizado anteriormente." });
+        }
+
+        // Se não existir, insere normal
         await pool.query(
             'INSERT INTO prontuarios (id_agendamento, id_paciente, id_profissional, evolucao, prescricao) VALUES (?, ?, ?, ?, ?)',
             [id_agendamento, id_paciente, req.userId, evolucao, prescricao]
         );
 
-        // 2. Atualizar o status do agendamento para 'Finalizado'
         await pool.query(
             'UPDATE agendamentos SET status = ? WHERE id = ?', 
             ['Finalizado', id_agendamento]
         );
 
-        res.json({ message: "Atendimento finalizado e registrado com sucesso!" });
+        res.json({ message: "Atendimento finalizado com sucesso!" });
     } catch (error) {
-        console.error("Erro ao finalizar atendimento:", error);
-        res.status(500).json({ error: "Erro interno ao salvar prontuário." });
+        res.status(500).json({ error: "Erro interno ao salvar." });
     }
 });
+
 
 // Buscar histórico de prontuários de um paciente específico
 router.get('/historico-paciente/:id_paciente', verifyToken, async (req, res) => {

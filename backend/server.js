@@ -40,7 +40,5 @@ app.get('/api/status', (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  const msg = `🚀 Dagenda Rodando em: http://localhost:${PORT}`;
-  console.log(msg);
-  logInit(msg);
+  console.log(`🚀 Dagenda Rodando em: http://localhost:${PORT}`);
 });

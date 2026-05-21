@@ -21,15 +21,16 @@ const CadastroPaciente = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:3001/api/auth/cadastro-clinica', formData);
+            // CORREÇÃO: Rota alterada para cadastro-paciente e apontando para o servidor real na AWS
+            const response = await axios.post('https://dagenda.com.br/api/auth/cadastro-paciente', formData);
             
             if (response.status === 201) {
-                alert("Clínica cadastrada com sucesso!");
+                alert("Paciente cadastrado com sucesso!");
                 navigate('/login');
             }
         } catch (err) {
             console.error(err);
-            alert(err.response?.data?.message || "Erro ao realizar cadastro da clínica.");
+            alert(err.response?.data?.message || "Erro ao realizar cadastro do paciente.");
         }
     };
 

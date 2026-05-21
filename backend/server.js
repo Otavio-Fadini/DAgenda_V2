@@ -4,19 +4,12 @@ const morgan = require('morgan');
 const path = require('path');
 const fs = require('fs');
 
-// FORÇAR CARREGAMENTO DO .ENV COM CAMINHO ABSOLUTO
+
+// Forçando o caminho absoluto para o serviço do Windows nunca se perder
 const envPath = path.join('C:\\Projetos\\DAgenda\\backend', '.env');
 require('dotenv').config({ path: envPath });
 
 const app = express();
-
-// Função para logar inicialização
-function logInit(msg) {
-    const logPath = path.join('C:\\Projetos\\DAgenda\\backend', 'debug.txt');
-    fs.appendFileSync(logPath, new Date().toLocaleString('pt-BR') + " - [INIT] " + msg + "\n");
-}
-
-logInit(`Iniciando servidor... DB_NAME detectado: ${process.env.DB_NAME || 'ERRO: VAZIO'}`);
 
 // Importações
 const { router: authRoutes } = require('./routes/auth');

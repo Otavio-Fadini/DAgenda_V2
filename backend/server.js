@@ -1,7 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan'); 
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+console.log("DB_NAME carregado:", process.env.DB_NAME); // DEBUG: Veja se isso aparece no Event Viewer
+console.log("JWT_SECRET carregado:", process.env.JWT_SECRET ? "OK" : "VAZIO"); // DEBUG
 
 const app = express();
 
@@ -11,6 +15,7 @@ const clinicaRoutes = require('./routes/clinica');
 const profissionalRoutes = require('./routes/profissional');
 const pacienteRoutes = require('./routes/paciente');
 const agendamentoRoutes = require('./routes/agendamentos');
+
 
 
 // Middlewares

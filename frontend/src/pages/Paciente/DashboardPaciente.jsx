@@ -17,7 +17,7 @@ const DashboardPaciente = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:3001/api/agendamentos/meus-agendamentos', {
+            const response = await axios.get('https://dagenda.com.br/api/agendamentos/meus-agendamentos', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setConsultas(response.data);
@@ -34,7 +34,7 @@ const DashboardPaciente = () => {
         if (window.confirm("Deseja realmente cancelar esta consulta?")) {
             try {
                 const token = localStorage.getItem('token');
-                await axios.delete(`http://localhost:3001/api/agendamentos/${id}`, {
+                await axios.delete(`https://dagenda.com.br/api/agendamentos/${id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setConsultas(consultas.filter(c => c.id !== id));

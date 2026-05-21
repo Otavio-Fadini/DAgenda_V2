@@ -31,7 +31,7 @@ const CadastroClinica = () => {
         try {
             // AJUSTADO: Enviando objeto simples (JSON), não FormData
             // Isso resolve o erro 500 se o backend não estiver usando 'multer'
-            await axios.post('http://localhost:3001/api/auth/cadastro-clinica', formData);
+            await axios.post('https://dagenda.com.br/api/auth/cadastro-clinica', formData);
             alert("Clínica cadastrada com sucesso!");
             navigate('/');
         } catch (err) { 

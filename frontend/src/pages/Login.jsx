@@ -22,7 +22,7 @@ const Login = ({ onLogin }) => {
     const handleSubmit = async (e) => {
         e.preventDefault(); 
         try {
-            const response = await axios.post('http://localhost:3001/api/auth/login', {
+            const response = await axios.post('https://dagenda.com.br/api/auth/login', {
                 login: form.email,
                 senha: form.senha,
                 tipoSelecionado: tipoVisual 

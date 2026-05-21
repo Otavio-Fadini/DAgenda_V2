@@ -30,7 +30,7 @@ const CadastroProfissional = () => {
         e.preventDefault();
         try {
             // AJUSTADO: Enviando como JSON simples para bater com o seu auth.js atual
-            await axios.post('http://localhost:3001/api/auth/cadastro-profissional', formData);
+            await axios.post('https://dagenda.com.br/api/auth/cadastro-profissional', formData);
             alert("Profissional cadastrado com sucesso!");
             navigate('/');
         } catch (err) { 

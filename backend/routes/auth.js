@@ -1,11 +1,11 @@
 const router = require('express').Router();
 const pool = require('../config/db'); 
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt'); // Importação do bcrypt
+const bcrypt = require('bcrypt');
 
-const saltRounds = 10; // Custo do processamento do hash
+const saltRounds = 10;
 
-// --- ROTA DE LOGIN (Atualizada para Bcrypt) ---
+// --- ROTA DE LOGIN ---
 router.post('/login', async (req, res) => {
     const { login, senha, tipoSelecionado } = req.body;
 
@@ -24,22 +24,27 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: "Tipo de usuário inválido." });
         }
 
+        // Log para debug (aparecerá no Visualizador de Eventos se rodar como serviço)
+        console.log(`[DEBUG] Tentativa de login: ${emailBusca} na tabela ${tabela}`);
+
         const [rows] = await pool.query(`SELECT * FROM ${tabela} WHERE email = ?`, [emailBusca]);
 
         if (rows.length === 0) {
+            console.log("[DEBUG] Usuário não encontrado no banco.");
             return res.status(401).json({ message: "Usuário não cadastrado." });
         }
 
         const usuario = rows[0];
 
-        // Compara a senha enviada com o Hash salvo no banco
+        // Comparação com bcrypt
         const senhaValida = await bcrypt.compare(senha, usuario.senha);
+        
+        console.log(`[DEBUG] Comparação de senha: ${senhaValida ? "SUCESSO" : "FALHA"}`);
 
         if (!senhaValida) {
             return res.status(401).json({ message: "Senha incorreta." });
         }
 
-        // Gera o Token com ID e Tipo de usuário
         const token = jwt.sign(
             { id: usuario.id, tipo: tabela },
             process.env.JWT_SECRET,
@@ -58,12 +63,12 @@ router.post('/login', async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Erro no login:", error);
+        console.error("Erro interno no login:", error);
         res.status(500).json({ error: "Erro interno no servidor." });
     }
 });
 
-// --- ROTA DE CADASTRO DE PACIENTE (Exemplo de Criptografia) ---
+// --- ROTA DE CADASTRO DE PACIENTE ---
 router.post('/cadastro-paciente', async (req, res) => {
     const { nome, email, senha, cpf, telefone } = req.body;
     try {
@@ -72,23 +77,21 @@ router.post('/cadastro-paciente', async (req, res) => {
         await pool.query(query, [nome, email.toLowerCase(), senhaHash, cpf, telefone]);
         res.status(201).json({ message: "Paciente cadastrado com sucesso!" });
     } catch (error) {
-        console.error("Erro no cadastro:", error);
+        console.error("Erro no cadastro de paciente:", error);
         res.status(500).json({ error: "Erro ao realizar cadastro." });
     }
 });
 
-// Localize a rota de cadastro de profissional no seu auth.js
+// --- ROTA DE CADASTRO DE PROFISSIONAL ---
 router.post('/cadastro-profissional', async (req, res) => {
-    // Recebe 'crm' do frontend, mas mapeia para 'conselho' para o banco
     const { nome, email, senha, crm, especialidade } = req.body; 
     try {
         const senhaHash = await bcrypt.hash(senha, saltRounds);
-        // Query corrigida para usar a coluna 'conselho' conforme a imagem
         const query = `INSERT INTO profissionais (nome, email, senha, conselho, especialidade) VALUES (?, ?, ?, ?, ?)`;
         await pool.query(query, [nome, email.toLowerCase(), senhaHash, crm, especialidade]);
         res.status(201).json({ message: "Profissional cadastrado com sucesso!" });
     } catch (error) {
-        console.error("Erro no cadastro:", error);
+        console.error("Erro no cadastro de profissional:", error);
         res.status(500).json({ error: "Erro ao realizar cadastro." });
     }
 });
@@ -102,7 +105,7 @@ router.post('/cadastro-clinica', async (req, res) => {
         await pool.query(query, [nome_fantasia, email.toLowerCase(), senhaHash, cnpj, telefone]);
         res.status(201).json({ message: "Clínica cadastrada com sucesso!" });
     } catch (error) {
-        console.error("Erro no cadastro:", error);
+        console.error("Erro no cadastro de clínica:", error);
         res.status(500).json({ error: "Erro ao realizar cadastro." });
     }
 });

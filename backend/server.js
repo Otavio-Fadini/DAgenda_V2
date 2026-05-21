@@ -2,21 +2,28 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan'); 
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+const fs = require('fs');
 
-console.log("DB_NAME carregado:", process.env.DB_NAME); // DEBUG: Veja se isso aparece no Event Viewer
-console.log("JWT_SECRET carregado:", process.env.JWT_SECRET ? "OK" : "VAZIO"); // DEBUG
+// FORÇAR CARREGAMENTO DO .ENV COM CAMINHO ABSOLUTO
+const envPath = path.join('C:\\Projetos\\DAgenda\\backend', '.env');
+require('dotenv').config({ path: envPath });
 
 const app = express();
 
-// Importação corrigida (authData contém .router e .verifyToken)
+// Função para logar inicialização
+function logInit(msg) {
+    const logPath = path.join('C:\\Projetos\\DAgenda\\backend', 'debug.txt');
+    fs.appendFileSync(logPath, new Date().toLocaleString('pt-BR') + " - [INIT] " + msg + "\n");
+}
+
+logInit(`Iniciando servidor... DB_NAME detectado: ${process.env.DB_NAME || 'ERRO: VAZIO'}`);
+
+// Importações
 const { router: authRoutes } = require('./routes/auth');
 const clinicaRoutes = require('./routes/clinica');
 const profissionalRoutes = require('./routes/profissional');
 const pacienteRoutes = require('./routes/paciente');
 const agendamentoRoutes = require('./routes/agendamentos');
-
-
 
 // Middlewares
 app.use(cors());
@@ -34,11 +41,13 @@ app.use('/api/clinica', clinicaRoutes);
 app.get('/api/status', (req, res) => {
   res.json({ 
     status: "DAGENDA 2.0 ON", 
-    banco: process.env.DB_NAME 
+    banco: process.env.DB_NAME || "Não definido"
   });
 });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`🚀 Dagenda Rodando em: http://localhost:${PORT}`);
+  const msg = `🚀 Dagenda Rodando em: http://localhost:${PORT}`;
+  console.log(msg);
+  logInit(msg);
 });

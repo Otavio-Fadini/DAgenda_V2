@@ -255,7 +255,7 @@ const DashboardPaciente = () => {
                             )}
                         </Paper>
 
-                        {/* SUPORTE PREMIUM */}
+                       {/* SUPORTE PREMIUM */}
                         <Paper elevation={0} sx={{ 
                             p: 4, 
                             borderRadius: '24px', 
@@ -264,7 +264,7 @@ const DashboardPaciente = () => {
                             flexGrow: 1, 
                             display: 'flex', 
                             flexDirection: 'column', 
-                            justifyContent: 'space-between',
+                            justifyContent: 'center', /* ALTERADO AQUI: De space-between para center */
                             boxShadow: '0 20px 40px -10px rgba(15, 23, 42, 0.4)',
                             position: 'relative',
                             overflow: 'hidden'
@@ -285,7 +285,6 @@ const DashboardPaciente = () => {
                                 fullWidth 
                                 variant="contained" 
                                 startIcon={<HeadphonesIcon size={20} />}
-                                paddingbottom="20px"
                                 sx={{ 
                                     mt: 4,
                                     bgcolor: '#32B5FE', 

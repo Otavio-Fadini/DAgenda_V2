@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Paper, Grid, InputAdornment, Avatar, IconButton } from '@mui/material';
-import { Building2, Mail, Lock, FileText, Camera, Phone } from 'lucide-react'; // Adicionei Phone
+import { Box, TextField, Button, Typography, Paper, Grid, InputAdornment, Avatar, IconButton, Fade } from '@mui/material';
+import { Building2, Mail, Lock, FileText, Camera, Phone } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/logo.png';
 
 const CadastroClinica = () => {
-    // AJUSTADO: Nomes dos campos batendo exatamente com o Backend (auth.js)
     const [formData, setFormData] = useState({ 
         nome_fantasia: '', 
         cnpj: '', 
@@ -21,7 +20,6 @@ const CadastroClinica = () => {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Por enquanto vamos focar no cadastro textual para o Banco rodar
             setPreview(URL.createObjectURL(file));
         }
     };
@@ -29,8 +27,6 @@ const CadastroClinica = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // AJUSTADO: Enviando objeto simples (JSON), não FormData
-            // Isso resolve o erro 500 se o backend não estiver usando 'multer'
             await axios.post('https://dagenda.com.br/api/auth/cadastro-clinica', formData);
             alert("Clínica cadastrada com sucesso!");
             navigate('/');
@@ -40,98 +36,149 @@ const CadastroClinica = () => {
         }
     };
 
+    // Estilo customizado e moderno para os Inputs
+    const modernInputStyle = {
+        '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+            backgroundColor: '#F8FAFC',
+            transition: 'all 0.2s ease-in-out',
+            '& fieldset': { borderColor: 'transparent' },
+            '&:hover fieldset': { borderColor: '#E2E8F0' },
+            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
+            '&.Mui-focused': { backgroundColor: '#FFFFFF', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
+        }
+    };
+
     return (
         <Box sx={{ 
-            minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', p: 2 
+            minHeight: '100vh', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            background: 'linear-gradient(135deg, #F0F4F8 0%, #D9E2EC 100%)', 
+            p: 2 
         }}>
-            <Paper elevation={0} sx={{ 
-                p: { xs: 4, md: 6 }, borderRadius: 10, maxWidth: 500, width: '100%', 
-                border: '1px solid #e2e8f0', textAlign: 'center',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.08)' 
-            }}>
-                <Box sx={{ mb: 3 }}>
-                    <img src={logoImg} alt="DAGENDA" style={{ height: '60px', objectFit: 'contain' }} />
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 4, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                    Gestão de Unidade / Clínica
-                </Typography>
-
-                <form onSubmit={handleSubmit}>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 5, position: 'relative' }}>
-                        <Avatar variant="rounded" src={preview} sx={{ 
-                            width: 140, height: 90, border: '5px solid #fff', 
-                            boxShadow: '0 10px 20px rgba(0,0,0,0.1)', bgcolor: '#f8fafc' 
-                        }}>
-                            <Building2 size={45} color="#cbd5e1" />
-                        </Avatar>
-                        <input accept="image/*" type="file" id="logo-clinica" style={{ display: 'none' }} onChange={handleImageChange} />
-                        <label htmlFor="logo-clinica">
-                            <IconButton component="span" sx={{ 
-                                position: 'absolute', bottom: -10, right: '32%', 
-                                bgcolor: '#0f172a', color: 'white', border: '3px solid #fff',
-                                '&:hover': { bgcolor: '#32B5FE' }
-                            }}>
-                                <Camera size={16} />
-                            </IconButton>
-                        </label>
+            <Fade in={true} timeout={800}>
+                <Paper elevation={0} sx={{ 
+                    p: { xs: 4, md: 5 }, 
+                    borderRadius: '24px', 
+                    maxWidth: 550, 
+                    width: '100%', 
+                    bgcolor: '#ffffff',
+                    textAlign: 'center',
+                    boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 0 10px rgba(50, 181, 254, 0.05)' 
+                }}>
+                    <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <img src={logoImg} alt="DAGENDA" style={{ height: '48px', objectFit: 'contain', marginBottom: '16px' }} />
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                            Cadastro de Unidade
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5, fontSize: '0.95rem' }}>
+                            Registre sua clínica para iniciar a gestão inteligente
+                        </Typography>
                     </Box>
 
-                    <Grid container spacing={2.5}>
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="Nome Fantasia" variant="filled" 
-                                value={formData.nome_fantasia}
-                                InputProps={{ disableUnderline: true, startAdornment: <InputAdornment position="start"><Building2 size={18} color="#64748b"/></InputAdornment>, sx: { borderRadius: 3, bgcolor: '#f1f5f9' } }} 
-                                onChange={(e) => setFormData({...formData, nome_fantasia: e.target.value})} />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="CNPJ" variant="filled" 
-                                value={formData.cnpj}
-                                InputProps={{ disableUnderline: true, startAdornment: <InputAdornment position="start"><FileText size={18} color="#64748b"/></InputAdornment>, sx: { borderRadius: 3, bgcolor: '#f1f5f9' } }} 
-                                onChange={(e) => setFormData({...formData, cnpj: e.target.value})} />
-                        </Grid>
-                        {/* ADICIONADO: Campo de Telefone que estava faltando no Form mas existe no SQL */}
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="Telefone / WhatsApp" variant="filled" 
-                                value={formData.telefone}
-                                InputProps={{ disableUnderline: true, startAdornment: <InputAdornment position="start"><Phone size={18} color="#64748b"/></InputAdornment>, sx: { borderRadius: 3, bgcolor: '#f1f5f9' } }} 
-                                onChange={(e) => setFormData({...formData, telefone: e.target.value})} />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="E-mail Administrativo" variant="filled" 
-                                value={formData.email}
-                                InputProps={{ disableUnderline: true, startAdornment: <InputAdornment position="start"><Mail size={18} color="#64748b"/></InputAdornment>, sx: { borderRadius: 3, bgcolor: '#f1f5f9' } }} 
-                                onChange={(e) => setFormData({...formData, email: e.target.value})} />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="Senha de Acesso" type="password" variant="filled" 
-                                value={formData.senha}
-                                InputProps={{ disableUnderline: true, startAdornment: <InputAdornment position="start"><Lock size={18} color="#64748b"/></InputAdornment>, sx: { borderRadius: 3, bgcolor: '#f1f5f9' } }} 
-                                onChange={(e) => setFormData({...formData, senha: e.target.value})} />
-                        </Grid>
-                    </Grid>
+                    <form onSubmit={handleSubmit}>
+                        {/* Seção da Logo da Clínica */}
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4, position: 'relative' }}>
+                            <Box sx={{ position: 'relative' }}>
+                                <Avatar variant="rounded" src={preview} sx={{ 
+                                    width: 120, height: 120, 
+                                    borderRadius: '16px',
+                                    border: '4px solid #ffffff', 
+                                    boxShadow: '0 8px 16px rgba(0,0,0,0.08)', 
+                                    bgcolor: '#F1F5F9',
+                                    color: '#94A3B8'
+                                }}>
+                                    {!preview && <Building2 size={48} />}
+                                </Avatar>
+                                <input accept="image/*" type="file" id="logo-clinica" style={{ display: 'none' }} onChange={handleImageChange} />
+                                <label htmlFor="logo-clinica">
+                                    <IconButton component="span" sx={{ 
+                                        position: 'absolute', bottom: -8, right: -8, 
+                                        bgcolor: '#32B5FE', color: 'white', 
+                                        border: '3px solid #fff', width: 36, height: 36,
+                                        boxShadow: '0 4px 6px rgba(50,181,254,0.3)',
+                                        '&:hover': { bgcolor: '#0f172a', transform: 'scale(1.05)' },
+                                        transition: 'all 0.2s'
+                                    }}>
+                                        <Camera size={18} />
+                                    </IconButton>
+                                </label>
+                            </Box>
+                        </Box>
 
-                    <Button 
-                        fullWidth 
-                        variant="contained" 
-                        type="submit" 
-                        size="large" 
-                        sx={{ 
-                            mt: 5, borderRadius: 4, fontWeight: 800, py: 2, 
-                            bgcolor: '#0f172a', color: 'white', textTransform: 'none',
-                            fontSize: '1.1rem', '&:hover': { bgcolor: '#32B5FE', color: 'white' }
-                        }}
-                    >
-                        Registrar Clínica
-                    </Button>
-                </form>
+                        {/* Campos do Formulário */}
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Nome Fantasia" variant="outlined" 
+                                    value={formData.nome_fantasia}
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><Building2 size={20} color="#94A3B8"/></InputAdornment> }} 
+                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, nome_fantasia: e.target.value})} required />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField fullWidth label="CNPJ" variant="outlined" 
+                                    value={formData.cnpj}
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={20} color="#94A3B8"/></InputAdornment> }} 
+                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, cnpj: e.target.value})} required />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField fullWidth label="Telefone / WhatsApp" variant="outlined" 
+                                    value={formData.telefone}
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={20} color="#94A3B8"/></InputAdornment> }} 
+                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, telefone: e.target.value})} required />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="E-mail Administrativo" variant="outlined" type="email"
+                                    value={formData.email}
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={20} color="#94A3B8"/></InputAdornment> }} 
+                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Senha de Acesso" type="password" variant="outlined" 
+                                    value={formData.senha}
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={20} color="#94A3B8"/></InputAdornment> }} 
+                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, senha: e.target.value})} required />
+                            </Grid>
+                        </Grid>
 
-                <Box sx={{ mt: 5, pt: 3, borderTop: '1px solid #f1f5f9' }}>
-                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                        Já possui uma conta? <Button onClick={() => navigate('/')} sx={{ fontWeight: 800, textTransform: 'none', color: '#32B5FE' }}>Fazer Login</Button>
-                    </Typography>
-                </Box>
-            </Paper>
+                        <Button fullWidth variant="contained" type="submit" sx={{ 
+                            mt: 4, py: 1.8, 
+                            borderRadius: '12px', 
+                            fontWeight: 700, 
+                            fontSize: '1rem',
+                            bgcolor: '#0f172a', 
+                            color: '#FFFFFF',
+                            textTransform: 'none',
+                            boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': { 
+                                bgcolor: '#32B5FE', 
+                                boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.6)',
+                                transform: 'translateY(-2px)'
+                            }
+                        }}>
+                            Registrar Clínica
+                        </Button>
+                    </form>
+
+                    <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid #F1F5F9' }}>
+                        <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                            Já possui uma conta? {' '}
+                            <Button onClick={() => navigate('/')} disableRipple sx={{ 
+                                fontWeight: 800, 
+                                textTransform: 'none', 
+                                color: '#32B5FE',
+                                p: 0,
+                                minWidth: 'auto',
+                                '&:hover': { background: 'transparent', textDecoration: 'underline' }
+                            }}>
+                                Fazer Login
+                            </Button>
+                        </Typography>
+                    </Box>
+                </Paper>
+            </Fade>
         </Box>
     );
 };

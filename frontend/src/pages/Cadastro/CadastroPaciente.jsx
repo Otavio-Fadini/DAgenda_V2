@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Grid, InputAdornment, Avatar, IconButton } from '@mui/material';
-import { User, Mail, Lock, CreditCard, Camera, ArrowRight } from 'lucide-react';
+import { Box, TextField, Button, Typography, Paper, Grid, InputAdornment, Avatar, IconButton, Fade } from '@mui/material';
+import { User, Mail, Lock, CreditCard, Camera } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/logo.png'; // Verifique se o caminho do logo está correto
+import logo from '../../assets/logo.png';
 
 const CadastroPaciente = () => {
     const [formData, setFormData] = useState({ nome: '', cpf: '', email: '', senha: '', foto: null });
@@ -33,142 +33,144 @@ const CadastroPaciente = () => {
         }
     };
 
+    // Estilo customizado e moderno para os Inputs
+    const modernInputStyle = {
+        '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+            backgroundColor: '#F8FAFC',
+            transition: 'all 0.2s ease-in-out',
+            '& fieldset': { borderColor: 'transparent' },
+            '&:hover fieldset': { borderColor: '#E2E8F0' },
+            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
+            '&.Mui-focused': { backgroundColor: '#FFFFFF', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
+        }
+    };
+
     return (
-        <Grid container sx={{ minHeight: '100vh', bgcolor: '#ffffff' }}>
-            
-            {/* LADO ESQUERDO - BRANDING (Industrial & Dark) */}
-            <Grid item xs={12} md={5} sx={{ 
-                bgcolor: '#0a0a0a', // Preto industrial
-                color: '#ffffff',
-                display: { xs: 'none', md: 'flex' }, // Esconde no celular
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                p: 6,
-                position: 'relative',
-                overflow: 'hidden'
-            }}>
-                {/* Elemento de design no fundo */}
-                <Box sx={{ 
-                    position: 'absolute', top: '-10%', left: '-10%', width: '120%', height: '120%', 
-                    background: 'radial-gradient(circle at 20% 30%, rgba(50, 181, 254, 0.08) 0%, transparent 50%)',
-                    zIndex: 0 
-                }} />
-
-                <Box sx={{ position: 'relative', zIndex: 1 }}>
-                    <img src={logo} alt="DAGENDA" style={{ height: '40px', objectFit: 'contain', marginBottom: '40px' }} />
-                    <Typography variant="h3" sx={{ fontWeight: 800, letterSpacing: '-1px', mb: 2, lineHeight: 1.1 }}>
-                        A evolução do<br/>seu atendimento.
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: '#888', maxWidth: '380px', fontSize: '1.1rem', lineHeight: 1.6 }}>
-                        Agendamentos ágeis, histórico centralizado e gestão inteligente de ponta a ponta.
-                    </Typography>
-                </Box>
-
-                <Box sx={{ position: 'relative', zIndex: 1 }}>
-                    <Typography variant="caption" sx={{ color: '#555', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                        © 2026 DAGENDA SYSTEMS
-                    </Typography>
-                </Box>
-            </Grid>
-
-            {/* LADO DIREITO - FORMULÁRIO (Minimalista & Clean) */}
-            <Grid item xs={12} md={7} sx={{ 
-                display: 'flex', alignItems: 'center', justifyContent: 'center', p: { xs: 3, md: 6 } 
-            }}>
-                <Box sx={{ width: '100%', maxWidth: 480 }}>
-                    
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#111', mb: 1, letterSpacing: '-0.5px' }}>
-                        Criar Conta
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#666', mb: 4, fontSize: '1rem' }}>
-                        Preencha os dados abaixo para acessar sua agenda.
-                    </Typography>
+        <Box sx={{ 
+            minHeight: '100vh', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            background: 'linear-gradient(135deg, #F0F4F8 0%, #D9E2EC 100%)', 
+            p: 2 
+        }}>
+            <Fade in={true} timeout={800}>
+                <Paper elevation={0} sx={{ 
+                    p: { xs: 4, md: 5 }, 
+                    borderRadius: '24px', 
+                    maxWidth: 550, 
+                    width: '100%', 
+                    bgcolor: '#ffffff',
+                    textAlign: 'center',
+                    boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 0 10px rgba(50, 181, 254, 0.05)' 
+                }}>
+                    <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <img src={logo} alt="DAGENDA" style={{ height: '48px', objectFit: 'contain', marginBottom: '16px' }} />
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                            Crie sua conta
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5, fontSize: '0.95rem' }}>
+                            Preencha seus dados para acessar o portal do paciente
+                        </Typography>
+                    </Box>
 
                     <form onSubmit={handleSubmit}>
-                        {/* Upload de Foto mais limpo */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4 }}>
+                        {/* Seção da Foto de Perfil */}
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4, position: 'relative' }}>
                             <Box sx={{ position: 'relative' }}>
-                                <Avatar src={preview} sx={{ width: 80, height: 80, bgcolor: '#f4f4f5', color: '#a1a1aa' }}>
-                                    {!preview && <User size={32} />}
+                                <Avatar src={preview} sx={{ 
+                                    width: 100, height: 100, 
+                                    border: '4px solid #ffffff', 
+                                    boxShadow: '0 8px 16px rgba(0,0,0,0.08)', 
+                                    bgcolor: '#F1F5F9',
+                                    color: '#94A3B8'
+                                }}>
+                                    {!preview && <User size={40} />}
                                 </Avatar>
                                 <input accept="image/*" type="file" id="foto-paciente" style={{ display: 'none' }} onChange={handleImageChange} />
                                 <label htmlFor="foto-paciente">
                                     <IconButton component="span" sx={{ 
-                                        position: 'absolute', bottom: -5, right: -5, bgcolor: '#111', color: '#fff', 
-                                        width: 32, height: 32, '&:hover': { bgcolor: '#32B5FE' } 
+                                        position: 'absolute', bottom: 0, right: -4, 
+                                        bgcolor: '#32B5FE', color: 'white', 
+                                        border: '3px solid #fff', width: 36, height: 36,
+                                        boxShadow: '0 4px 6px rgba(50,181,254,0.3)',
+                                        '&:hover': { bgcolor: '#0f172a', transform: 'scale(1.05)' },
+                                        transition: 'all 0.2s'
                                     }}>
-                                        <Camera size={14} />
+                                        <Camera size={18} />
                                     </IconButton>
                                 </label>
                             </Box>
-                            <Box>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#111' }}>Foto de Perfil</Typography>
-                                <Typography variant="caption" sx={{ color: '#888' }}>JPG ou PNG (Opcional)</Typography>
-                            </Box>
                         </Box>
 
+                        {/* Campos do Formulário */}
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <TextField fullWidth label="Nome Completo" variant="outlined" 
-                                    InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#888"/></InputAdornment> }} 
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '6px' } }}
-                                    onChange={(e) => setFormData({...formData, nome: e.target.value})} required />
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><User size={20} color="#94A3B8"/></InputAdornment> }} 
+                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, nome: e.target.value})} required />
                             </Grid>
-                            
                             <Grid item xs={12} sm={6}>
                                 <TextField fullWidth label="CPF" variant="outlined" 
-                                    InputProps={{ startAdornment: <InputAdornment position="start"><CreditCard size={18} color="#888"/></InputAdornment> }} 
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '6px' } }}
-                                    onChange={(e) => setFormData({...formData, cpf: e.target.value})} required />
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><CreditCard size={20} color="#94A3B8"/></InputAdornment> }} 
+                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, cpf: e.target.value})} required />
                             </Grid>
-                            
                             <Grid item xs={12} sm={6}>
                                 <TextField fullWidth label="Telefone" variant="outlined" 
-                                    InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#888"/></InputAdornment> }} 
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '6px' } }}
-                                    onChange={(e) => setFormData({...formData, telefone: e.target.value})} required />
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><User size={20} color="#94A3B8"/></InputAdornment> }} 
+                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, telefone: e.target.value})} required />
                             </Grid>
-
                             <Grid item xs={12}>
                                 <TextField fullWidth label="E-mail" variant="outlined" type="email"
-                                    InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#888"/></InputAdornment> }} 
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '6px' } }}
-                                    onChange={(e) => setFormData({...formData, email: e.target.value})} required />
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={20} color="#94A3B8"/></InputAdornment> }} 
+                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
                             </Grid>
-
                             <Grid item xs={12}>
                                 <TextField fullWidth label="Senha" type="password" variant="outlined" 
-                                    InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#888"/></InputAdornment> }} 
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '6px' } }}
-                                    onChange={(e) => setFormData({...formData, senha: e.target.value})} required />
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={20} color="#94A3B8"/></InputAdornment> }} 
+                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, senha: e.target.value})} required />
                             </Grid>
                         </Grid>
 
-                        <Button fullWidth variant="contained" type="submit" endIcon={<ArrowRight size={18} />}
-                            sx={{ 
-                                mt: 4, py: 1.8, bgcolor: '#111', color: '#fff', fontSize: '1rem', fontWeight: 600, 
-                                borderRadius: '6px', textTransform: 'none', boxShadow: 'none',
-                                transition: 'all 0.2s', '&:hover': { bgcolor: '#32B5FE', boxShadow: 'none' }
-                            }}>
+                        <Button fullWidth variant="contained" type="submit" sx={{ 
+                            mt: 4, py: 1.8, 
+                            borderRadius: '12px', 
+                            fontWeight: 700, 
+                            fontSize: '1rem',
+                            bgcolor: '#0f172a', 
+                            color: '#FFFFFF',
+                            textTransform: 'none',
+                            boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': { 
+                                bgcolor: '#32B5FE', 
+                                boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.6)',
+                                transform: 'translateY(-2px)'
+                            }
+                        }}>
                             Finalizar Cadastro
                         </Button>
                     </form>
 
-                    <Box sx={{ mt: 5, textAlign: 'center' }}>
-                        <Typography variant="body2" sx={{ color: '#666' }}>
-                            Já possui uma conta?{' '}
-                            <Button onClick={() => navigate('/login')} sx={{ 
-                                fontWeight: 700, color: '#111', p: 0, minWidth: 'auto', textTransform: 'none',
-                                '&:hover': { bgcolor: 'transparent', color: '#32B5FE', textDecoration: 'underline' } 
+                    <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid #F1F5F9' }}>
+                        <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                            Já possui uma conta? {' '}
+                            <Button onClick={() => navigate('/login')} disableRipple sx={{ 
+                                fontWeight: 800, 
+                                textTransform: 'none', 
+                                color: '#32B5FE',
+                                p: 0,
+                                minWidth: 'auto',
+                                '&:hover': { background: 'transparent', textDecoration: 'underline' }
                             }}>
                                 Fazer Login
                             </Button>
                         </Typography>
                     </Box>
-
-                </Box>
-            </Grid>
-        </Grid>
+                </Paper>
+            </Fade>
+        </Box>
     );
 };
 

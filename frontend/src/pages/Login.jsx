@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { 
     Box, Paper, Typography, TextField, Button, 
-    ToggleButton, ToggleButtonGroup, InputAdornment, Divider 
+    ToggleButton, ToggleButtonGroup, InputAdornment, Divider, Fade 
 } from '@mui/material';
-import { Mail, Lock, User, Building2, UserPlus } from 'lucide-react';
+import { Mail, Lock, User, Building2, UserPlus, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; 
 import axios from 'axios';
-import logo from '../assets/logo.png'; // Certifique-se de que o caminho está correto
+import logo from '../assets/logo.png';
 
 const Login = ({ onLogin }) => {
     const navigate = useNavigate(); 
@@ -59,107 +59,171 @@ const Login = ({ onLogin }) => {
         }
     };
 
+    // Estilo customizado e moderno para os Inputs (Padrão do Sistema)
+    const modernInputStyle = {
+        '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+            backgroundColor: '#F8FAFC',
+            transition: 'all 0.2s ease-in-out',
+            '& fieldset': { borderColor: 'transparent' },
+            '&:hover fieldset': { borderColor: '#E2E8F0' },
+            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
+            '&.Mui-focused': { backgroundColor: '#FFFFFF', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
+        }
+    };
+
     return (
         <Box sx={{ 
-            minHeight: '100vh', width: '100vw', display: 'flex', 
-            alignItems: 'center', justifyContent: 'center',
-            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-            position: 'fixed', top: 0, left: 0, zIndex: 2000
+            minHeight: '100vh', 
+            width: '100vw', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #F0F4F8 0%, #D9E2EC 100%)',
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            zIndex: 2000
         }}>
-            <Paper elevation={0} sx={{ 
-                p: { xs: 4, md: 6 }, width: '100%', maxWidth: 450, borderRadius: 8, 
-                textAlign: 'center', border: '1px solid #e2e8f0',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.08)'
-            }}>
-                {/* LOGO DO DAGENDA */}
-                <Box sx={{ mb: 3 }}>
-                    <img src={logo} alt="DAGENDA" style={{ height: '70px', objectFit: 'contain' }} />
-                </Box>
-                
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 4, fontWeight: 600, letterSpacing: '0.5px' }}>
-                    BEM-VINDO AO SISTEMA DE GESTÃO
-                </Typography>
+            <Fade in={true} timeout={800}>
+                <Paper elevation={0} sx={{ 
+                    p: { xs: 4, md: 5 }, 
+                    width: '100%', 
+                    maxWidth: 450, 
+                    borderRadius: '24px', 
+                    textAlign: 'center', 
+                    bgcolor: '#ffffff',
+                    boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 0 10px rgba(50, 181, 254, 0.05)'
+                }}>
+                    {/* LOGO DO DAGENDA */}
+                    <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <img src={logo} alt="DAGENDA" style={{ height: '48px', objectFit: 'contain', marginBottom: '16px' }} />
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                            Acesso ao Sistema
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5, fontSize: '0.95rem' }}>
+                            Selecione o seu perfil para continuar
+                        </Typography>
+                    </Box>
 
-                {erro && (
-                    <Typography color="error" variant="body2" sx={{ mb: 2, fontWeight: 'bold', bgcolor: '#fef2f2', p: 1.5, borderRadius: 2 }}>
-                        {erro}
-                    </Typography>
-                )}
+                    {erro && (
+                        <Fade in={Boolean(erro)}>
+                            <Typography variant="body2" sx={{ 
+                                mb: 3, fontWeight: 600, color: '#DC2626', bgcolor: '#FEF2F2', 
+                                p: 1.5, borderRadius: '8px', borderLeft: '4px solid #DC2626' 
+                            }}>
+                                {erro}
+                            </Typography>
+                        </Fade>
+                    )}
 
-                <ToggleButtonGroup
-                    value={tipoVisual}
-                    exclusive
-                    onChange={(e, val) => val && setTipoVisual(val)}
-                    fullWidth
-                    sx={{ 
-                        mb: 3,
-                        '& .MuiToggleButton-root.Mui-selected': {
-                            color: '#32B5FE',
-                            backgroundColor: 'rgba(50, 181, 254, 0.08)',
-                        }
-                    }}
-                >
-                    <ToggleButton value="cpf" sx={{ gap: 1, textTransform: 'none', fontWeight: 700 }}><User size={18} /> Paciente</ToggleButton>
-                    <ToggleButton value="cnpj" sx={{ gap: 1, textTransform: 'none', fontWeight: 700 }}><Building2 size={18} /> Clínica</ToggleButton>
-                    <ToggleButton value="profissional" sx={{ gap: 1, textTransform: 'none', fontWeight: 700 }}><Lock size={18} /> Profissional</ToggleButton>
-                </ToggleButtonGroup>
-
-                <form onSubmit={handleSubmit}>
-                    <TextField
-                        fullWidth label="E-mail" name="email" margin="normal" variant="filled"
-                        onChange={handleChange}
-                        InputProps={{ 
-                            disableUnderline: true,
-                            sx: { borderRadius: 3, bgcolor: '#f1f5f9' },
-                            startAdornment: (<InputAdornment position="start"><Mail size={20} color="#94a3b8" /></InputAdornment>) 
-                        }}
-                    />
-                    <TextField
-                        fullWidth label="Senha" name="senha" type="password" margin="normal" variant="filled"
-                        onChange={handleChange}
-                        InputProps={{ 
-                            disableUnderline: true,
-                            sx: { borderRadius: 3, bgcolor: '#f1f5f9' },
-                            startAdornment: (<InputAdornment position="start"><Lock size={20} color="#94a3b8" /></InputAdornment>) 
-                        }}
-                    />
-
-                    <Button 
-                        fullWidth variant="contained" size="large" type="submit"
-                        sx={{ 
-                            mt: 3, mb: 2, height: 56, borderRadius: 3, fontWeight: 800, 
-                            textTransform: 'none', fontSize: '1.1rem', bgcolor: '#0f172a', color: '#FFFFFF',
-                            '&:hover': { bgcolor: '#32B5FE' }
-                        }}
-                    >
-                        Entrar no Sistema
-                    </Button>
-                </form>
-
-                <Divider sx={{ my: 3 }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>OU</Typography>
-                </Divider>
-
-                <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">
-                        Não tem acesso como <strong>{tipoVisual === 'cpf' ? 'Paciente' : tipoVisual === 'cnpj' ? 'Clínica' : 'Profissional'}</strong>?
-                    </Typography>
-                    <Button 
+                    {/* SELEÇÃO DE PERFIL */}
+                    <ToggleButtonGroup
+                        value={tipoVisual}
+                        exclusive
+                        onChange={(e, val) => val && setTipoVisual(val)}
                         fullWidth
-                        startIcon={<UserPlus size={18} />}
-                        onClick={handleIrParaCadastro}
                         sx={{ 
-                            mt: 1, 
-                            fontWeight: 800, 
-                            textTransform: 'none', 
-                            color: '#32B5FE',
-                            '&:hover': { bgcolor: 'rgba(50, 181, 254, 0.05)' }
+                            mb: 4,
+                            bgcolor: '#F8FAFC',
+                            borderRadius: '12px',
+                            p: 0.5,
+                            '& .MuiToggleButton-root': {
+                                border: 'none',
+                                borderRadius: '8px !important',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                color: '#64748B',
+                                transition: 'all 0.2s',
+                            },
+                            '& .MuiToggleButton-root.Mui-selected': {
+                                color: '#FFFFFF',
+                                backgroundColor: '#0F172A',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                '&:hover': {
+                                    backgroundColor: '#1E293B',
+                                }
+                            }
                         }}
                     >
-                        Criar conta agora
-                    </Button>
-                </Box>
-            </Paper>
+                        <ToggleButton value="cpf" sx={{ gap: 1 }}><User size={18} /> Paciente</ToggleButton>
+                        <ToggleButton value="cnpj" sx={{ gap: 1 }}><Building2 size={18} /> Clínica</ToggleButton>
+                        <ToggleButton value="profissional" sx={{ gap: 1 }}><Lock size={18} /> Profissional</ToggleButton>
+                    </ToggleButtonGroup>
+
+                    {/* FORMULÁRIO DE LOGIN */}
+                    <form onSubmit={handleSubmit}>
+                        <TextField
+                            fullWidth label="E-mail" name="email" margin="normal" variant="outlined"
+                            onChange={handleChange} sx={modernInputStyle}
+                            InputProps={{ 
+                                startAdornment: (<InputAdornment position="start"><Mail size={20} color="#94A3B8" /></InputAdornment>) 
+                            }}
+                        />
+                        <TextField
+                            fullWidth label="Senha" name="senha" type="password" margin="normal" variant="outlined"
+                            onChange={handleChange} sx={{ ...modernInputStyle, mt: 2 }}
+                            InputProps={{ 
+                                startAdornment: (<InputAdornment position="start"><Lock size={20} color="#94A3B8" /></InputAdornment>) 
+                            }}
+                        />
+
+                        <Button 
+                            fullWidth variant="contained" size="large" type="submit" endIcon={<LogIn size={18} />}
+                            sx={{ 
+                                mt: 4, py: 1.8, 
+                                borderRadius: '12px', 
+                                fontWeight: 700, 
+                                fontSize: '1rem',
+                                bgcolor: '#0f172a', 
+                                color: '#FFFFFF',
+                                textTransform: 'none',
+                                boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)',
+                                transition: 'all 0.3s ease',
+                                '&:hover': { 
+                                    bgcolor: '#32B5FE', 
+                                    boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.6)',
+                                    transform: 'translateY(-2px)'
+                                }
+                            }}
+                        >
+                            Entrar na Plataforma
+                        </Button>
+                    </form>
+
+                    <Divider sx={{ my: 4 }}>
+                        <Typography variant="caption" sx={{ color: '#CBD5E1', fontWeight: 600 }}>OU</Typography>
+                    </Divider>
+
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                            Novo por aqui? Crie sua conta de <strong>{tipoVisual === 'cpf' ? 'Paciente' : tipoVisual === 'cnpj' ? 'Clínica' : 'Profissional'}</strong>.
+                        </Typography>
+                        <Button 
+                            fullWidth
+                            startIcon={<UserPlus size={18} />}
+                            onClick={handleIrParaCadastro}
+                            disableRipple
+                            sx={{ 
+                                mt: 2, 
+                                py: 1.5,
+                                borderRadius: '12px',
+                                fontWeight: 700, 
+                                textTransform: 'none', 
+                                color: '#32B5FE',
+                                border: '2px solid transparent',
+                                transition: 'all 0.2s',
+                                '&:hover': { 
+                                    bgcolor: '#F0F9FF',
+                                    borderColor: '#BAE6FD'
+                                }
+                            }}
+                        >
+                            Criar minha conta
+                        </Button>
+                    </Box>
+                </Paper>
+            </Fade>
         </Box>
     );
 };

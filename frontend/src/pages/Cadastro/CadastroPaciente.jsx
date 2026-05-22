@@ -1,108 +1,89 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Paper, Grid, InputAdornment, Avatar, IconButton } from '@mui/material';
-import { User, Mail, Lock, CreditCard, Camera } from 'lucide-react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/logo.png';
+import { useNavigate, Link } from 'react-router-dom';
+import api from '../services/api';
+import './Cadastro.css'; // Vamos criar este arquivo abaixo
 
-const CadastroPaciente = () => {
-    const [formData, setFormData] = useState({ nome: '', cpf: '', email: '', senha: '', foto: null });
-    const [preview, setPreview] = useState(null);
+function CadastroPaciente() {
+    const [formData, setFormData] = useState({
+        nome: '',
+        email: '',
+        senha: '',
+        cpf: '',
+        telefone: ''
+    });
+    const [erro, setErro] = useState('');
     const navigate = useNavigate();
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setFormData({ ...formData, foto: file });
-            setPreview(URL.createObjectURL(file));
-        }
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // CORREÇÃO: Rota alterada para cadastro-paciente e apontando para o servidor real na AWS
-            const response = await axios.post('https://dagenda.com.br/api/auth/cadastro-paciente', formData);
-            
-            if (response.status === 201) {
-                alert("Paciente cadastrado com sucesso!");
-                navigate('/login');
-            }
+            await api.post('/auth/cadastro-paciente', formData);
+            alert('Cadastro realizado com sucesso!');
+            navigate('/login');
         } catch (err) {
-            console.error(err);
-            alert(err.response?.data?.message || "Erro ao realizar cadastro do paciente.");
+            setErro(err.response?.data?.error || 'Erro ao realizar cadastro.');
         }
     };
 
     return (
-        <Box sx={{ 
-            minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', p: 2 
-        }}>
-            <Paper elevation={0} sx={{ 
-                p: { xs: 4, md: 6 }, borderRadius: 10, maxWidth: 500, width: '100%', 
-                border: '1px solid #e2e8f0', textAlign: 'center',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.08)' 
-            }}>
-                <Box sx={{ mb: 3 }}>
-                    <img src={logo} alt="DAGENDA" style={{ height: '60px', objectFit: 'contain' }} />
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 4, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                    Cadastro de Paciente
-                </Typography>
+        <div className="cadastro-container">
+            {/* Lado Esquerdo - Branding (Fundo escuro/Industrial) */}
+            <div className="cadastro-banner">
+                <div className="banner-content">
+                    <h1>DAGENDA</h1>
+                    <p>Agendamento inteligente e gestão de ponta para a sua saúde.</p>
+                </div>
+            </div>
 
-                <form onSubmit={handleSubmit}>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 5, position: 'relative' }}>
-                        <Avatar src={preview} sx={{ 
-                            width: 110, height: 110, border: '5px solid #fff', 
-                            boxShadow: '0 10px 20px rgba(0,0,0,0.1)', bgcolor: '#f8fafc' 
-                        }}>
-                            <User size={45} color="#cbd5e1" />
-                        </Avatar>
-                        <input accept="image/*" type="file" id="foto-paciente" style={{ display: 'none' }} onChange={handleImageChange} />
-                        <label htmlFor="foto-paciente">
-                            <IconButton component="span" sx={{ 
-                                position: 'absolute', bottom: 5, right: '35%', 
-                                bgcolor: '#0f172a', color: 'white', border: '3px solid #fff',
-                                '&:hover': { bgcolor: '#32B5FE' } 
-                            }}>
-                                <Camera size={16} />
-                            </IconButton>
-                        </label>
-                    </Box>
+            {/* Lado Direito - Formulário (Fundo claro/Minimalista) */}
+            <div className="cadastro-form-section">
+                <div className="form-wrapper">
+                    <h2>Crie sua conta</h2>
+                    <p className="subtitle">Preencha seus dados para começar a agendar suas consultas.</p>
 
-                    <Grid container spacing={2.5}>
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="Nome Completo" variant="filled" InputProps={{ disableUnderline: true, startAdornment: <InputAdornment position="start"><User size={18} color="#64748b"/></InputAdornment>, sx: { borderRadius: 3, bgcolor: '#f1f5f9' } }} onChange={(e) => setFormData({...formData, nome: e.target.value})} />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="CPF" variant="filled" InputProps={{ disableUnderline: true, startAdornment: <InputAdornment position="start"><CreditCard size={18} color="#64748b"/></InputAdornment>, sx: { borderRadius: 3, bgcolor: '#f1f5f9' } }} onChange={(e) => setFormData({...formData, cpf: e.target.value})} />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="E-mail" variant="filled" InputProps={{ disableUnderline: true, startAdornment: <InputAdornment position="start"><Mail size={18} color="#64748b"/></InputAdornment>, sx: { borderRadius: 3, bgcolor: '#f1f5f9' } }} onChange={(e) => setFormData({...formData, email: e.target.value})} />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="Senha" type="password" variant="filled" InputProps={{ disableUnderline: true, startAdornment: <InputAdornment position="start"><Lock size={18} color="#64748b"/></InputAdornment>, sx: { borderRadius: 3, bgcolor: '#f1f5f9' } }} onChange={(e) => setFormData({...formData, senha: e.target.value})} />
-                        </Grid>
-                    </Grid>
+                    {erro && <div className="alerta-erro">{erro}</div>}
 
-                    <Button fullWidth variant="contained" type="submit" size="large" sx={{ 
-                        mt: 5, borderRadius: 4, fontWeight: 800, py: 2, 
-                        bgcolor: '#0f172a', textTransform: 'none', fontSize: '1.1rem', color: '#FFFFFF',
-                        '&:hover': { bgcolor: '#32B5FE' }
-                    }}>
-                        Finalizar Cadastro
-                    </Button>
-                </form>
+                    <form onSubmit={handleSubmit} className="form-moderno">
+                        <div className="input-group">
+                            <label htmlFor="nome">Nome Completo</label>
+                            <input type="text" id="nome" name="nome" value={formData.nome} onChange={handleChange} required placeholder="Ex: João da Silva" />
+                        </div>
 
-                <Box sx={{ mt: 5, pt: 3, borderTop: '1px solid #f1f5f9' }}>
-                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                        Já possui uma conta? <Button onClick={() => navigate('/')} sx={{ fontWeight: 800, textTransform: 'none', color: '#32B5FE' }}>Fazer Login</Button>
-                    </Typography>
-                </Box>
-            </Paper>
-        </Box>
+                        <div className="input-group">
+                            <label htmlFor="email">E-mail</label>
+                            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required placeholder="seu@email.com" />
+                        </div>
+
+                        <div className="input-row">
+                            <div className="input-group">
+                                <label htmlFor="cpf">CPF</label>
+                                <input type="text" id="cpf" name="cpf" value={formData.cpf} onChange={handleChange} required placeholder="000.000.000-00" />
+                            </div>
+                            <div className="input-group">
+                                <label htmlFor="telefone">Telefone</label>
+                                <input type="text" id="telefone" name="telefone" value={formData.telefone} onChange={handleChange} required placeholder="(11) 90000-0000" />
+                            </div>
+                        </div>
+
+                        <div className="input-group">
+                            <label htmlFor="senha">Senha</label>
+                            <input type="password" id="senha" name="senha" value={formData.senha} onChange={handleChange} required placeholder="Crie uma senha forte" />
+                        </div>
+
+                        <button type="submit" className="btn-primario">Cadastrar</button>
+                    </form>
+
+                    <div className="form-footer">
+                        <p>Já possui uma conta? <Link to="/login" className="link-destaque">Faça login</Link></p>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
-};
+}
 
 export default CadastroPaciente;

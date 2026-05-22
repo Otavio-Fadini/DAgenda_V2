@@ -1,0 +1,160 @@
+/* Reset básico para a tela */
+.cadastro-container {
+    display: flex;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #ffffff;
+    color: #1a1a1a;
+}
+
+/* Lado do Banner */
+.cadastro-banner {
+    flex: 1;
+    background-color: #121212; /* Preto industrial */
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+}
+
+.banner-content h1 {
+    font-size: 3rem;
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+    font-weight: 800;
+}
+
+.banner-content p {
+    font-size: 1.1rem;
+    color: #a0a0a0;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
+/* Esconde o banner em telas de celular */
+@media (max-width: 768px) {
+    .cadastro-banner {
+        display: none;
+    }
+}
+
+/* Lado do Formulário */
+.cadastro-form-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 450px;
+}
+
+.form-wrapper h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #111;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+/* Estilização dos Inputs */
+.form-moderno {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.input-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.input-row .input-group {
+    flex: 1;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.input-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-group input {
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px; /* Bordas levemente quadradas */
+    background-color: #fafafa;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.input-group input:focus {
+    border-color: #111;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Botão Moderno */
+.btn-primario {
+    margin-top: 1rem;
+    padding: 0.9rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #111;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primario:hover {
+    background-color: #333;
+}
+
+/* Alertas e Rodapé */
+.alerta-erro {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: 0.8rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    border-left: 4px solid #dc2626;
+}
+
+.form-footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.link-destaque {
+    color: #111;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.link-destaque:hover {
+    text-decoration: underline;
+}

@@ -276,7 +276,7 @@ const DashboardPaciente = () => {
                             }} />
 
                             <Box sx={{ position: 'relative', zIndex: 1 }}>
-                                <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, letterSpacing: '-0.5px' }}>Central de Ajuda</Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, letterSpacing: '-0.5px', color: 'white' }}>Central de Ajuda</Typography>
                                 <Typography variant="body2" sx={{ color: '#94A3B8', lineHeight: 1.6, fontSize: '0.95rem' }}>
                                     Precisa de assistência com seus agendamentos ou pagamentos?
                                 </Typography>
@@ -297,6 +297,8 @@ const DashboardPaciente = () => {
                                     zIndex: 1,
                                     boxShadow: '0 8px 16px -4px rgba(50, 181, 254, 0.4)',
                                     transition: 'all 0.3s ease',
+                                    paddingbottom: '1.8px',
+                                    color: 'white',
                                     '&:hover': { bgcolor: '#29A3E5', transform: 'translateY(-2px)', boxShadow: '0 12px 20px -4px rgba(50, 181, 254, 0.5)' }
                                 }}
                             >

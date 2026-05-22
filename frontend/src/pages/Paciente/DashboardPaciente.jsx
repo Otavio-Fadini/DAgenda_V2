@@ -285,6 +285,7 @@ const DashboardPaciente = () => {
                                 fullWidth 
                                 variant="contained" 
                                 startIcon={<HeadphonesIcon size={20} />}
+                                paddingbottom="20px"
                                 sx={{ 
                                     mt: 4,
                                     bgcolor: '#32B5FE', 
@@ -297,7 +298,6 @@ const DashboardPaciente = () => {
                                     zIndex: 1,
                                     boxShadow: '0 8px 16px -4px rgba(50, 181, 254, 0.4)',
                                     transition: 'all 0.3s ease',
-                                    paddingbottom: '1.8px',
                                     color: 'white',
                                     '&:hover': { bgcolor: '#29A3E5', transform: 'translateY(-2px)', boxShadow: '0 12px 20px -4px rgba(50, 181, 254, 0.5)' }
                                 }}

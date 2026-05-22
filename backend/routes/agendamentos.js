@@ -48,7 +48,16 @@ router.post('/agendar', verifyToken, async (req, res) => {
         const { id_profissional, id_clinica, data_agendamento, horario, valor_consulta, nome_medico } = req.body;
         const id_paciente = req.userId;
 
-        // 1. Cria a preferência no Mercado Pago
+        // --- 1. SALVAR O AGENDAMENTO NO BANCO PRIMEIRO ---
+        // Agora a consulta vai realmente existir no sistema
+        const insertQuery = `
+            INSERT INTO agendamentos 
+            (id_paciente, id_profissional, id_clinica, data_agendamento, horario) 
+            VALUES (?, ?, ?, ?, ?)
+        `;
+        await pool.query(insertQuery, [id_paciente, id_profissional, id_clinica, data_agendamento, horario]);
+
+        // --- 2. CRIAR A PREFERÊNCIA NO MERCADO PAGO ---
         const preference = new Preference(client);
         
         const response = await preference.create({
@@ -61,24 +70,22 @@ router.post('/agendar', verifyToken, async (req, res) => {
                         currency_id: 'BRL',
                     }
                 ],
-                // CORREÇÃO: Defina todas as chaves obrigatórias aqui
+                // CORREÇÃO: Agora o Mercado Pago devolve o paciente para o seu site oficial
                 back_urls: {
-                    success: 'http://localhost:3000/dashboard/meus-agendamentos',
-                    failure: 'http://localhost:3000/agendamento-erro',
-                    pending: 'http://localhost:3000/agendamento-pendente'
+                    success: 'https://dagenda.com.br/dashboard/meus-agendamentos',
+                    failure: 'https://dagenda.com.br/agendamento-erro',
+                    pending: 'https://dagenda.com.br/agendamento-pendente'
                 },
-                // Se usar 'approved', é OBRIGATÓRIO ter a URL de success definida acima
                 auto_return: 'approved', 
-                binary_mode: true // Opcional: força apenas pagamentos aprovados ou rejeitados
+                binary_mode: true
             }
         });
 
-        // 2. Retorna o link para o front-end
+        // 3. RETORNAR O LINK PARA O FRONT-END
         res.json({ init_point: response.init_point });
 
     } catch (error) {
-        console.error("Erro ao criar preferência de pagamento:", error);
-        // Exibindo o erro detalhado que o Mercado Pago te enviou
+        console.error("Erro ao processar agendamento:", error);
         res.status(500).json({ error: error.message });
     }
 });

@@ -57,7 +57,6 @@ const MeusAgendamentos = () => {
                                 onClick={carregarAgendamentos} 
                                 sx={{ 
                                     color: '#32B5FE',
-                                    bgcolor: 'white', 
                                     border: '1px solid #E2E8F0',
                                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
                                     transition: 'all 0.2s',

@@ -94,10 +94,10 @@ router.get('/financeiro', verifyToken, async (req, res) => {
     try {
         const profissionalId = req.userId;
 
-        // Busca o histórico de repasses do médico
+        // Buscamos direto da tabela agendamentos, usando a coluna 'valor' que existe na sua foto
         const [rows] = await pool.query(
-            `SELECT id, data_agendamento as data, horario as hora, valor_consulta as valor, 
-                    (valor_consulta * 0.1) as taxa, (valor_consulta * 0.9) as liquido, 
+            `SELECT id, data_agendamento as data, horario as hora, valor, 
+                    (valor * 0.1) as taxa, (valor * 0.9) as liquido, 
                     status, 'C' as tipo, id_paciente 
              FROM agendamentos 
              WHERE id_profissional = ? 
@@ -105,24 +105,25 @@ router.get('/financeiro', verifyToken, async (req, res) => {
             [profissionalId]
         );
 
-        // Calcula saldo total somando o líquido
+        // Calcula saldo total somando o líquido (valor - 10%)
         const saldoTotal = rows.reduce((acc, curr) => acc + Number(curr.liquido), 0);
 
         res.json({
             saldo_total: saldoTotal,
             lancamentos: rows.map(r => ({
                 id: r.id,
-                pac: 'Consulta ' + r.id, // Ou o nome do paciente via JOIN
+                pac: 'Consulta #' + r.id, 
                 data: r.data,
                 hora: r.hora,
-                valor: Number(r.valor).toFixed(2),
-                taxa: Number(r.taxa).toFixed(2),
-                liquido: Number(r.liquido).toFixed(2),
-                status: r.status,
+                valor: Number(r.valor || 0).toFixed(2),
+                taxa: Number(r.taxa || 0).toFixed(2),
+                liquido: Number(r.liquido || 0).toFixed(2),
+                status: r.status || 'Pendente',
                 tipo: r.tipo
             }))
         });
     } catch (error) {
+        console.error("Erro no financeiro:", error);
         res.status(500).json({ error: "Erro ao buscar financeiro." });
     }
 });

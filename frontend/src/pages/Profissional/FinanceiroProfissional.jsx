@@ -78,23 +78,15 @@ const FinanceiroProfissional = () => {
                             </TableHead>
                             <TableBody>
                                 {lancamentos.map((row) => (
-                                    <TableRow key={row.id} hover sx={{ '&:last-child td': { border: 0 } }}>
-                                        <TableCell sx={{ fontWeight: 700, color: '#475569' }}>{row.data}</TableCell>
-                                        <TableCell sx={{ fontWeight: 800, color: '#0F172A' }}>
-                                            <Stack direction="row" alignItems="center" spacing={2}>
-                                                <Avatar sx={{ width: 32, height: 32, bgcolor: row.tipo === 'C' ? '#ECFDF5' : '#FEF2F2' }}>
-                                                    {row.tipo === 'C' ? <ArrowUpRight size={16} color="#10B981"/> : <ArrowDownLeft size={16} color="#EF4444"/>}
-                                                </Avatar>
-                                                {row.pac}
-                                            </Stack>
-                                        </TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 700 }}>R$ {row.valor}</TableCell>
-                                        <TableCell align="right" sx={{ color: '#EF4444', fontWeight: 700 }}>{row.taxa}</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 900, color: row.tipo === 'C' ? '#10B981' : '#EF4444' }}>
-                                            {row.tipo === 'C' ? '+' : '-'} R$ {row.liquido}
-                                        </TableCell>
+                                    // No seu map da tabela:
+                                    <TableRow key={row.id}>
+                                        <TableCell>{row.data} {row.hora}</TableCell>
+                                        <TableCell>{row.pac}</TableCell>
+                                        <TableCell align="right">R$ {row.valor}</TableCell>
+                                        <TableCell align="right" sx={{ color: '#ef4444' }}>R$ {row.taxa}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 900 }}>R$ {row.liquido}</TableCell>
                                         <TableCell align="center">
-                                            <Chip label={row.status} size="small" sx={{ fontWeight: 800, borderRadius: '8px', bgcolor: '#F1F5F9' }} />
+                                            <Chip label={row.status} size="small" sx={{ fontWeight: 800, borderRadius: 2 }} />
                                         </TableCell>
                                     </TableRow>
                                 ))}

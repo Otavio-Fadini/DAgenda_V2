@@ -2,14 +2,22 @@ import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { 
     Box, Typography, Paper, Grid, TextField, InputAdornment, Switch, 
-    Button, CircularProgress, Alert, Snackbar, Fade, Stack, Avatar, IconButton 
+    Button, CircularProgress, Alert, Snackbar, Fade, Divider, Stack, Avatar, IconButton 
 } from '@mui/material';
-import { DollarSign, Clock, Shield, Settings, User, Briefcase, FileText, Camera } from 'lucide-react';
+import { DollarSign, Clock, Shield, Settings, User, Briefcase, FileText, Camera, Lock, Calendar } from 'lucide-react';
 
 const ConfiguracoesPerfil = () => {
     const [formData, setFormData] = useState({
-        nome: '', email: '', conselho: '', especialidade: '', senha: '', foto_perfil: '',
-        valor_consulta: '', duracao_sessao: '', atende_convenio: false
+        nome: '', email: '', conselho: '', especialidade: '', 
+        valor_consulta: '', duracao_sessao: '', atende_convenio: false,
+        senha: '', // Campo para nova senha
+        disponibilidade: [
+            { dia: 'Segunda', inicio: '08:00', fim: '18:00' },
+            { dia: 'Terça', inicio: '08:00', fim: '18:00' },
+            { dia: 'Quarta', inicio: '08:00', fim: '18:00' },
+            { dia: 'Quinta', inicio: '08:00', fim: '18:00' },
+            { dia: 'Sexta', inicio: '08:00', fim: '18:00' }
+        ]
     });
 
     const [loading, setLoading] = useState(true);
@@ -20,24 +28,8 @@ const ConfiguracoesPerfil = () => {
         const fetchPerfil = async () => {
             try {
                 const response = await api.get('/profissional/perfil');
-                console.log("DADOS QUE CHEGARAM DO BANCO:", response.data); // Verifique o console do F12!
-
-                // Tente acessar response.data[0] se o seu banco retornar um array
-                const data = Array.isArray(response.data) ? response.data[0] : response.data;
-
-                setFormData({
-                    nome: data.nome || '',
-                    email: data.email || '',
-                    conselho: data.conselho || '',
-                    especialidade: data.especialidade || '',
-                    senha: data.senha || '',
-                    foto_perfil: data.foto_perfil || '',
-                    valor_consulta: data.valor_consulta || '',
-                    duracao_sessao: data.duracao_sessao || '30',
-                    atende_convenio: data.atende_convenio === 1 || data.atende_convenio === '1'
-                });
+                setFormData(prev => ({ ...prev, ...response.data, atende_convenio: response.data.atende_convenio === 1 }));
             } catch (err) {
-                console.error("Erro ao buscar perfil:", err);
                 showNotification("Erro ao carregar dados", "error");
             } finally {
                 setLoading(false);
@@ -63,83 +55,84 @@ const ConfiguracoesPerfil = () => {
 
     const inputStyle = { '& .MuiOutlinedInput-root': { borderRadius: '16px', backgroundColor: '#F8FAFC' } };
 
-    const salvarDisponibilidade = async (dias) => {
-        await api.post('/profissional/disponibilidade', { dias });
-    };
-
-    // Renderização do carregamento fora do Fade para evitar o erro de estilo
-    if (loading) return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}>
-            <CircularProgress />
-        </Box>
-    );
+    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}><CircularProgress /></Box>;
 
     return (
-        <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh' }}>
-            <Fade in={!loading} timeout={600}>
-                <Box>
-                    <Box sx={{ mb: 4 }}>
-                        <Typography variant="h4" fontWeight={900} color="#0F172A">Configurações de Perfil</Typography>
-                        <Typography color="#64748B">Atualize seus dados profissionais e parâmetros de consulta.</Typography>
-                    </Box>
-
-                    <form onSubmit={handleSubmit}>
-                        <Grid container spacing={4}>
-                            <Grid item xs={12} md={6}>
-                                <Paper elevation={0} sx={{ p: 4, borderRadius: '24px', border: '1px solid #F1F5F9', height: '100%' }}>
-                                    <Typography variant="h6" fontWeight={800} sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <User size={20}/> Dados Cadastrais
-                                    </Typography>
-                                    <Stack spacing={2}>
-                                        <TextField fullWidth label="Nome Completo" value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} sx={inputStyle} />
-                                        <TextField fullWidth label="E-mail" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} sx={inputStyle} />
-                                        <TextField fullWidth label="Registro (Conselho/CRM)" value={formData.conselho} onChange={(e) => setFormData({...formData, conselho: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18}/></InputAdornment> }} />
-                                        <TextField fullWidth label="Especialidade" value={formData.especialidade} onChange={(e) => setFormData({...formData, especialidade: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Briefcase size={18}/></InputAdornment> }} />
-                                    </Stack>
-                                </Paper>
-                            </Grid>
-
-                            <Grid item xs={12} md={6}>
-                                <Paper elevation={0} sx={{ p: 4, borderRadius: '24px', border: '1px solid #F1F5F9', height: '100%' }}>
-                                    <Typography variant="h6" fontWeight={800} sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Settings size={20}/> Parâmetros
-                                    </Typography>
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                            <TextField fullWidth label="Valor (R$)" value={formData.valor_consulta} onChange={(e) => setFormData({...formData, valor_consulta: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><DollarSign size={18}/></InputAdornment> }} />
-                                        </Grid>
-                                        <Grid item xs={6}>
-                                            <TextField fullWidth label="Duração (min)" value={formData.duracao_sessao} onChange={(e) => setFormData({...formData, duracao_sessao: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Clock size={18}/></InputAdornment> }} />
-                                        </Grid>
-                                    </Grid>
-                                    <Box sx={{ mt: 3, p: 3, borderRadius: '16px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Shield color="#10B981" size={20}/>
-                                            <Typography fontWeight={700}>Aceita Convênio?</Typography>
-                                        </Box>
-                                        <Switch checked={formData.atende_convenio} onChange={(e) => setFormData({...formData, atende_convenio: e.target.checked})} />
-                                    </Box>
-                                    <Button fullWidth type="submit" variant="contained" size="large" sx={{ mt: 4, py: 2, borderRadius: '16px', bgcolor: '#0F172A', fontWeight: 900 }}>
-                                        {saving ? <CircularProgress size={24} color="inherit" /> : 'Salvar Alterações'}
-                                    </Button>
-                                </Paper>
-                            </Grid>
-
-                            <Grid item xs={12}>
-                                <Paper sx={{ p: 4, borderRadius: '24px', mt: 3 }}>
-                                    <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>Disponibilidade Semanal</Typography>
-                                    {/* Aqui você pode mapear os dias da semana (0-6) com TimePickers */}
-                                    <Typography color="text.secondary">Use a grade de horários para definir quando você atende.</Typography>
-                                </Paper>
-                            </Grid>
-                        </Grid>
-                    </form>
+        <Fade in={true} timeout={600}>
+            <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh' }}>
+                <Box sx={{ mb: 4 }}>
+                    <Typography variant="h4" fontWeight={900}>Configurações de Perfil</Typography>
                 </Box>
-            </Fade>
+
+                <form onSubmit={handleSubmit}>
+                    <Grid container spacing={4}>
+                        {/* FOTO E DADOS PESSOAIS */}
+                        <Grid item xs={12} md={4}>
+                            <Paper sx={{ p: 4, borderRadius: '24px', textAlign: 'center' }}>
+                                <Box sx={{ position: 'relative', display: 'inline-block', mb: 2 }}>
+                                    <Avatar sx={{ width: 120, height: 120, fontSize: '3rem', bgcolor: '#0F172A' }} />
+                                    <IconButton sx={{ position: 'absolute', bottom: 0, right: 0, bgcolor: '#32B5FE', color: 'white', '&:hover': { bgcolor: '#0F172A' } }}>
+                                        <Camera size={20} />
+                                    </IconButton>
+                                </Box>
+                                <Typography variant="h6" fontWeight={800}>{formData.nome}</Typography>
+                                <Typography variant="caption" color="text.secondary">{formData.especialidade}</Typography>
+                            </Paper>
+                        </Grid>
+
+                        {/* DADOS CADASTRAIS */}
+                        <Grid item xs={12} md={8}>
+                            <Paper sx={{ p: 4, borderRadius: '24px', height: '100%' }}>
+                                <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}><User size={20}/> Dados Profissionais</Typography>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}><TextField fullWidth label="Nome Completo" value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} sx={inputStyle} /></Grid>
+                                    <Grid item xs={6}><TextField fullWidth label="E-mail" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} sx={inputStyle} /></Grid>
+                                    <Grid item xs={6}><TextField fullWidth label="Nova Senha" type="password" placeholder="••••••••" onChange={(e) => setFormData({...formData, senha: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18}/></InputAdornment> }} /></Grid>
+                                    <Grid item xs={6}><TextField fullWidth label="Conselho/CRM" value={formData.conselho} onChange={(e) => setFormData({...formData, conselho: e.target.value})} sx={inputStyle} /></Grid>
+                                    <Grid item xs={6}><TextField fullWidth label="Especialidade" value={formData.especialidade} onChange={(e) => setFormData({...formData, especialidade: e.target.value})} sx={inputStyle} /></Grid>
+                                </Grid>
+                            </Paper>
+                        </Grid>
+
+                        {/* DISPONIBILIDADE E PARAMETROS */}
+                        <Grid item xs={12}>
+                            <Paper sx={{ p: 4, borderRadius: '24px' }}>
+                                <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}><Calendar size={20}/> Horários de Atendimento</Typography>
+                                <Grid container spacing={2}>
+                                    {formData.disponibilidade.map((item, index) => (
+                                        <Grid item xs={12} md={2.4} key={index}>
+                                            <Typography variant="caption" fontWeight={700}>{item.dia}</Typography>
+                                            <Stack direction="row" spacing={1}>
+                                                <TextField size="small" value={item.inicio} />
+                                                <TextField size="small" value={item.fim} />
+                                            </Stack>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                                
+                                <Divider sx={{ my: 4 }} />
+                                
+                                <Grid container spacing={4} alignItems="center">
+                                    <Grid item xs={4}><TextField fullWidth label="Valor Consulta" value={formData.valor_consulta} onChange={(e) => setFormData({...formData, valor_consulta: e.target.value})} InputProps={{ startAdornment: <InputAdornment position="start"><DollarSign size={18}/></InputAdornment> }}/></Grid>
+                                    <Grid item xs={4}><TextField fullWidth label="Duração (min)" value={formData.duracao_sessao} onChange={(e) => setFormData({...formData, duracao_sessao: e.target.value})} InputProps={{ startAdornment: <InputAdornment position="start"><Clock size={18}/></InputAdornment> }}/></Grid>
+                                    <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Typography sx={{ mr: 2 }}>Aceita Convênio?</Typography>
+                                        <Switch checked={formData.atende_convenio} onChange={(e) => setFormData({...formData, atende_convenio: e.target.checked})} />
+                                    </Grid>
+                                </Grid>
+
+                                <Button fullWidth type="submit" variant="contained" size="large" sx={{ mt: 5, py: 2, borderRadius: '16px', bgcolor: '#0F172A', fontWeight: 900 }}>
+                                    {saving ? <CircularProgress size={24} color="inherit" /> : 'Salvar Alterações Globais'}
+                                </Button>
+                            </Paper>
+                        </Grid>
+                    </Grid>
+                </form>
+            </Box>
             <Snackbar open={notification.open} autoHideDuration={4000} onClose={() => setNotification({...notification, open: false})} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
                 <Alert severity={notification.type} variant="filled" sx={{ borderRadius: '12px', fontWeight: 700 }}>{notification.message}</Alert>
             </Snackbar>
-        </Box>
+        </Fade>
     );
 };
 

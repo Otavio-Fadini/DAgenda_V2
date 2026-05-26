@@ -1,26 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, TextField, Button, Avatar, IconButton, Fade, InputAdornment, Divider, CircularProgress } from '@mui/material';
-import { Building2, MapPin, Phone, Mail, Save, Camera, FileText } from 'lucide-react';
 import api from '../../services/api';
+import { 
+    Box, Typography, Paper, Grid, TextField, InputAdornment, 
+    Button, CircularProgress, Alert, Snackbar, Fade, Avatar, IconButton, 
+    Tabs, Tab 
+} from '@mui/material';
+import { Building2, MapPin, Phone, Mail, Save, Camera, FileText, Map } from 'lucide-react';
 
 const GerenciamentoClinica = () => {
+    const [tabValue, setTabValue] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [salvando, setSalvando] = useState(false);
+    const [notification, setNotification] = useState({ open: false, message: '', type: 'success' });
+    const [preview, setPreview] = useState(null);
+
     const [formData, setFormData] = useState({
         nome_fantasia: '',
         cnpj: '',
         endereco: '',
         telefone: '',
-        email: ''
+        email: '',
+        logo: '' // Agora preparado para receber a imagem em Base64
     });
-    
-    const [preview, setPreview] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [salvando, setSalvando] = useState(false);
 
-    // 1. BUSCAR DADOS REAIS DO BANCO AO ABRIR A TELA
     useEffect(() => {
         const carregarPerfil = async () => {
             try {
-                // Ajuste esta rota para o endpoint exato do seu backend
                 const response = await api.get('/clinica/perfil');
                 
                 if (response.data) {
@@ -29,16 +34,16 @@ const GerenciamentoClinica = () => {
                         cnpj: response.data.cnpj || '',
                         endereco: response.data.endereco || '',
                         telefone: response.data.telefone || '',
-                        email: response.data.email || ''
+                        email: response.data.email || '',
+                        logo: response.data.logo || ''
                     });
                     
-                    // Se o banco retornar a URL da logo, carrega no preview
                     if (response.data.logo) {
                         setPreview(response.data.logo);
                     }
                 }
             } catch (error) {
-                console.error("Erro ao carregar dados da clínica:", error);
+                showNotification("Erro ao carregar dados da clínica.", "error");
             } finally {
                 setLoading(false);
             }
@@ -47,39 +52,41 @@ const GerenciamentoClinica = () => {
         carregarPerfil();
     }, []);
 
-    // 2. SALVAR AS ALTERAÇÕES NO BANCO DE DADOS
+    // Conversão de imagem para Base64 para salvar via JSON
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData({ ...formData, logo: reader.result });
+                setPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSalvar = async () => {
         setSalvando(true);
         try {
-            // Ajuste esta rota para o endpoint de UPDATE do seu backend
             await api.put('/clinica/perfil', formData);
-            alert("Dados da clínica atualizados com sucesso!");
+            showNotification("Dados da clínica atualizados com sucesso!", "success");
         } catch (error) {
-            console.error("Erro ao salvar:", error);
-            alert(error.response?.data?.message || "Erro ao atualizar os dados.");
+            showNotification(error.response?.data?.message || "Erro ao atualizar os dados.", "error");
         } finally {
             setSalvando(false);
         }
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setPreview(URL.createObjectURL(file));
-            // Opcional: Aqui você pode implementar a lógica do FormData 
-            // caso o seu backend já esteja preparado para receber imagens via multer.
-        }
-    };
+    const showNotification = (message, type) => setNotification({ open: true, message, type });
 
     const modernInputStyle = {
         '& .MuiOutlinedInput-root': {
             borderRadius: '12px',
             backgroundColor: '#F8FAFC',
             transition: 'all 0.2s ease-in-out',
-            '& fieldset': { borderColor: 'transparent' },
-            '&:hover fieldset': { borderColor: '#E2E8F0' },
-            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
-            '&.Mui-focused': { backgroundColor: '#FFFFFF', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
+            '& fieldset': { borderColor: '#E2E8F0' },
+            '&:hover fieldset': { borderColor: '#32B5FE' },
+            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' }
         }
     };
 
@@ -87,142 +94,137 @@ const GerenciamentoClinica = () => {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#F8FAFC' }}>
                 <CircularProgress sx={{ color: '#32B5FE' }} size={48} thickness={4} />
-                <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 600, mt: 2 }}>Carregando dados da unidade...</Typography>
             </Box>
         );
     }
 
     return (
-        <Fade in={!loading} timeout={600}>
-            <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', width: '100%', boxSizing: 'border-box' }}>
-                
-                <Box sx={{ mb: 5 }}>
-                    <Typography variant="h4" fontWeight={900} sx={{ color: '#0F172A', mb: 1, letterSpacing: '-1px' }}>
+        <Box sx={{ height: 'calc(100vh - 64px)', overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', p: { xs: 2, md: 4 }, boxSizing: 'border-box' }}>
+            
+            {/* CABEÇALHO FIXO COM BOTÃO DE SALVAR */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Box>
+                    <Typography variant="h4" fontWeight={900} sx={{ color: '#0F172A', letterSpacing: '-1px' }}>
                         Gerenciamento da Clínica
                     </Typography>
-                    <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                    <Typography variant="body2" color="#64748B" fontWeight={500}>
                         Configure os dados cadastrais e a identidade visual da sua unidade.
                     </Typography>
                 </Box>
+                <Button 
+                    variant="contained" 
+                    onClick={handleSalvar}
+                    disabled={salvando}
+                    startIcon={salvando ? <CircularProgress size={18} color="inherit" /> : <Save size={18} />} 
+                    sx={{ 
+                        py: 1.5, px: 4, borderRadius: '12px', bgcolor: '#0F172A', fontWeight: 800, color: '#FFFFFF', textTransform: 'none',
+                        boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)', transition: 'all 0.3s ease',
+                        '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 15px 25px -10px rgba(50, 181, 254, 0.5)' }
+                    }}
+                >
+                    {salvando ? 'Salvando...' : 'Salvar Alterações'}
+                </Button>
+            </Box>
 
-                <Grid container spacing={4}>
-                    {/* DADOS CADASTRAIS */}
-                    <Grid item xs={12} lg={8}>
-                        <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: '24px', border: '1px solid #F1F5F9', bgcolor: 'white', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)' }}>
-                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 4 }}>
-                                Informações Cadastrais
-                            </Typography>
+            {/* ABAS DE NAVEGAÇÃO */}
+            <Tabs 
+                value={tabValue} onChange={(e, v) => setTabValue(v)} 
+                sx={{ 
+                    mb: 3, borderBottom: '1px solid #E2E8F0', 
+                    '& .MuiTab-root': { fontWeight: 800, textTransform: 'none', fontSize: '1rem', color: '#64748B' }, 
+                    '& .Mui-selected': { color: '#32B5FE !important' }, 
+                    '& .MuiTabs-indicator': { backgroundColor: '#32B5FE', height: 3, borderRadius: '3px 3px 0 0' } 
+                }}
+            >
+                <Tab icon={<Building2 size={18}/>} iconPosition="start" label="Identidade & Registro" />
+                <Tab icon={<Map size={18}/>} iconPosition="start" label="Contato & Localização" />
+            </Tabs>
 
-                            <Grid container spacing={3}>
-                                <Grid item xs={12} md={6}>
-                                    <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ mb: 1, display: 'block' }}>NOME FANTASIA</Typography>
-                                    <TextField 
-                                        fullWidth variant="outlined" 
-                                        value={formData.nome_fantasia}
-                                        onChange={(e) => setFormData({...formData, nome_fantasia: e.target.value})}
-                                        sx={modernInputStyle} 
-                                        InputProps={{ startAdornment: <InputAdornment position="start"><Building2 size={18} color="#94A3B8"/></InputAdornment> }}
-                                    />
+            {/* ÁREA DE CONTEÚDO (Com rolagem interna isolada) */}
+            <Paper elevation={0} sx={{ flexGrow: 1, borderRadius: '24px', border: '1px solid #E2E8F0', p: 4, overflowY: 'auto', bgcolor: 'white', boxSizing: 'border-box' }}>
+                <Fade in={true} timeout={400} key={tabValue}>
+                    <Box>
+                        
+                        {/* ABA 0: IDENTIDADE & REGISTRO */}
+                        {tabValue === 0 && (
+                            <Grid container spacing={4}>
+                                <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRight: { md: '1px solid #F1F5F9' }, pb: { xs: 4, md: 0 } }}>
+                                    <Box sx={{ position: 'relative', mb: 2 }}>
+                                        <Avatar variant="rounded" src={preview} sx={{ width: 160, height: 160, mx: 'auto', borderRadius: '24px', border: '4px solid #F8FAFC', boxShadow: '0 10px 25px rgba(0,0,0,0.08)', bgcolor: '#F1F5F9', color: '#94A3B8' }}>
+                                            {!preview && <Building2 size={60} strokeWidth={1.5} />}
+                                        </Avatar>
+                                        <input accept="image/*" type="file" id="logo-upload" style={{ display: 'none' }} onChange={handleImageChange} />
+                                        <label htmlFor="logo-upload">
+                                            <IconButton component="span" sx={{ position: 'absolute', bottom: -10, right: -10, bgcolor: '#32B5FE', color: 'white', border: '4px solid #fff', width: 44, height: 44, boxShadow: '0 4px 10px rgba(50,181,254,0.4)', '&:hover': { bgcolor: '#0F172A', transform: 'scale(1.05)' }, transition: 'all 0.2s' }}>
+                                                <Camera size={20} />
+                                            </IconButton>
+                                        </label>
+                                    </Box>
+                                    <Typography variant="caption" color="text.secondary" textAlign="center" fontWeight={600} sx={{ maxWidth: 200, mt: 2 }}>
+                                        Recomendado: Imagem quadrada em formato PNG ou JPG. Processamento Base64 automático.
+                                    </Typography>
                                 </Grid>
                                 
-                                <Grid item xs={12} md={6}>
-                                    <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ mb: 1, display: 'block' }}>CNPJ</Typography>
-                                    <TextField 
-                                        fullWidth variant="outlined" 
-                                        value={formData.cnpj}
-                                        onChange={(e) => setFormData({...formData, cnpj: e.target.value})}
-                                        sx={modernInputStyle} 
-                                        InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }}
-                                    />
-                                </Grid>
-                                
-                                <Grid item xs={12}>
-                                    <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ mb: 1, display: 'block' }}>ENDEREÇO COMPLETO</Typography>
-                                    <TextField 
-                                        fullWidth variant="outlined" 
-                                        value={formData.endereco}
-                                        onChange={(e) => setFormData({...formData, endereco: e.target.value})}
-                                        sx={modernInputStyle} 
-                                        InputProps={{ startAdornment: <InputAdornment position="start"><MapPin size={18} color="#94A3B8"/></InputAdornment> }}
-                                    />
-                                </Grid>
-
-                                <Grid item xs={12} md={6}>
-                                    <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ mb: 1, display: 'block' }}>TELEFONE / WHATSAPP</Typography>
-                                    <TextField 
-                                        fullWidth variant="outlined" 
-                                        value={formData.telefone}
-                                        onChange={(e) => setFormData({...formData, telefone: e.target.value})}
-                                        sx={modernInputStyle} 
-                                        InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }}
-                                    />
-                                </Grid>
-
-                                <Grid item xs={12} md={6}>
-                                    <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ mb: 1, display: 'block' }}>E-MAIL ADMINISTRATIVO</Typography>
-                                    <TextField 
-                                        fullWidth variant="outlined" 
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({...formData, email: e.target.value})}
-                                        sx={modernInputStyle} 
-                                        InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }}
-                                    />
+                                <Grid item xs={12} md={8}>
+                                    <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>Dados Cadastrais</Typography>
+                                    <Grid container spacing={3}>
+                                        <Grid item xs={12}>
+                                            <TextField 
+                                                fullWidth label="Nome Fantasia" variant="outlined" value={formData.nome_fantasia} 
+                                                onChange={(e) => setFormData({...formData, nome_fantasia: e.target.value})} 
+                                                sx={modernInputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Building2 size={18} color="#94A3B8"/></InputAdornment> }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <TextField 
+                                                fullWidth label="CNPJ" variant="outlined" value={formData.cnpj} 
+                                                onChange={(e) => setFormData({...formData, cnpj: e.target.value})} 
+                                                sx={modernInputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }}
+                                            />
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
                             </Grid>
+                        )}
 
-                            <Divider sx={{ my: 4, borderStyle: 'dashed', borderColor: '#E2E8F0' }} />
-
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                <Button 
-                                    variant="contained" 
-                                    onClick={handleSalvar}
-                                    disabled={salvando}
-                                    startIcon={salvando ? <CircularProgress size={18} color="inherit" /> : <Save size={18} />} 
-                                    sx={{ 
-                                        py: 1.5, px: 4, 
-                                        borderRadius: '12px', 
-                                        bgcolor: '#0F172A', 
-                                        fontWeight: 800, 
-                                        color: '#FFFFFF',
-                                        textTransform: 'none',
-                                        fontSize: '1rem',
-                                        boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 15px 25px -10px rgba(50, 181, 254, 0.5)' }
-                                    }}
-                                >
-                                    {salvando ? 'Salvando...' : 'Salvar Alterações'}
-                                </Button>
+                        {/* ABA 1: CONTATO & LOCALIZAÇÃO */}
+                        {tabValue === 1 && (
+                            <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+                                <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>Informações de Comunicação</Typography>
+                                <Grid container spacing={3}>
+                                    <Grid item xs={12}>
+                                        <TextField 
+                                            fullWidth label="Endereço Completo" variant="outlined" value={formData.endereco} 
+                                            onChange={(e) => setFormData({...formData, endereco: e.target.value})} 
+                                            sx={modernInputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><MapPin size={18} color="#94A3B8"/></InputAdornment> }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <TextField 
+                                            fullWidth label="Telefone / WhatsApp" variant="outlined" value={formData.telefone} 
+                                            onChange={(e) => setFormData({...formData, telefone: e.target.value})} 
+                                            sx={modernInputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <TextField 
+                                            fullWidth label="E-mail Administrativo" variant="outlined" value={formData.email} 
+                                            onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                                            sx={modernInputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }}
+                                        />
+                                    </Grid>
+                                </Grid>
                             </Box>
-                        </Paper>
-                    </Grid>
+                        )}
 
-                    {/* IDENTIDADE VISUAL */}
-                    <Grid item xs={12} lg={4}>
-                        <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: '24px', border: '1px solid #F1F5F9', bgcolor: 'white', textAlign: 'center', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)' }}>
-                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 1 }}>Identidade Visual</Typography>
-                            <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 4 }}>Logomarca da unidade</Typography>
+                    </Box>
+                </Fade>
+            </Paper>
 
-                            <Box sx={{ position: 'relative', mb: 3 }}>
-                                <Avatar variant="rounded" src={preview} sx={{ width: 160, height: 160, mx: 'auto', borderRadius: '24px', border: '4px solid #F8FAFC', boxShadow: '0 10px 25px rgba(0,0,0,0.08)', bgcolor: '#F1F5F9', color: '#94A3B8' }}>
-                                    {!preview && <Building2 size={60} strokeWidth={1.5} />}
-                                </Avatar>
-                                <input accept="image/*" type="file" id="logo-upload" style={{ display: 'none' }} onChange={handleImageChange} />
-                                <label htmlFor="logo-upload">
-                                    <IconButton component="span" sx={{ position: 'absolute', bottom: -10, right: '25%', bgcolor: '#32B5FE', color: 'white', border: '4px solid #fff', width: 44, height: 44, boxShadow: '0 4px 10px rgba(50,181,254,0.4)', '&:hover': { bgcolor: '#0F172A', transform: 'scale(1.05)' }, transition: 'all 0.2s' }}>
-                                        <Camera size={20} />
-                                    </IconButton>
-                                </label>
-                            </Box>
-
-                            <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ display: 'block', maxWidth: 200, mx: 'auto', mt: 2 }}>
-                                Recomendado: Imagem quadrada em formato PNG transparente ou JPG (Máx. 2MB).
-                            </Typography>
-                        </Paper>
-                    </Grid>
-                </Grid>
-            </Box>
-        </Fade>
+            <Snackbar open={notification.open} autoHideDuration={4000} onClose={() => setNotification({...notification, open: false})} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+                <Alert severity={notification.type} variant="filled" sx={{ borderRadius: '12px', fontWeight: 700 }}>{notification.message}</Alert>
+            </Snackbar>
+        </Box>
     );
 };
 

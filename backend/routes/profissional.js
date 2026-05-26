@@ -90,6 +90,43 @@ router.get('/agenda', verifyToken, async (req, res) => {
     }
 });
 
+router.get('/financeiro', verifyToken, async (req, res) => {
+    try {
+        const profissionalId = req.userId;
+
+        // Busca o histórico de repasses do médico
+        const [rows] = await pool.query(
+            `SELECT id, data_agendamento as data, horario as hora, valor_consulta as valor, 
+                    (valor_consulta * 0.1) as taxa, (valor_consulta * 0.9) as liquido, 
+                    status, 'C' as tipo, id_paciente 
+             FROM agendamentos 
+             WHERE id_profissional = ? 
+             ORDER BY id DESC`,
+            [profissionalId]
+        );
+
+        // Calcula saldo total somando o líquido
+        const saldoTotal = rows.reduce((acc, curr) => acc + Number(curr.liquido), 0);
+
+        res.json({
+            saldo_total: saldoTotal,
+            lancamentos: rows.map(r => ({
+                id: r.id,
+                pac: 'Consulta ' + r.id, // Ou o nome do paciente via JOIN
+                data: r.data,
+                hora: r.hora,
+                valor: Number(r.valor).toFixed(2),
+                taxa: Number(r.taxa).toFixed(2),
+                liquido: Number(r.liquido).toFixed(2),
+                status: r.status,
+                tipo: r.tipo
+            }))
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao buscar financeiro." });
+    }
+});
+
 // Rota para finalizar o atendimento e gerar o prontuário
 router.post('/finalizar-atendimento', verifyToken, async (req, res) => {
     const { id_agendamento, id_paciente, evolucao, prescricao } = req.body;

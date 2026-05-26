@@ -1,56 +1,175 @@
-import React from 'react';
-import { Box, Typography, Grid, Paper, Avatar, Button, Chip } from '@mui/material';
-import { Calendar, Users, DollarSign, Clock, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Grid, Paper, Avatar, Button, Chip, Fade, CircularProgress, Divider, Stack } from '@mui/material';
+import { Calendar, Users, DollarSign, Clock, ChevronRight, Activity, TrendingUp } from 'lucide-react';
+import api from '../../services/api';
 
 const DashboardMedico = () => {
+    // Simulação de estados reais (pronto para ser integrado ao BD)
+    const [loading, setLoading] = useState(false);
+    
+    // Você pode substituir essas constantes pelas variáveis de estado que vêm da API
+    const kpis = { consultasHoje: 8, novosPacientes: 12, faturamentoMes: 4200 };
     const proximasConsultas = [
-        { id: 1, paciente: 'Otávio Augusto', horario: '14:00', tipo: 'Retorno', status: 'Confirmado' },
-        { id: 2, paciente: 'Ana Souza', horario: '15:30', tipo: 'Primeira Consulta', status: 'Pendente' },
+        { id: 1, paciente: 'Otávio Augusto', horario: '14:00', tipo: 'Retorno', status: 'Confirmado', bgStatus: '#ECFDF5', corStatus: '#10B981', borderStatus: '#A7F3D0' },
+        { id: 2, paciente: 'Ana Souza', horario: '15:30', tipo: 'Primeira Consulta', status: 'Em Espera', bgStatus: '#FEFCE8', corStatus: '#EAB308', borderStatus: '#FEF08A' },
     ];
 
-    return (
-        <Box sx={{ p: 4, bgcolor: '#f8fafc', width: '100%' }}>
-            <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: '-1px' }}>Painel Médico</Typography>
-            
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-                {[
-                    { label: 'Consultas Hoje', val: '8', icon: <Calendar color="#32B5FE"/> },
-                    { label: 'Novos Pacientes', val: '12', icon: <Users color="#32B5FE"/> },
-                    { label: 'Faturamento Mês', val: 'R$ 4.200', icon: <DollarSign color="#10b981"/> },
-                ].map((kpi, i) => (
-                    <Grid item xs={12} md={4} key={i}>
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 5, border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Box sx={{ p: 2, bgcolor: '#f1f5f9', borderRadius: 4 }}>{kpi.icon}</Box>
-                            <Box>
-                                <Typography variant="caption" fontWeight={700} color="text.secondary">{kpi.label}</Typography>
-                                <Typography variant="h5" fontWeight={900}>{kpi.val}</Typography>
-                            </Box>
-                        </Paper>
-                    </Grid>
-                ))}
-            </Grid>
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#F8FAFC' }}>
+                <CircularProgress sx={{ color: '#32B5FE' }} size={48} thickness={4} />
+                <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 600, mt: 2 }}>Preparando sua agenda...</Typography>
+            </Box>
+        );
+    }
 
-            <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Próximos Atendimentos</Typography>
-            <Paper elevation={0} sx={{ borderRadius: 6, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                {proximasConsultas.map((c, index) => (
-                    <Box key={c.id} sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: index !== proximasConsultas.length - 1 ? '1px solid #f1f5f9' : 'none', '&:hover': { bgcolor: '#fcfcfd' } }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Avatar sx={{ bgcolor: '#32B5FE', fontWeight: 800 }}>{c.paciente[0]}</Avatar>
-                            <Box>
-                                <Typography variant="subtitle1" fontWeight={800}>{c.paciente}</Typography>
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                    <Clock size={12}/> {c.horario} - {c.tipo}
-                                </Typography>
+    return (
+        <Fade in={true} timeout={600}>
+            <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', width: '100%', minHeight: '100vh', boxSizing: 'border-box' }}>
+                
+                {/* CABEÇALHO */}
+                <Box sx={{ mb: 5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', mb: 1, letterSpacing: '-1px' }}>
+                            Painel do Médico
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                            Visão geral da sua agenda e fluxo de faturamento.
+                        </Typography>
+                    </Box>
+                    <Chip 
+                        label="SISTEMA OPERANTE" 
+                        sx={{ 
+                            fontWeight: 800, 
+                            bgcolor: '#ECFDF5', 
+                            color: '#10B981', 
+                            border: '1px solid #A7F3D0',
+                            px: 1, height: 32, borderRadius: '8px'
+                        }} 
+                    />
+                </Box>
+                
+                {/* KPIS PRINCIPAIS */}
+                <Grid container spacing={3} sx={{ mb: 5 }}>
+                    {[
+                        { label: 'Consultas Hoje', val: kpis.consultasHoje, icon: <Calendar color="#32B5FE" size={28} strokeWidth={2.5}/>, color: '#32B5FE', bg: 'rgba(50, 181, 254, 0.1)' },
+                        { label: 'Novos Pacientes', val: kpis.novosPacientes, icon: <Users color="#F97316" size={28} strokeWidth={2.5}/>, color: '#F97316', bg: '#FFF7ED' },
+                        { label: 'Faturamento Estimado', val: `R$ ${kpis.faturamentoMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, icon: <TrendingUp color="#10B981" size={28} strokeWidth={2.5}/>, color: '#10B981', bg: '#ECFDF5' },
+                    ].map((kpi, i) => (
+                        <Grid item xs={12} md={4} key={i}>
+                            <Paper elevation={0} sx={{ 
+                                p: 3.5, 
+                                borderRadius: '24px', 
+                                border: '1px solid #F1F5F9', 
+                                bgcolor: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 3,
+                                boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-4px)',
+                                    boxShadow: '0 15px 35px -10px rgba(0, 0, 0, 0.08)',
+                                    borderColor: kpi.color
+                                }
+                            }}>
+                                <Box sx={{ p: 2.5, bgcolor: kpi.bg, borderRadius: '20px' }}>{kpi.icon}</Box>
+                                <Box>
+                                    <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        {kpi.label}
+                                    </Typography>
+                                    <Typography variant="h4" fontWeight={900} sx={{ color: '#0F172A', mt: 0.5, letterSpacing: '-0.5px' }}>
+                                        {kpi.val}
+                                    </Typography>
+                                </Box>
+                            </Paper>
+                        </Grid>
+                    ))}
+                </Grid>
+
+                {/* LISTA DE PACIENTES */}
+                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" fontWeight={900} sx={{ color: '#0F172A' }}>
+                        Próximos Atendimentos
+                    </Typography>
+                    <Button endIcon={<ChevronRight size={16} />} sx={{ fontWeight: 800, color: '#32B5FE', textTransform: 'none' }}>Ver todos</Button>
+                </Box>
+                
+                <Paper elevation={0} sx={{ 
+                    borderRadius: '24px', 
+                    border: '1px solid #F1F5F9', 
+                    overflow: 'hidden', 
+                    bgcolor: 'white',
+                    boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)'
+                }}>
+                    {proximasConsultas.length > 0 ? proximasConsultas.map((c, index) => (
+                        <Box key={c.id} sx={{ 
+                            p: { xs: 2.5, md: 3.5 }, 
+                            display: 'flex', 
+                            flexDirection: { xs: 'column', md: 'row' },
+                            alignItems: { xs: 'flex-start', md: 'center' }, 
+                            justifyContent: 'space-between', 
+                            gap: { xs: 3, md: 0 },
+                            borderBottom: index !== proximasConsultas.length - 1 ? '1px solid #F8FAFC' : 'none', 
+                            transition: 'all 0.2s',
+                            '&:hover': { bgcolor: '#F8FAFC' } 
+                        }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                <Avatar sx={{ width: 56, height: 56, bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 900, border: '2px solid #E2E8F0', fontSize: '1.2rem' }}>
+                                    {c.paciente[0]}
+                                </Avatar>
+                                <Box>
+                                    <Typography variant="subtitle1" fontWeight={900} color="#0F172A" sx={{ mb: 0.5 }}>
+                                        {c.paciente}
+                                    </Typography>
+                                    <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1, letterSpacing: '0.5px' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: '#F1F5F9', px: 1, py: 0.5, borderRadius: '6px', color: '#0F172A' }}>
+                                            <Clock size={12}/> {c.horario}
+                                        </Box>
+                                        <Box component="span" sx={{ color: '#CBD5E1' }}>•</Box> 
+                                        {c.tipo}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: { xs: '100%', md: 'auto' }, justifyContent: { xs: 'space-between', md: 'flex-end' } }}>
+                                <Chip 
+                                    label={c.status.toUpperCase()} 
+                                    size="small" 
+                                    sx={{ 
+                                        fontWeight: 800, fontSize: '0.7rem', height: 28, px: 1, borderRadius: '8px', letterSpacing: '0.5px',
+                                        bgcolor: c.bgStatus, color: c.corStatus, border: '1px solid', borderColor: c.borderStatus
+                                    }} 
+                                />
+                                <Button 
+                                    variant="contained"
+                                    size="small" 
+                                    endIcon={<ChevronRight size={16}/>} 
+                                    sx={{ 
+                                        fontWeight: 800, 
+                                        textTransform: 'none', 
+                                        borderRadius: '10px', 
+                                        bgcolor: '#0F172A', 
+                                        color: '#FFF',
+                                        py: 1, px: 2,
+                                        boxShadow: 'none',
+                                        '&:hover': { bgcolor: '#32B5FE', boxShadow: '0 4px 10px rgba(50, 181, 254, 0.3)' }
+                                    }}
+                                >
+                                    Abrir Prontuário
+                                </Button>
                             </Box>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Chip label={c.status} size="small" sx={{ fontWeight: 800, bgcolor: c.status === 'Confirmado' ? '#dcfce7' : '#fef3c7' }} />
-                            <Button size="small" endIcon={<ChevronRight size={16}/>} sx={{ fontWeight: 700, textTransform: 'none' }}>Ver Prontuário</Button>
+                    )) : (
+                        <Box sx={{ p: 6, textAlign: 'center', opacity: 0.6 }}>
+                            <Activity size={50} color="#CBD5E1" strokeWidth={1.5} style={{ marginBottom: '16px' }} />
+                            <Typography variant="h6" fontWeight={800} color="#64748B">Sua agenda está livre</Typography>
+                            <Typography variant="body2" color="#94A3B8" fontWeight={500}>Você não possui consultas nas próximas horas.</Typography>
                         </Box>
-                    </Box>
-                ))}
-            </Paper>
-        </Box>
+                    )}
+                </Paper>
+            </Box>
+        </Fade>
     );
 };
 

@@ -134,7 +134,7 @@ const ConfiguracoesPerfil = () => {
                                 fullWidth type="submit" variant="contained" size="large" disabled={saving}
                                 sx={{ 
                                     mt: 5, py: 2, borderRadius: '16px', bgcolor: '#0F172A', fontWeight: 900, 
-                                    textTransform: 'none', fontSize: '1rem', boxShadow: 'none',
+                                    textTransform: 'none', fontSize: '1rem', boxShadow: 'none', color: 'white',
                                     '&:hover': { bgcolor: '#32B5FE', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)' }
                                 }}
                             >

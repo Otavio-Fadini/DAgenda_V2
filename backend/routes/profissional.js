@@ -1,40 +1,89 @@
 const router = require('express').Router();
 const pool = require('../config/db');
 const { verifyToken } = require('./auth');
+const bcrypt = require('bcrypt');
 
+// ==========================================
+// ROTA: BUSCAR PERFIL COMPLETO (ATUALIZADA)
+// ==========================================
 router.get('/perfil', verifyToken, async (req, res) => {
     try {
         const id = req.userId;
+        
+        // Adicionado 'foto_perfil' na busca do banco
         const [rows] = await pool.query(
-            'SELECT nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio FROM profissionais WHERE id = ?',
+            'SELECT nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio, foto_perfil FROM profissionais WHERE id = ?',
             [id]
         );
 
         if (rows.length === 0) return res.status(404).json({ message: "Profissional não encontrado" });
 
-        // Envia apenas o objeto, não o array
-        res.json(rows[0]); 
+        // Busca a disponibilidade cadastrada para este profissional
+        const [horarios] = await pool.query(
+            'SELECT dia_semana as dia, ativo, hora_inicio as inicio, hora_fim as fim FROM disponibilidade_profissional WHERE profissional_id = ?',
+            [id]
+        );
+
+        const perfil = rows[0];
+        perfil.horarios = horarios; // Envia os horários junto com os dados do perfil
+
+        res.json(perfil); 
     } catch (error) {
+        console.error("Erro ao buscar perfil:", error);
         res.status(500).json({ error: "Erro no servidor" });
     }
 });
 
-// ATUALIZAR PERFIL
+// ==========================================
+// ROTA: ATUALIZAR PERFIL COMPLETO (ATUALIZADA)
+// ==========================================
 router.put('/perfil', verifyToken, async (req, res) => {
     try {
         const id = req.userId;
-        const { nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio } = req.body;
+        const { nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio, senha, foto_perfil, horarios } = req.body;
 
-        await pool.query(
-            `UPDATE profissionais SET nome=?, email=?, conselho=?, especialidade=?, valor_consulta=?, duracao_sessao=?, atende_convenio=? WHERE id=?`,
-            [nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio ? 1 : 0, id]
-        );
-        res.json({ message: "Perfil atualizado!" });
+        // 1. Atualiza os dados básicos e a foto_perfil (Base64)
+        let query = `
+            UPDATE profissionais 
+            SET nome=?, email=?, conselho=?, especialidade=?, valor_consulta=?, duracao_sessao=?, atende_convenio=?, foto_perfil=?
+        `;
+        let queryParams = [nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio ? 1 : 0, foto_perfil];
+
+        // 2. Se uma nova senha foi enviada, adiciona a criptografia dinamicamente
+        if (senha && senha.trim() !== '') {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(senha, salt);
+            query += `, senha=?`;
+            queryParams.push(hashedPassword);
+        }
+
+        query += ` WHERE id=?`;
+        queryParams.push(id);
+
+        await pool.query(query, queryParams);
+
+        // 3. Atualiza a tabela de disponibilidade_profissional (Limpa e reinsere)
+        if (horarios && horarios.length > 0) {
+            await pool.query('DELETE FROM disponibilidade_profissional WHERE profissional_id = ?', [id]);
+
+            for (const h of horarios) {
+                await pool.query(
+                    'INSERT INTO disponibilidade_profissional (profissional_id, dia_semana, ativo, hora_inicio, hora_fim) VALUES (?, ?, ?, ?, ?)',
+                    [id, h.dia, h.ativo ? 1 : 0, h.inicio || '08:00', h.fim || '18:00']
+                );
+            }
+        }
+
+        res.json({ message: "Perfil e configurações atualizados com sucesso!" });
     } catch (error) {
-        res.status(500).json({ error: "Erro ao atualizar" });
+        console.error("Erro ao atualizar perfil:", error);
+        res.status(500).json({ error: "Erro ao atualizar as configurações do perfil" });
     }
 });
 
+// ==========================================
+// ROTA: AGENDA
+// ==========================================
 router.get('/agenda', verifyToken, async (req, res) => {
     try {
         const { data, status, busca } = req.query;
@@ -79,7 +128,7 @@ router.get('/agenda', verifyToken, async (req, res) => {
         
         res.json(rows.map(row => ({
             id: row.id,
-            id_paciente: row.id_paciente, // <--- ADICIONADO: Agora o frontend vai receber o ID
+            id_paciente: row.id_paciente,
             hora: row.horario,
             data: row.data_formatada,
             paciente: row.paciente_nome || "Paciente não identificado",
@@ -92,11 +141,13 @@ router.get('/agenda', verifyToken, async (req, res) => {
     }
 });
 
+// ==========================================
+// ROTA: FINANCEIRO
+// ==========================================
 router.get('/financeiro', verifyToken, async (req, res) => {
     try {
         const profissionalId = req.userId;
 
-        // Buscamos direto da tabela agendamentos, usando a coluna 'valor' que existe na sua foto
         const [rows] = await pool.query(
             `SELECT id, data_agendamento as data, horario as hora, valor, 
                     (valor * 0.1) as taxa, (valor * 0.9) as liquido, 
@@ -107,7 +158,6 @@ router.get('/financeiro', verifyToken, async (req, res) => {
             [profissionalId]
         );
 
-        // Calcula saldo total somando o líquido (valor - 10%)
         const saldoTotal = rows.reduce((acc, curr) => acc + Number(curr.liquido), 0);
 
         res.json({
@@ -130,12 +180,13 @@ router.get('/financeiro', verifyToken, async (req, res) => {
     }
 });
 
-// Rota para finalizar o atendimento e gerar o prontuário
+// ==========================================
+// ROTA: FINALIZAR ATENDIMENTO
+// ==========================================
 router.post('/finalizar-atendimento', verifyToken, async (req, res) => {
     const { id_agendamento, id_paciente, evolucao, prescricao } = req.body;
     
     try {
-        // VERIFICAÇÃO DE DUPLICIDADE
         const [check] = await pool.query(
             'SELECT id FROM prontuarios WHERE id_agendamento = ?', 
             [id_agendamento]
@@ -145,7 +196,6 @@ router.post('/finalizar-atendimento', verifyToken, async (req, res) => {
             return res.status(400).json({ message: "Este atendimento já foi finalizado anteriormente." });
         }
 
-        // Se não existir, insere normal
         await pool.query(
             'INSERT INTO prontuarios (id_agendamento, id_paciente, id_profissional, evolucao, prescricao) VALUES (?, ?, ?, ?, ?)',
             [id_agendamento, id_paciente, req.userId, evolucao, prescricao]
@@ -162,8 +212,9 @@ router.post('/finalizar-atendimento', verifyToken, async (req, res) => {
     }
 });
 
-
-// Buscar histórico de prontuários de um paciente específico
+// ==========================================
+// ROTA: HISTÓRICO DO PACIENTE
+// ==========================================
 router.get('/historico-paciente/:id_paciente', verifyToken, async (req, res) => {
     try {
         const query = `
@@ -182,6 +233,9 @@ router.get('/historico-paciente/:id_paciente', verifyToken, async (req, res) => 
     }
 });
 
+// ==========================================
+// ROTA: MEU PRONTUÁRIO
+// ==========================================
 router.get('/meu-prontuario', verifyToken, async (req, res) => {
     try {
         const query = `
@@ -200,7 +254,6 @@ router.get('/meu-prontuario', verifyToken, async (req, res) => {
             WHERE p.id_paciente = ?
             ORDER BY p.data_atendimento DESC
         `;
-        // O req.userId vem do verifyToken
         const [rows] = await pool.query(query, [req.userId]);
         res.json(rows);
     } catch (error) {
@@ -209,15 +262,16 @@ router.get('/meu-prontuario', verifyToken, async (req, res) => {
     }
 });
 
+// ==========================================
+// ROTA: DISPONIBILIDADE
+// ==========================================
 router.post('/disponibilidade', verifyToken, async (req, res) => {
     try {
         const profissionalId = req.userId;
-        const { dias } = req.body; // Array de dias e horários
+        const { dias } = req.body;
 
-        // Primeiro, limpa os horários antigos
         await pool.query('DELETE FROM disponibilidade_profissional WHERE profissional_id = ?', [profissionalId]);
 
-        // Insere os novos
         for (const dia of dias) {
             await pool.query(
                 'INSERT INTO disponibilidade_profissional (profissional_id, dia_semana, hora_inicio, hora_fim) VALUES (?, ?, ?, ?)',
@@ -237,23 +291,18 @@ router.get('/dashboard', verifyToken, async (req, res) => {
     try {
         const profissionalId = req.userId;
 
-        // 1. Total de Consultas Hoje
-        // O MySQL entende CURDATE() como 'YYYY-MM-DD', combinando com o formato salvo.
         const [consultasHojeRow] = await pool.query(
             `SELECT COUNT(*) as total FROM agendamentos 
              WHERE id_profissional = ? AND data_agendamento = CURDATE()`,
             [profissionalId]
         );
 
-        // 2. Total de Pacientes Distintos (Novos/Ativos)
         const [pacientesRow] = await pool.query(
             `SELECT COUNT(DISTINCT id_paciente) as total FROM agendamentos 
              WHERE id_profissional = ?`,
             [profissionalId]
         );
 
-        // 3. Faturamento Bruto do Mês Atual
-        // Pega o valor_consulta da tabela profissionais e multiplica pelas consultas do mês
         const [faturamentoRow] = await pool.query(
             `SELECT (COUNT(a.id) * p.valor_consulta) as total 
              FROM agendamentos a
@@ -263,8 +312,6 @@ router.get('/dashboard', verifyToken, async (req, res) => {
             [profissionalId]
         );
 
-        // 4. Próximas Consultas (A partir de hoje)
-        // Removi a coluna 'status' da busca para evitar quebrar. Deixaremos 'Confirmado' por padrão.
         const [proximasConsultas] = await pool.query(
             `SELECT a.id, u.nome as paciente, a.data_agendamento, a.horario
              FROM agendamentos a
@@ -283,10 +330,8 @@ router.get('/dashboard', verifyToken, async (req, res) => {
             },
             proximasConsultas: proximasConsultas.map(consulta => ({
                 ...consulta,
-                // Como não temos 'status' e 'tipo' no banco de agendamentos ainda, mandamos valores padrões:
                 status: 'Confirmado',
                 tipo: 'Consulta Padrão',
-                // Transforma YYYY-MM-DD em DD/MM/YYYY para ficar bonito na tela
                 data_agendamento: consulta.data_agendamento.split('-').reverse().join('/')
             }))
         });

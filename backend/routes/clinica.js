@@ -2,7 +2,9 @@ const router = require('express').Router();
 const pool = require('../config/db');
 const { verifyToken } = require('./auth');
 
-// DASHBOARD DA CLÍNICA (Total de médicos, consultas do mês)
+// ==========================================
+// ROTA: DASHBOARD DA CLÍNICA
+// ==========================================
 router.get('/dashboard', verifyToken, async (req, res) => {
     try {
         const [stats] = await pool.query(`
@@ -16,7 +18,9 @@ router.get('/dashboard', verifyToken, async (req, res) => {
     }
 });
 
-// LISTAR MÉDICOS VINCULADOS À CLÍNICA
+// ==========================================
+// ROTA: LISTAR MÉDICOS VINCULADOS À CLÍNICA
+// ==========================================
 router.get('/medicos-unidade', verifyToken, async (req, res) => {
     try {
         const query = `
@@ -32,6 +36,9 @@ router.get('/medicos-unidade', verifyToken, async (req, res) => {
     }
 });
 
+// ==========================================
+// ROTA: FINANCEIRO GERAL
+// ==========================================
 router.get('/financeiro-geral', verifyToken, async (req, res) => {
     try {
         const query = `
@@ -43,7 +50,7 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
                 SUM(prof.valor_consulta) * 0.3 as lucro_clinica
             FROM agendamentos a
             JOIN profissionais prof ON a.id_profissional = prof.id
-            JOIN usuarios_cpf p ON prof.id = p.id -- Assumindo que o nome está aqui
+            JOIN usuarios_cpf p ON prof.id = p.id 
             WHERE a.id_clinica = ? AND a.status = 'Finalizado'
             GROUP BY prof.id
         `;
@@ -54,13 +61,16 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
     }
 });
 
-// 1. BUSCAR DADOS DO PERFIL
+// ==========================================
+// ROTA: BUSCAR DADOS DO PERFIL (ATUALIZADA)
+// ==========================================
 router.get('/perfil', verifyToken, async (req, res) => {
     try {
-        const usuarioId = req.userId; // ID do usuário logado
+        const usuarioId = req.userId;
 
+        // Adicionado a busca da coluna 'endereco' e 'foto_perfil'
         const query = `
-            SELECT nome_fantasia, cnpj, telefone, email, foto_perfil 
+            SELECT nome_fantasia, cnpj, endereco, telefone, email, foto_perfil 
             FROM usuarios_cnpj 
             WHERE id = ?
         `;
@@ -70,14 +80,14 @@ router.get('/perfil', verifyToken, async (req, res) => {
             return res.status(404).json({ message: "Usuário não encontrado." });
         }
 
-        // Renomeamos 'foto_perfil' para 'logo' no retorno para o front
         const data = rows[0];
         res.json({
             nome_fantasia: data.nome_fantasia,
             cnpj: data.cnpj,
+            endereco: data.endereco || '', // Mapeamento do novo campo de endereço
             telefone: data.telefone,
             email: data.email,
-            logo: data.foto_perfil // Mapeando a coluna correta
+            logo: data.foto_perfil // Mapeamento da foto para o preview do React
         });
     } catch (error) {
         console.error("Erro ao buscar perfil:", error);
@@ -85,19 +95,30 @@ router.get('/perfil', verifyToken, async (req, res) => {
     }
 });
 
-// 2. ATUALIZAR DADOS DO PERFIL
+// ==========================================
+// ROTA: ATUALIZAR DADOS DO PERFIL (ATUALIZADA)
+// ==========================================
 router.put('/perfil', verifyToken, async (req, res) => {
     try {
         const usuarioId = req.userId;
-        const { nome_fantasia, cnpj, telefone, email } = req.body;
+        
+        // Desestruturação incluindo 'endereco' e 'logo' vindos do formData do React
+        const { nome_fantasia, cnpj, endereco, telefone, email, logo } = req.body;
 
+        // Query atualizada incluindo as colunas 'endereco' e 'foto_perfil'
         const query = `
             UPDATE usuarios_cnpj 
-            SET nome_fantasia = ?, cnpj = ?, telefone = ?, email = ?
+            SET nome_fantasia = ?, 
+                cnpj = ?, 
+                endereco = ?, 
+                telefone = ?, 
+                email = ?, 
+                foto_perfil = ?
             WHERE id = ?
         `;
         
-        await pool.query(query, [nome_fantasia, cnpj, telefone, email, usuarioId]);
+        // Passagem ordenada de todos os parâmetros exigidos pelas interrogações acima
+        await pool.query(query, [nome_fantasia, cnpj, endereco, telefone, email, logo, usuarioId]);
 
         res.status(200).json({ message: "Dados atualizados com sucesso!" });
     } catch (error) {

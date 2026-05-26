@@ -54,4 +54,49 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
     }
 });
 
+// 1. BUSCAR DADOS DA CLÍNICA
+router.get('/perfil', verifyToken, async (req, res) => {
+    try {
+        // O ID da clínica vem do token gerado no login
+        const clinicaId = req.userId; 
+
+        const query = `
+            SELECT nome_fantasia, cnpj, telefone, email, endereco, logo 
+            FROM clinicas 
+            WHERE id = ?
+        `;
+        const [rows] = await pool.query(query, [clinicaId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "Clínica não encontrada." });
+        }
+
+        res.json(rows[0]);
+    } catch (error) {
+        console.error("Erro ao buscar perfil da clínica:", error);
+        res.status(500).json({ message: "Erro interno no servidor." });
+    }
+});
+
+// 2. ATUALIZAR DADOS DA CLÍNICA
+router.put('/perfil', verifyToken, async (req, res) => {
+    try {
+        const clinicaId = req.userId;
+        const { nome_fantasia, cnpj, telefone, email, endereco } = req.body;
+
+        const query = `
+            UPDATE clinicas 
+            SET nome_fantasia = ?, cnpj = ?, telefone = ?, email = ?, endereco = ?
+            WHERE id = ?
+        `;
+        
+        await pool.query(query, [nome_fantasia, cnpj, telefone, email, endereco, clinicaId]);
+
+        res.status(200).json({ message: "Dados atualizados com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao atualizar perfil:", error);
+        res.status(500).json({ message: "Erro ao salvar os dados no banco." });
+    }
+});
+
 module.exports = router;

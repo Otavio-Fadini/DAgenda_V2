@@ -52,7 +52,7 @@ const FinanceiroProfissional = () => {
                             color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 40px -10px rgba(15, 23, 42, 0.4)'
                         }}>
                             <Typography variant="caption" sx={{ fontWeight: 800, color: '#32B5FE', letterSpacing: '1px' }}>SALDO DISPONÍVEL</Typography>
-                            <Typography variant="h3" fontWeight={900} sx={{ mt: 1, letterSpacing: '-1px' }}>R$ {Number(saldo).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Typography>
+                            <Typography variant="h3" fontWeight={900} sx={{ mt: 1, color: 'white', letterSpacing: '-1px' }}>R$ {Number(saldo).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Typography>
                             <Wallet size={120} color="rgba(50, 181, 254, 0.05)" style={{ position: 'absolute', right: -20, bottom: -20 }} />
                         </Paper>
                     </Grid>

@@ -62,15 +62,15 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
 });
 
 // ==========================================
-// ROTA: BUSCAR DADOS DO PERFIL (ATUALIZADA)
+// ROTA: BUSCAR DADOS DO PERFIL (ATUALIZADA PARA CEP)
 // ==========================================
 router.get('/perfil', verifyToken, async (req, res) => {
     try {
         const usuarioId = req.userId;
 
-        // Adicionado a busca da coluna 'endereco' e 'foto_perfil'
         const query = `
-            SELECT nome_fantasia, cnpj, endereco, telefone, email, foto_perfil 
+            SELECT nome_fantasia, cnpj, telefone, email, foto_perfil, 
+                   cep, rua, numero, bairro, cidade, estado 
             FROM usuarios_cnpj 
             WHERE id = ?
         `;
@@ -84,10 +84,15 @@ router.get('/perfil', verifyToken, async (req, res) => {
         res.json({
             nome_fantasia: data.nome_fantasia,
             cnpj: data.cnpj,
-            endereco: data.endereco || '', // Mapeamento do novo campo de endereço
             telefone: data.telefone,
             email: data.email,
-            logo: data.foto_perfil // Mapeamento da foto para o preview do React
+            logo: data.foto_perfil,
+            cep: data.cep || '',
+            rua: data.rua || '',
+            numero: data.numero || '',
+            bairro: data.bairro || '',
+            cidade: data.cidade || '',
+            estado: data.estado || ''
         });
     } catch (error) {
         console.error("Erro ao buscar perfil:", error);
@@ -96,29 +101,44 @@ router.get('/perfil', verifyToken, async (req, res) => {
 });
 
 // ==========================================
-// ROTA: ATUALIZAR DADOS DO PERFIL (ATUALIZADA)
+// ROTA: ATUALIZAR DADOS DO PERFIL (ATUALIZADA PARA CEP)
 // ==========================================
 router.put('/perfil', verifyToken, async (req, res) => {
     try {
         const usuarioId = req.userId;
         
-        // Desestruturação incluindo 'endereco' e 'logo' vindos do formData do React
-        const { nome_fantasia, cnpj, endereco, telefone, email, logo } = req.body;
+        const { nome_fantasia, cnpj, telefone, email, logo, cep, rua, numero, bairro, cidade, estado } = req.body;
 
-        // Query atualizada incluindo as colunas 'endereco' e 'foto_perfil'
         const query = `
             UPDATE usuarios_cnpj 
             SET nome_fantasia = ?, 
                 cnpj = ?, 
-                endereco = ?, 
                 telefone = ?, 
                 email = ?, 
-                foto_perfil = ?
+                foto_perfil = ?,
+                cep = ?,
+                rua = ?,
+                numero = ?,
+                bairro = ?,
+                cidade = ?,
+                estado = ?
             WHERE id = ?
         `;
         
-        // Passagem ordenada de todos os parâmetros exigidos pelas interrogações acima
-        await pool.query(query, [nome_fantasia, cnpj, endereco, telefone, email, logo, usuarioId]);
+        await pool.query(query, [
+            nome_fantasia, 
+            cnpj, 
+            telefone, 
+            email, 
+            logo, 
+            cep, 
+            rua, 
+            numero, 
+            bairro, 
+            cidade, 
+            estado, 
+            usuarioId
+        ]);
 
         res.status(200).json({ message: "Dados atualizados com sucesso!" });
     } catch (error) {

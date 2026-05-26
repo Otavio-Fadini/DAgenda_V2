@@ -60,7 +60,7 @@ const MeusAgendamentos = () => {
                                     border: '1px solid #E2E8F0',
                                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
                                     transition: 'all 0.2s',
-                                    // 1. Aqui isolamos os estilos do ícone (SVG)
+                                    // 1. Isola os estilos do ícone (SVG)
                                     '& svg': {
                                         color: '#32B5FE', // Força a cor azul nas linhas
                                         fill: 'none',     // Remove qualquer fundo branco que o MUI esteja forçando
@@ -76,7 +76,7 @@ const MeusAgendamentos = () => {
                                     }
                                 }}
                             >
-                                {/* 3. Agora você não precisa passar cor aqui, o sx do pai já controla tudo! */}
+                                {/* 3. Não precisa passar cor aqui, o sx do pai já controla tudo! */}
                                 <RefreshCw size={20} />
                             </IconButton>
                         </Tooltip>

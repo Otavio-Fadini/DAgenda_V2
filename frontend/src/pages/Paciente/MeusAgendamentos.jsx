@@ -56,7 +56,8 @@ const MeusAgendamentos = () => {
                             <IconButton 
                                 onClick={carregarAgendamentos} 
                                 sx={{ 
-                                    bgcolor: 'black', 
+                                    bgcolor: 'white', 
+                                    color: '#32B5FE',
                                     border: '1px solid #E2E8F0',
                                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
                                     transition: 'all 0.2s',

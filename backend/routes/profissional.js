@@ -169,4 +169,59 @@ router.get('/meu-prontuario', verifyToken, async (req, res) => {
     }
 });
 
+// ==========================================
+// ROTA: DASHBOARD DO MÉDICO
+// ==========================================
+router.get('/dashboard', verifyToken, async (req, res) => {
+    try {
+        const profissionalId = req.userId;
+
+        // 1. Total de Consultas Hoje
+        const [consultasHojeRow] = await pool.query(
+            `SELECT COUNT(*) as total FROM agendamentos 
+             WHERE id_profissional = ? AND data_agendamento = CURDATE()`,
+            [profissionalId]
+        );
+
+        // 2. Total de Pacientes Distintos (Novos/Ativos)
+        const [pacientesRow] = await pool.query(
+            `SELECT COUNT(DISTINCT id_paciente) as total FROM agendamentos 
+             WHERE id_profissional = ?`,
+            [profissionalId]
+        );
+
+        // 3. Faturamento Bruto do Mês Atual
+        const [faturamentoRow] = await pool.query(
+            `SELECT SUM(valor_consulta) as total FROM agendamentos 
+             WHERE id_profissional = ? AND MONTH(STR_TO_DATE(data_agendamento, '%d/%m/%Y')) = MONTH(CURDATE()) 
+             AND YEAR(STR_TO_DATE(data_agendamento, '%d/%m/%Y')) = YEAR(CURDATE())`,
+            [profissionalId]
+        );
+
+        // 4. Próximas Consultas (A partir de hoje)
+        const [proximasConsultas] = await pool.query(
+            `SELECT a.id, u.nome as paciente, a.data_agendamento, a.horario, a.status 
+             FROM agendamentos a
+             LEFT JOIN usuarios_cpf u ON a.id_paciente = u.id
+             WHERE a.id_profissional = ? 
+             ORDER BY STR_TO_DATE(a.data_agendamento, '%d/%m/%Y') ASC, a.horario ASC
+             LIMIT 5`,
+            [profissionalId]
+        );
+
+        res.json({
+            kpis: {
+                consultasHoje: consultasHojeRow[0].total || 0,
+                novosPacientes: pacientesRow[0].total || 0,
+                faturamentoMes: faturamentoRow[0].total || 0
+            },
+            proximasConsultas: proximasConsultas
+        });
+
+    } catch (error) {
+        console.error("Erro ao carregar dashboard do médico:", error);
+        res.status(500).json({ error: "Erro interno ao carregar dados do dashboard." });
+    }
+});
+
 module.exports = router;

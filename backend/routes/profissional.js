@@ -2,19 +2,20 @@ const router = require('express').Router();
 const pool = require('../config/db');
 const { verifyToken } = require('./auth');
 
-// BUSCAR PERFIL
 router.get('/perfil', verifyToken, async (req, res) => {
     try {
+        const id = req.userId;
         const [rows] = await pool.query(
-            'SELECT valor_consulta, duracao_sessao, atende_convenio FROM profissionais WHERE id = ?', 
-            [req.userId]
+            'SELECT nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio FROM profissionais WHERE id = ?',
+            [id]
         );
 
-        if (rows.length === 0) return res.status(404).json({ message: "Não encontrado" });
-        res.json(rows[0]);
+        if (rows.length === 0) return res.status(404).json({ message: "Profissional não encontrado" });
+
+        // Envia apenas o objeto, não o array
+        res.json(rows[0]); 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Erro interno" });
+        res.status(500).json({ error: "Erro no servidor" });
     }
 });
 

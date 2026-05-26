@@ -20,16 +20,22 @@ const ConfiguracoesPerfil = () => {
         const fetchPerfil = async () => {
             try {
                 const response = await api.get('/profissional/perfil');
+                console.log("DADOS QUE CHEGARAM DO BANCO:", response.data); // Verifique o console do F12!
+
+                // Tente acessar response.data[0] se o seu banco retornar um array
+                const data = Array.isArray(response.data) ? response.data[0] : response.data;
+
                 setFormData({
-                    nome: response.data.nome || '',
-                    email: response.data.email || '',
-                    conselho: response.data.conselho || '',
-                    especialidade: response.data.especialidade || '',
-                    valor_consulta: response.data.valor_consulta || '',
-                    duracao_sessao: response.data.duracao_sessao || '30',
-                    atende_convenio: response.data.atende_convenio === 1
+                    nome: data.nome || '',
+                    email: data.email || '',
+                    conselho: data.conselho || '',
+                    especialidade: data.especialidade || '',
+                    valor_consulta: data.valor_consulta || '',
+                    duracao_sessao: data.duracao_sessao || '30',
+                    atende_convenio: data.atende_convenio === 1 || data.atende_convenio === '1'
                 });
             } catch (err) {
+                console.error("Erro ao buscar perfil:", err);
                 showNotification("Erro ao carregar dados", "error");
             } finally {
                 setLoading(false);

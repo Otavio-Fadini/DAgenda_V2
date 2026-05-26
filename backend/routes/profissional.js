@@ -168,7 +168,6 @@ router.get('/meu-prontuario', verifyToken, async (req, res) => {
         res.status(500).json({ error: "Erro ao buscar prontuário" });
     }
 });
-
 // ==========================================
 // ROTA: DASHBOARD DO MÉDICO
 // ==========================================
@@ -177,6 +176,7 @@ router.get('/dashboard', verifyToken, async (req, res) => {
         const profissionalId = req.userId;
 
         // 1. Total de Consultas Hoje
+        // O MySQL entende CURDATE() como 'YYYY-MM-DD', combinando com o formato salvo.
         const [consultasHojeRow] = await pool.query(
             `SELECT COUNT(*) as total FROM agendamentos 
              WHERE id_profissional = ? AND data_agendamento = CURDATE()`,
@@ -191,31 +191,42 @@ router.get('/dashboard', verifyToken, async (req, res) => {
         );
 
         // 3. Faturamento Bruto do Mês Atual
+        // Pega o valor_consulta da tabela profissionais e multiplica pelas consultas do mês
         const [faturamentoRow] = await pool.query(
-            `SELECT SUM(valor_consulta) as total FROM agendamentos 
-             WHERE id_profissional = ? AND MONTH(STR_TO_DATE(data_agendamento, '%d/%m/%Y')) = MONTH(CURDATE()) 
-             AND YEAR(STR_TO_DATE(data_agendamento, '%d/%m/%Y')) = YEAR(CURDATE())`,
+            `SELECT (COUNT(a.id) * p.valor_consulta) as total 
+             FROM agendamentos a
+             JOIN profissionais p ON a.id_profissional = p.id
+             WHERE a.id_profissional = ? 
+             AND a.data_agendamento LIKE CONCAT(DATE_FORMAT(CURDATE(), '%Y-%m'), '%')`,
             [profissionalId]
         );
 
         // 4. Próximas Consultas (A partir de hoje)
+        // Removi a coluna 'status' da busca para evitar quebrar. Deixaremos 'Confirmado' por padrão.
         const [proximasConsultas] = await pool.query(
-            `SELECT a.id, u.nome as paciente, a.data_agendamento, a.horario, a.status 
+            `SELECT a.id, u.nome as paciente, a.data_agendamento, a.horario
              FROM agendamentos a
              LEFT JOIN usuarios_cpf u ON a.id_paciente = u.id
-             WHERE a.id_profissional = ? 
-             ORDER BY STR_TO_DATE(a.data_agendamento, '%d/%m/%Y') ASC, a.horario ASC
+             WHERE a.id_profissional = ? AND a.data_agendamento >= CURDATE()
+             ORDER BY a.data_agendamento ASC, a.horario ASC
              LIMIT 5`,
             [profissionalId]
         );
 
         res.json({
             kpis: {
-                consultasHoje: consultasHojeRow[0].total || 0,
-                novosPacientes: pacientesRow[0].total || 0,
-                faturamentoMes: faturamentoRow[0].total || 0
+                consultasHoje: consultasHojeRow[0]?.total || 0,
+                novosPacientes: pacientesRow[0]?.total || 0,
+                faturamentoMes: faturamentoRow[0]?.total || 0
             },
-            proximasConsultas: proximasConsultas
+            proximasConsultas: proximasConsultas.map(consulta => ({
+                ...consulta,
+                // Como não temos 'status' e 'tipo' no banco de agendamentos ainda, mandamos valores padrões:
+                status: 'Confirmado',
+                tipo: 'Consulta Padrão',
+                // Transforma YYYY-MM-DD em DD/MM/YYYY para ficar bonito na tela
+                data_agendamento: consulta.data_agendamento.split('-').reverse().join('/')
+            }))
         });
 
     } catch (error) {

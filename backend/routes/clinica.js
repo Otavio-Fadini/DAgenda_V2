@@ -54,48 +54,55 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
     }
 });
 
-// 1. BUSCAR DADOS DA CLÍNICA
+// 1. BUSCAR DADOS DO PERFIL
 router.get('/perfil', verifyToken, async (req, res) => {
     try {
-        // O ID da clínica vem do token gerado no login
-        const clinicaId = req.userId; 
+        const usuarioId = req.userId; // ID do usuário logado
 
         const query = `
-            SELECT nome_fantasia, cnpj, telefone, email, endereco, logo 
-            FROM clinicas 
+            SELECT nome_fantasia, cnpj, telefone, email, foto_perfil 
+            FROM usuarios_cnpj 
             WHERE id = ?
         `;
-        const [rows] = await pool.query(query, [clinicaId]);
+        const [rows] = await pool.query(query, [usuarioId]);
 
         if (rows.length === 0) {
-            return res.status(404).json({ message: "Clínica não encontrada." });
+            return res.status(404).json({ message: "Usuário não encontrado." });
         }
 
-        res.json(rows[0]);
+        // Renomeamos 'foto_perfil' para 'logo' no retorno para o front
+        const data = rows[0];
+        res.json({
+            nome_fantasia: data.nome_fantasia,
+            cnpj: data.cnpj,
+            telefone: data.telefone,
+            email: data.email,
+            logo: data.foto_perfil // Mapeando a coluna correta
+        });
     } catch (error) {
-        console.error("Erro ao buscar perfil da clínica:", error);
+        console.error("Erro ao buscar perfil:", error);
         res.status(500).json({ message: "Erro interno no servidor." });
     }
 });
 
-// 2. ATUALIZAR DADOS DA CLÍNICA
+// 2. ATUALIZAR DADOS DO PERFIL
 router.put('/perfil', verifyToken, async (req, res) => {
     try {
-        const clinicaId = req.userId;
-        const { nome_fantasia, cnpj, telefone, email, endereco } = req.body;
+        const usuarioId = req.userId;
+        const { nome_fantasia, cnpj, telefone, email } = req.body;
 
         const query = `
-            UPDATE clinicas 
-            SET nome_fantasia = ?, cnpj = ?, telefone = ?, email = ?, endereco = ?
+            UPDATE usuarios_cnpj 
+            SET nome_fantasia = ?, cnpj = ?, telefone = ?, email = ?
             WHERE id = ?
         `;
         
-        await pool.query(query, [nome_fantasia, cnpj, telefone, email, endereco, clinicaId]);
+        await pool.query(query, [nome_fantasia, cnpj, telefone, email, usuarioId]);
 
         res.status(200).json({ message: "Dados atualizados com sucesso!" });
     } catch (error) {
         console.error("Erro ao atualizar perfil:", error);
-        res.status(500).json({ message: "Erro ao salvar os dados no banco." });
+        res.status(500).json({ message: "Erro ao atualizar no banco." });
     }
 });
 

@@ -20,15 +20,16 @@ router.get('/perfil', verifyToken, async (req, res) => {
 
 // ATUALIZAR PERFIL
 router.put('/perfil', verifyToken, async (req, res) => {
-    const { valor_consulta, duracao_sessao, atende_convenio } = req.body;
     try {
+        const id = req.userId;
+        const { nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio } = req.body;
+
         await pool.query(
-            'UPDATE profissionais SET valor_consulta = ?, duracao_sessao = ?, atende_convenio = ? WHERE id = ?',
-            [valor_consulta, duracao_sessao, atende_convenio ? 1 : 0, req.userId]
+            `UPDATE profissionais SET nome=?, email=?, conselho=?, especialidade=?, valor_consulta=?, duracao_sessao=?, atende_convenio=? WHERE id=?`,
+            [nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio ? 1 : 0, id]
         );
-        res.json({ message: "Sucesso" });
+        res.json({ message: "Perfil atualizado!" });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: "Erro ao atualizar" });
     }
 });

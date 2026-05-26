@@ -57,14 +57,27 @@ const MeusAgendamentos = () => {
                                 onClick={carregarAgendamentos} 
                                 sx={{ 
                                     bgcolor: 'white', 
-                                    color: '#32B5FE',
                                     border: '1px solid #E2E8F0',
                                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
                                     transition: 'all 0.2s',
-                                    '&:hover': { bgcolor: '#F0F9FF', borderColor: '#32B5FE', color: '#32B5FE', transform: 'rotate(15deg)' }
+                                    // 1. Aqui isolamos os estilos do ícone (SVG)
+                                    '& svg': {
+                                        color: '#32B5FE', // Força a cor azul nas linhas
+                                        fill: 'none',     // Remove qualquer fundo branco que o MUI esteja forçando
+                                    },
+                                    '&:hover': { 
+                                        bgcolor: '#F0F9FF', 
+                                        borderColor: '#32B5FE', 
+                                        transform: 'rotate(15deg)',
+                                        // 2. Garante que o ícone continue azul no hover
+                                        '& svg': {
+                                            color: '#32B5FE' 
+                                        }
+                                    }
                                 }}
                             >
-                                <RefreshCw size={20} color={loading ? "#32B5FE" : "inherit"} />
+                                {/* 3. Agora você não precisa passar cor aqui, o sx do pai já controla tudo! */}
+                                <RefreshCw size={20} />
                             </IconButton>
                         </Tooltip>
                         <Chip 

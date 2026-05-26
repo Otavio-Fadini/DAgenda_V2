@@ -55,7 +55,6 @@ const MeusAgendamentos = () => {
                         <Tooltip title="Atualizar Lista" arrow>
                             <IconButton 
                                 onClick={carregarAgendamentos} 
-                                icon={<RefreshCw color='#32B5FE' />} 
                                 sx={{ 
                                     bgcolor: 'white', 
                                     border: '1px solid #E2E8F0',
@@ -64,7 +63,7 @@ const MeusAgendamentos = () => {
                                     '&:hover': { bgcolor: '#F0F9FF', borderColor: '#32B5FE', color: '#32B5FE', transform: 'rotate(15deg)' }
                                 }}
                             >
-                                <RefreshCw size={20} color={loading ? "#cbd5e1" : "inherit"} />
+                                <RefreshCw size={20} color={loading ? "#32B5FE" : "inherit"} />
                             </IconButton>
                         </Tooltip>
                         <Chip 

@@ -208,6 +208,28 @@ router.get('/meu-prontuario', verifyToken, async (req, res) => {
         res.status(500).json({ error: "Erro ao buscar prontuário" });
     }
 });
+
+router.post('/disponibilidade', verifyToken, async (req, res) => {
+    try {
+        const profissionalId = req.userId;
+        const { dias } = req.body; // Array de dias e horários
+
+        // Primeiro, limpa os horários antigos
+        await pool.query('DELETE FROM disponibilidade_profissional WHERE profissional_id = ?', [profissionalId]);
+
+        // Insere os novos
+        for (const dia of dias) {
+            await pool.query(
+                'INSERT INTO disponibilidade_profissional (profissional_id, dia_semana, hora_inicio, hora_fim) VALUES (?, ?, ?, ?)',
+                [profissionalId, dia.dia, dia.inicio, dia.fim]
+            );
+        }
+        res.json({ message: "Disponibilidade salva!" });
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao salvar horários." });
+    }
+});
+
 // ==========================================
 // ROTA: DASHBOARD DO MÉDICO
 // ==========================================

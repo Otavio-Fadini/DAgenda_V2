@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { 
     Box, Typography, Paper, Grid, TextField, InputAdornment, Switch, 
-    Button, CircularProgress, Alert, Snackbar, Fade, Stack 
+    Button, CircularProgress, Alert, Snackbar, Fade, Stack, Avatar, IconButton 
 } from '@mui/material';
-import { DollarSign, Clock, Shield, Settings, User, Briefcase, FileText } from 'lucide-react';
+import { DollarSign, Clock, Shield, Settings, User, Briefcase, FileText, Camera } from 'lucide-react';
 
 const ConfiguracoesPerfil = () => {
     const [formData, setFormData] = useState({
-        nome: '', email: '', conselho: '', especialidade: '', 
+        nome: '', email: '', conselho: '', especialidade: '', senha: '', foto_perfil: '',
         valor_consulta: '', duracao_sessao: '', atende_convenio: false
     });
 
@@ -30,6 +30,8 @@ const ConfiguracoesPerfil = () => {
                     email: data.email || '',
                     conselho: data.conselho || '',
                     especialidade: data.especialidade || '',
+                    senha: data.senha || '',
+                    foto_perfil: data.foto_perfil || '',
                     valor_consulta: data.valor_consulta || '',
                     duracao_sessao: data.duracao_sessao || '30',
                     atende_convenio: data.atende_convenio === 1 || data.atende_convenio === '1'
@@ -60,6 +62,10 @@ const ConfiguracoesPerfil = () => {
     const showNotification = (message, type) => setNotification({ open: true, message, type });
 
     const inputStyle = { '& .MuiOutlinedInput-root': { borderRadius: '16px', backgroundColor: '#F8FAFC' } };
+
+    const salvarDisponibilidade = async (dias) => {
+        await api.post('/profissional/disponibilidade', { dias });
+    };
 
     // Renderização do carregamento fora do Fade para evitar o erro de estilo
     if (loading) return (
@@ -116,6 +122,14 @@ const ConfiguracoesPerfil = () => {
                                     <Button fullWidth type="submit" variant="contained" size="large" sx={{ mt: 4, py: 2, borderRadius: '16px', bgcolor: '#0F172A', fontWeight: 900 }}>
                                         {saving ? <CircularProgress size={24} color="inherit" /> : 'Salvar Alterações'}
                                     </Button>
+                                </Paper>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Paper sx={{ p: 4, borderRadius: '24px', mt: 3 }}>
+                                    <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>Disponibilidade Semanal</Typography>
+                                    {/* Aqui você pode mapear os dias da semana (0-6) com TimePickers */}
+                                    <Typography color="text.secondary">Use a grade de horários para definir quando você atende.</Typography>
                                 </Paper>
                             </Grid>
                         </Grid>

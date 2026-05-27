@@ -159,9 +159,16 @@ const CadastroPaciente = () => {
                                     sx={modernInputStyle} onChange={(e) => setFormData({...formData, cpf: e.target.value})} required />
                             </Grid>
                             <Grid item xs={12} sm={6}>
-                                <TextField fullWidth label="Data de Nascimento" variant="outlined" type="date"
-                                    InputLabelProps={{ shrink: true }} // Mantém a label no topo
-                                    sx={modernInputStyle} onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} required />
+                                <TextField 
+                                    fullWidth 
+                                    label="Data de Nascimento" 
+                                    variant="outlined" 
+                                    type="date"
+                                    InputLabelProps={{ shrink: true }}
+                                    sx={modernInputStyle} 
+                                    onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
+                                    required 
+                                />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField fullWidth label="Telefone / WhatsApp" variant="outlined" 

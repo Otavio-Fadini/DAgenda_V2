@@ -86,7 +86,7 @@ const CadastroPaciente = () => {
 
     const modernInputStyle = {
         '& .MuiOutlinedInput-root': {
-            borderRadius: '10px', // Borda um pouco mais sutil para não ficar gigante
+            borderRadius: '10px',
             backgroundColor: '#F8FAFC',
             transition: 'all 0.2s ease-in-out',
             '& fieldset': { borderColor: 'transparent' },
@@ -94,9 +94,7 @@ const CadastroPaciente = () => {
             '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
             '&.Mui-focused': { backgroundColor: '#FFFFFF', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
         },
-        '& .MuiInputBase-input': { padding: '12px 14px' }, // Reduz a altura interna do input
-        '& .MuiInputLabel-root': { transform: 'translate(14px, 12px) scale(1)' },
-        '& .MuiInputLabel-shrink': { transform: 'translate(14px, -9px) scale(0.75)' }
+        '& .MuiInputBase-input': { padding: '14px' } // Padding padrão para evitar sobreposição
     };
 
     return (

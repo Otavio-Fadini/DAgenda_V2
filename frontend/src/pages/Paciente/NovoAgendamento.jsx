@@ -38,6 +38,8 @@ const NovoAgendamento = () => {
     const [profissionais, setProfissionais] = useState([]);
     const [profissionaisFiltrados, setProfissionaisFiltrados] = useState([]);
     const [clinicas, setClinicas] = useState([]);
+    
+    // Coordenada inicial padrão (Mogi Mirim/Araras)
     const [mapCenter, setMapCenter] = useState([-22.4331, -47.3581]);
 
     const [busca, setBusca] = useState('');
@@ -71,13 +73,56 @@ const NovoAgendamento = () => {
         setProfissionaisFiltrados(filtered);
     }, [busca, apenasConvenio, profissionais]);
 
+    // LÓGICA DE GEOCODING INCORPORADA AQUI
     const selectMedico = async (id, nome, valor) => {
         setAgendamento({ ...agendamento, id_profissional: id, nome_medico: nome, valor_consulta: valor });
+        setLoading(true); // Ativa o loading para esperar a busca das coordenadas
+        
         try {
             const res = await api.get(`/agendamentos/vinculos/clinicas/${id}`);
-            setClinicas(res.data);
+            const clinicasObtidas = res.data;
+
+            const clinicasComMapa = [];
+
+            // Passa por cada clínica e busca as coordenadas no OpenStreetMap
+            for (const c of clinicasObtidas) {
+                let lat = null;
+                let lng = null;
+
+                if (c.rua && c.cidade) {
+                    try {
+                        const query = `${c.rua}, ${c.numero ? c.numero + ', ' : ''}${c.cidade}, ${c.estado || 'SP'}, Brasil`;
+                        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                        const geoData = await geoRes.json();
+                        
+                        if (geoData && geoData.length > 0) {
+                            lat = geoData[0].lat;
+                            lng = geoData[0].lon;
+                        }
+                        
+                        // Pequeno delay para não bloquear a API gratuita
+                        await new Promise(r => setTimeout(r, 400));
+                    } catch (e) { 
+                        console.error("Erro no geocoding da clínica:", e); 
+                    }
+                }
+                clinicasComMapa.push({ ...c, latitude: lat, longitude: lng });
+            }
+
+            setClinicas(clinicasComMapa);
+
+            // Centraliza o mapa na primeira clínica que retornou coordenadas válidas
+            const primeiraComMapa = clinicasComMapa.find(c => c.latitude && c.longitude);
+            if (primeiraComMapa) {
+                setMapCenter([parseFloat(primeiraComMapa.latitude), parseFloat(primeiraComMapa.longitude)]);
+            }
+
             setActiveStep(1);
-        } catch (err) { console.error(err); }
+        } catch (err) { 
+            console.error(err); 
+        } finally {
+            setLoading(false);
+        }
     };
 
     const processarPagamentoEAgendar = async () => {
@@ -228,7 +273,7 @@ const NovoAgendamento = () => {
                             
                             <Box sx={{ flex: 1, overflowY: 'auto' }}>
                                 {clinicas.map((c, i) => {
-                                    // Fallbacks para o mapa se a clínica não tiver lat/lng cadastrados ainda
+                                    // Se a API não retornou lat/lng real, usa o fallback para não quebrar o mapa
                                     const lat = c.latitude ? parseFloat(c.latitude) : -22.4331 + (i * 0.01);
                                     const lng = c.longitude ? parseFloat(c.longitude) : -47.3581 + (i * 0.01);
 

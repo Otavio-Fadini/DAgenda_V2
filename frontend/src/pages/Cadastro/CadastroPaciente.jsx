@@ -163,8 +163,11 @@ const CadastroPaciente = () => {
                                     fullWidth 
                                     label="Data de Nascimento" 
                                     variant="outlined" 
-                                    type="date"
-                                    InputLabelProps={{ shrink: true }}
+                                    type={formData.data_nascimento ? "date" : "text"}
+                                    onFocus={(e) => (e.target.type = "date")}
+                                    onBlur={(e) => {
+                                        if (!formData.data_nascimento) e.target.type = "text";
+                                    }}
                                     sx={modernInputStyle} 
                                     onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
                                     required 

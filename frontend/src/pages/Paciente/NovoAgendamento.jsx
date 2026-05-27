@@ -7,7 +7,7 @@ import {
 import { 
     Search, MapPin, ShieldCheck, Star, ChevronLeft, ChevronRight, 
     Building2, User, Clock, Car, LocateFixed, Calendar as CalendarIcon,
-    ArrowRight, CreditCard, QrCode, Lock, Wifi, Wheelchair
+    ArrowRight, CreditCard, QrCode, Lock, Wifi, Accessibility
 } from 'lucide-react';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -181,7 +181,7 @@ const NovoAgendamento = () => {
         const text = nome.toLowerCase();
         if (text.includes('estacionamento') || text.includes('vaga')) return <Car size={14} />;
         if (text.includes('wi-fi') || text.includes('internet')) return <Wifi size={14} />;
-        if (text.includes('acesso') || text.includes('cadeira')) return <Wheelchair size={14} />;
+        if (text.includes('acesso') || text.includes('cadeira')) return <Accessibility size={14} />;
         return <ShieldCheck size={14} />;
     };
 

@@ -20,6 +20,7 @@ const Sidebar = ({ onLogout, userType }) => {
             { text: 'Meus Agendamentos', icon: <CalendarCheck size={22} />, path: '/dashboard/meus-agendamentos' },
             { text: 'Meu Prontuário', icon: <ClipboardList size={22} />, path: '/dashboard/prontuario' },
             { text: 'Financeiro', icon: <Wallet size={22} />, path: '/dashboard/financeiro' },
+            { text: 'Configurações', icon: <Settings size={22} />, path: '/dashboard/configuracao' }, // <--- TELA NOVA ADICIONADA AQUI
         ],
         profissionais: [
             { text: 'Painel Médico', icon: <LayoutDashboard size={22} />, path: '/dashboard' },

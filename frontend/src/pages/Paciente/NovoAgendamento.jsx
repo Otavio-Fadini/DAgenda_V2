@@ -113,6 +113,7 @@ const NovoAgendamento = () => {
                 let lat = null;
                 let lng = null;
 
+                // 1. Busca as coordenadas da clínica por endereço
                 if (c.rua && c.cidade) {
                     try {
                         const query = `${c.rua}, ${c.numero ? c.numero + ', ' : ''}${c.cidade}, ${c.estado || 'SP'}, Brasil`;
@@ -123,14 +124,28 @@ const NovoAgendamento = () => {
                             lat = geoData[0].lat;
                             lng = geoData[0].lon;
                         }
-                        await new Promise(r => setTimeout(r, 400));
-                    } catch (e) { console.error("Erro no geocoding da clínica:", e); }
+                        await new Promise(r => setTimeout(r, 300)); // Delay de segurança para a API
+                    } catch (e) { console.error(e); }
                 }
 
-                // Calcula a distância real se tivermos ambas as coordenadas
+                // 2. BUSCA DA DISTÂNCIA REAL POR RUAS (Via OSRM)
                 let distanciaKm = null;
                 if (pacienteLatLng && lat && lng) {
-                    distanciaKm = calcularDistancia(pacienteLatLng.lat, pacienteLatLng.lng, lat, lng);
+                    try {
+                        // OSRM espera os parâmetros no formato: longitude,latitude;longitude,latitude
+                        const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${pacienteLatLng.lng},${pacienteLatLng.lat};${lng},${lat}?overview=false`);
+                        const osrmData = await osrmRes.json();
+                        
+                        if (osrmData.routes && osrmData.routes.length > 0) {
+                            // A distância vem em metros do OSRM. Dividimos por 1000 para converter em KM
+                            const distanciaMetros = osrmData.routes[0].distance;
+                            distanciaKm = (distanciaMetros / 1000).toFixed(1); // Ex: 0.8 ou 0.7
+                        }
+                    } catch (osrmError) {
+                        console.error("Erro ao calcular rota por ruas, usando linha reta como fallback:", osrmError);
+                        // Se o servidor de rotas falhar, usa a fórmula matemática antiga como plano B
+                        distanciaKm = calcularDistancia(pacienteLatLng.lat, pacienteLatLng.lng, lat, lng);
+                    }
                 }
 
                 clinicasComMapaEDistancia.push({ ...c, latitude: lat, longitude: lng, distancia: distanciaKm });

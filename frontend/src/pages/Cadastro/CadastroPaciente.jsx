@@ -66,11 +66,36 @@ const CadastroPaciente = () => {
         }
     };
 
+    // Máscara para Data de Nascimento (DD/MM/AAAA)
+    const handleDateChange = (e) => {
+        let value = e.target.value.replace(/\D/g, ""); // Remove tudo que não for número
+        
+        if (value.length > 8) value = value.slice(0, 8); // Limita a 8 dígitos
+
+        // Adiciona as barras automaticamente
+        if (value.length > 4) {
+            value = value.replace(/^(\d{2})(\d{2})(\d+)/, "$1/$2/$3");
+        } else if (value.length > 2) {
+            value = value.replace(/^(\d{2})(\d+)/, "$1/$2");
+        }
+
+        setFormData({ ...formData, data_nascimento: value });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSalvando(true);
         try {
-            const response = await axios.post('https://dagenda.com.br/api/auth/cadastro-paciente', formData);
+            // Cria uma cópia dos dados para não alterar o que o usuário está vendo na tela
+            const dataToSend = { ...formData };
+            
+            // Converte de DD/MM/AAAA para AAAA-MM-DD para o banco de dados aceitar
+            if (dataToSend.data_nascimento && dataToSend.data_nascimento.includes('/')) {
+                const [dia, mes, ano] = dataToSend.data_nascimento.split('/');
+                dataToSend.data_nascimento = `${ano}-${mes}-${dia}`;
+            }
+
+            const response = await axios.post('https://dagenda.com.br/api/auth/cadastro-paciente', dataToSend);
             
             if (response.status === 201) {
                 alert("Paciente cadastrado com sucesso!");
@@ -162,14 +187,12 @@ const CadastroPaciente = () => {
                                 <TextField 
                                     fullWidth 
                                     label="Data de Nascimento" 
+                                    placeholder="DD/MM/AAAA"
                                     variant="outlined" 
-                                    type={formData.data_nascimento ? "date" : "text"}
-                                    onFocus={(e) => (e.target.type = "date")}
-                                    onBlur={(e) => {
-                                        if (!formData.data_nascimento) e.target.type = "text";
-                                    }}
+                                    type="text" 
+                                    value={formData.data_nascimento}
                                     sx={modernInputStyle} 
-                                    onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
+                                    onChange={handleDateChange} 
                                     required 
                                 />
                             </Grid>

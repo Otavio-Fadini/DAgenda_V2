@@ -105,7 +105,6 @@ const NovoAgendamento = () => {
         }
     };
 
-    // Estilo Moderno para Inputs (Mesmo padrão do Cadastro/Login)
     const modernInputStyle = {
         '& .MuiOutlinedInput-root': {
             borderRadius: '12px',
@@ -146,7 +145,6 @@ const NovoAgendamento = () => {
                                     <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>Selecione o profissional ideal para o seu atendimento.</Typography>
                                 </Box>
 
-                                {/* FILTRO HIGH-TECH */}
                                 <Paper elevation={0} sx={{ 
                                     p: 1.5, mb: 6, borderRadius: '20px', display: 'flex', alignItems: 'center', 
                                     border: '1px solid #F1F5F9', bgcolor: '#FFFFFF', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)'
@@ -155,11 +153,8 @@ const NovoAgendamento = () => {
                                         <Stack direction="row" spacing={2} sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: '14px', display: 'flex', alignItems: 'center' }}>
                                             <Search size={22} color="#32B5FE" />
                                             <InputBase 
-                                                fullWidth 
-                                                placeholder="Busque por nome ou especialidade..." 
-                                                value={busca} 
-                                                onChange={e => setBusca(e.target.value)} 
-                                                sx={{ fontWeight: 600, fontSize: '1.05rem', color: '#0F172A' }} 
+                                                fullWidth placeholder="Busque por nome ou especialidade..." value={busca} 
+                                                onChange={e => setBusca(e.target.value)} sx={{ fontWeight: 600, fontSize: '1.05rem', color: '#0F172A' }} 
                                             />
                                         </Stack>
                                     </Box>
@@ -181,8 +176,7 @@ const NovoAgendamento = () => {
                                                 <Zoom in={true}>
                                                     <Paper elevation={0} sx={{ 
                                                         borderRadius: '24px', border: '1px solid #F1F5F9', overflow: 'hidden', 
-                                                        transition: 'all 0.3s ease', bgcolor: '#FFFFFF',
-                                                        boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)',
+                                                        transition: 'all 0.3s ease', bgcolor: '#FFFFFF', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)',
                                                         '&:hover': { transform: 'translateY(-6px)', borderColor: '#32B5FE', boxShadow: '0 20px 40px -10px rgba(50, 181, 254, 0.15)'} 
                                                     }}>
                                                         <CardActionArea onClick={() => selectMedico(prof.id, prof.nome, prof.valor_consulta)} sx={{ p: 4 }}>
@@ -223,34 +217,57 @@ const NovoAgendamento = () => {
                     </Fade>
                 )}
 
-                {/* PASSO 1: LOCALIZAÇÃO */}
+                {/* PASSO 1: LOCALIZAÇÃO (ATUALIZADA COM DADOS REAIS DA CLÍNICA) */}
                 {activeStep === 1 && (
                     <Box sx={{ display: 'flex', height: '100%' }}>
-                        <Box sx={{ width: 440, borderRight: '1px solid #F1F5F9', bgcolor: '#FFF', display: 'flex', flexDirection: 'column', zIndex: 5, boxShadow: '20px 0 40px -20px rgba(0,0,0,0.05)' }}>
+                        <Box sx={{ width: { xs: '100%', md: 460 }, borderRight: '1px solid #F1F5F9', bgcolor: '#FFF', display: 'flex', flexDirection: 'column', zIndex: 5, boxShadow: '20px 0 40px -20px rgba(0,0,0,0.05)' }}>
                             <Box sx={{ p: 4, bgcolor: '#F8FAFC', borderBottom: '1px solid #F1F5F9' }}>
                                 <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 1, letterSpacing: '-0.5px' }}>Onde agendar?</Typography>
                                 <Typography variant="body2" color="#64748B" fontWeight={600}>Unidades que atendem com <Box component="span" fontWeight={800} color="#0F172A">{agendamento.nome_medico}</Box></Typography>
                             </Box>
+                            
                             <Box sx={{ flex: 1, overflowY: 'auto' }}>
                                 {clinicas.map((c, i) => {
+                                    // Fallbacks para o mapa se a clínica não tiver lat/lng cadastrados ainda
                                     const lat = c.latitude ? parseFloat(c.latitude) : -22.4331 + (i * 0.01);
                                     const lng = c.longitude ? parseFloat(c.longitude) : -47.3581 + (i * 0.01);
+
+                                    // Lógica inteligente para montar o endereço real
+                                    let enderecoCompleto = c.endereco || 'Endereço não cadastrado';
+                                    if (c.rua) {
+                                        enderecoCompleto = `${c.rua}${c.numero ? `, ${c.numero}` : ''} • ${c.bairro || c.cidade}${c.estado ? `/${c.estado}` : ''}`;
+                                    }
+
+                                    // Define qual imagem usar (foto_perfil, logo ou o ícone padrão)
+                                    const imagemClinica = c.foto_perfil || c.logo;
 
                                     return (
                                         <CardActionArea 
                                             key={c.id} 
                                             onMouseEnter={() => setMapCenter([lat, lng])}
                                             onClick={() => { setAgendamento({...agendamento, id_clinica: c.id, nome_clinica: c.nome_fantasia}); setActiveStep(2); }}
-                                            sx={{ p: 4, borderBottom: '1px solid #F8FAFC', transition: '0.2s', '&:hover': { bgcolor: alpha('#32B5FE', 0.04), pl: 5 } }}
+                                            sx={{ p: 3, borderBottom: '1px solid #F8FAFC', transition: 'all 0.2s', '&:hover': { bgcolor: alpha('#32B5FE', 0.04), pl: 4 } }}
                                         >
-                                            <Stack direction="row" spacing={3} alignItems="flex-start">
-                                                <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: '16px', color: '#0F172A', display: 'flex', border: '1px solid #E2E8F0' }}><Building2 size={28} strokeWidth={1.5} /></Box>
+                                            <Stack direction="row" spacing={3} alignItems="center">
+                                                <Avatar 
+                                                    src={imagemClinica} 
+                                                    variant="rounded" 
+                                                    sx={{ width: 64, height: 64, borderRadius: '16px', bgcolor: '#F1F5F9', color: '#94A3B8', border: '1px solid #E2E8F0' }}
+                                                >
+                                                    {!imagemClinica && <Building2 size={32} strokeWidth={1.5} />}
+                                                </Avatar>
+                                                
                                                 <Box sx={{ flex: 1 }}>
-                                                    <Typography variant="h6" fontWeight={800} color="#0F172A">{c.nome_fantasia}</Typography>
-                                                    <Typography variant="body2" color="#64748B" fontWeight={600} sx={{ mb: 2, mt: 0.5 }}>{c.endereco || 'Centro • Araras, SP'}</Typography>
-                                                    <Stack direction="row" spacing={2}>
-                                                        <Chip label="2.4 km" size="small" icon={<LocateFixed size={12}/>} sx={{ fontWeight: 800, bgcolor: '#F1F5F9', color: '#64748B', borderRadius: '8px' }} />
-                                                        <Stack direction="row" spacing={1} alignItems="center" sx={{ color: '#10B981', bgcolor: '#ECFDF5', px: 1, borderRadius: '8px' }}>
+                                                    <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2, mb: 0.5 }}>{c.nome_fantasia}</Typography>
+                                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1.5 }}>
+                                                        <MapPin size={14} color="#64748B" style={{ marginTop: '2px', marginRight: '6px', flexShrink: 0 }} />
+                                                        <Typography variant="body2" color="#64748B" fontWeight={500} sx={{ lineHeight: 1.3 }}>
+                                                            {enderecoCompleto}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Stack direction="row" spacing={2} alignItems="center">
+                                                        <Chip label="2.4 km" size="small" sx={{ fontWeight: 800, bgcolor: '#F1F5F9', color: '#64748B', borderRadius: '8px', height: 24, fontSize: '0.7rem' }} />
+                                                        <Stack direction="row" spacing={1} alignItems="center" sx={{ color: '#10B981', bgcolor: '#ECFDF5', px: 1, py: 0.5, borderRadius: '8px' }}>
                                                             <Car size={14} /><Typography variant="caption" fontWeight={800}>Vagas</Typography>
                                                         </Stack>
                                                     </Stack>
@@ -265,7 +282,7 @@ const NovoAgendamento = () => {
                             </Box>
                         </Box>
 
-                        <Box sx={{ flex: 1, zIndex: 0 }}>
+                        <Box sx={{ flex: 1, zIndex: 0, display: { xs: 'none', md: 'block' } }}>
                             <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
                                 <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
                                 <RecenterMap center={mapCenter} />
@@ -276,6 +293,7 @@ const NovoAgendamento = () => {
                                         <Marker key={i} position={[lat, lng]}>
                                             <Popup>
                                                 <Box sx={{ p: 1, textAlign: 'center' }}>
+                                                    {c.foto_perfil && <Avatar src={c.foto_perfil} sx={{ width: 40, height: 40, mx: 'auto', mb: 1, borderRadius: '8px' }} />}
                                                     <Typography variant="subtitle2" fontWeight={900} color="#0F172A">{c.nome_fantasia}</Typography>
                                                     <Button fullWidth size="small" variant="contained" sx={{ mt: 1.5, bgcolor: '#32B5FE', fontWeight: 800, borderRadius: '8px', textTransform: 'none', boxShadow: 'none' }} onClick={() => { setAgendamento({...agendamento, id_clinica: c.id, nome_clinica: c.nome_fantasia}); setActiveStep(2); }}>Escolher Unidade</Button>
                                                 </Box>

@@ -23,30 +23,29 @@ router.get('/profissionais', async (req, res) => {
 // ROTA CORRIGIDA: BUSCAR CLÍNICAS VINCULADAS AO PROFISSIONAL
 router.get('/vinculos/clinicas/:id_profissional', verifyToken, async (req, res) => {
     try {
-        const { id_profissional } = req.params;
-        
         const query = `
-            SELECT 
-                c.id, 
-                c.nome_fantasia, 
-                c.foto_perfil, 
-                c.rua, 
-                c.numero, 
-                c.bairro, 
-                c.cidade, 
-                c.estado,
-                c.cep
+            SELECT c.id, c.nome_fantasia, c.foto_perfil, c.rua, c.numero, 
+                   c.bairro, c.cidade, c.estado, c.cep, c.comodidades
             FROM usuarios_cnpj c
             JOIN vinculo_profissional_clinica v ON c.id = v.id_clinica
             WHERE v.id_profissional = ?
         `;
-        
-        const [clinicas] = await pool.query(query, [id_profissional]);
-        
+        const [clinicas] = await pool.query(query, [req.params.id_profissional]);
         res.json(clinicas);
     } catch (error) {
-        console.error("Erro ao buscar clínicas do profissional:", error);
-        res.status(500).json({ error: "Erro interno ao buscar unidades." });
+        res.status(500).json({ error: "Erro ao buscar clínicas." });
+    }
+});
+
+router.get('/meu-endereco', verifyToken, async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            'SELECT rua, numero, cidade, estado FROM usuarios_cpf WHERE id = ?', 
+            [req.userId]
+        );
+        res.json(rows[0] || {});
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao buscar endereço do paciente." });
     }
 });
 

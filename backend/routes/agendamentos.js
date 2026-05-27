@@ -20,21 +20,33 @@ router.get('/profissionais', async (req, res) => {
     }
 });
 
-// 2. LISTAR CLÍNICAS ONDE O MÉDICO ATENDE
-router.get('/vinculos/clinicas/:profissionalId', async (req, res) => {
+// ROTA CORRIGIDA: BUSCAR CLÍNICAS VINCULADAS AO PROFISSIONAL
+router.get('/vinculos/clinicas/:id_profissional', verifyToken, async (req, res) => {
     try {
-        const { profissionalId } = req.params;
+        const { id_profissional } = req.params;
+        
         const query = `
-            SELECT c.id, c.nome_fantasia, c.foto_perfil
+            SELECT 
+                c.id, 
+                c.nome_fantasia, 
+                c.foto_perfil, 
+                c.rua, 
+                c.numero, 
+                c.bairro, 
+                c.cidade, 
+                c.estado,
+                c.cep
             FROM usuarios_cnpj c
             JOIN vinculo_profissional_clinica v ON c.id = v.id_clinica
             WHERE v.id_profissional = ?
         `;
-        const [rows] = await pool.query(query, [profissionalId]);
-        res.json(rows);
+        
+        const [clinicas] = await pool.query(query, [id_profissional]);
+        
+        res.json(clinicas);
     } catch (error) {
-        console.error("Erro ao buscar vínculos:", error);
-        res.status(500).json({ error: "Erro ao buscar clínicas vinculadas" });
+        console.error("Erro ao buscar clínicas do profissional:", error);
+        res.status(500).json({ error: "Erro interno ao buscar unidades." });
     }
 });
 

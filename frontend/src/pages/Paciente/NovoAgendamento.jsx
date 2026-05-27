@@ -6,8 +6,7 @@ import {
 } from '@mui/material';
 import { 
     Search, MapPin, ShieldCheck, Star, ChevronLeft, ChevronRight, 
-    Building2, User, Clock, Car, LocateFixed, Calendar as CalendarIcon,
-    ArrowRight, CreditCard, QrCode, Lock, Wifi, Accessibility
+    Building2, User, Car, LocateFixed, ArrowRight, CreditCard, QrCode, Lock, Wifi, Accessibility
 } from 'lucide-react';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +16,6 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Correção de ícone do marcador
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -31,10 +29,10 @@ const RecenterMap = ({ center }) => {
     return null;
 };
 
-// Função Matemática para Calcular Distância Real (Haversine)
-const calcularDistancia = (lat1, lon1, lat2, lon2) => {
+// Fallback de distância em linha reta caso a API do OSRM falhe
+const calcularDistanciaLinhaReta = (lat1, lon1, lat2, lon2) => {
     if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-    const R = 6371; // Raio da Terra em km
+    const R = 6371; 
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
@@ -49,13 +47,16 @@ const NovoAgendamento = () => {
     const [profissionais, setProfissionais] = useState([]);
     const [profissionaisFiltrados, setProfissionaisFiltrados] = useState([]);
     const [clinicas, setClinicas] = useState([]);
-    
     const [mapCenter, setMapCenter] = useState([-22.4331, -47.3581]);
-    const [pacienteLatLng, setPacienteLatLng] = useState(null); // Armazena a localização do paciente
+    const [pacienteLatLng, setPacienteLatLng] = useState(null);
 
     const [busca, setBusca] = useState('');
     const [apenasConvenio, setApenasConvenio] = useState(false);
     const [metodoPagamento, setMetodoPagamento] = useState('pix');
+
+    // NOVOS ESTADOS PARA OS HORÁRIOS DINÂMICOS
+    const [horariosDisponiveis, setHorariosDisponiveis] = useState([]);
+    const [loadingHorarios, setLoadingHorarios] = useState(false);
 
     const [agendamento, setAgendamento] = useState({ 
         id_profissional: '', nome_medico: '', valor_consulta: '', id_clinica: '', nome_clinica: '', data_agendamento: '', horario: '' 
@@ -65,16 +66,14 @@ const NovoAgendamento = () => {
         const load = async () => {
             setLoading(true);
             try {
-                // Busca os profissionais E o endereço do paciente simultaneamente
                 const [resProf, resEnd] = await Promise.all([
                     api.get('/agendamentos/profissionais'),
-                    api.get('/agendamentos/meu-endereco').catch(() => ({ data: {} })) // Fallback se a rota falhar
+                    api.get('/agendamentos/meu-endereco').catch(() => ({ data: {} })) 
                 ]);
                 
                 setProfissionais(resProf.data);
                 setProfissionaisFiltrados(resProf.data);
 
-                // Converte o endereço do paciente em coordenadas
                 const pacEnd = resEnd.data;
                 if (pacEnd && pacEnd.rua && pacEnd.cidade) {
                     const query = `${pacEnd.rua}, ${pacEnd.numero ? pacEnd.numero + ', ' : ''}${pacEnd.cidade}, ${pacEnd.estado || 'SP'}, Brasil`;
@@ -92,8 +91,7 @@ const NovoAgendamento = () => {
 
     useEffect(() => {
         const filtered = profissionais.filter(p => {
-            const matchTexto = p.nome.toLowerCase().includes(busca.toLowerCase()) || 
-                               p.especialidade.toLowerCase().includes(busca.toLowerCase());
+            const matchTexto = p.nome.toLowerCase().includes(busca.toLowerCase()) || p.especialidade.toLowerCase().includes(busca.toLowerCase());
             const matchConvenio = apenasConvenio ? Number(p.atende_convenio) === 1 : true;
             return matchTexto && matchConvenio;
         });
@@ -101,7 +99,7 @@ const NovoAgendamento = () => {
     }, [busca, apenasConvenio, profissionais]);
 
     const selectMedico = async (id, nome, valor) => {
-        setAgendamento({ ...agendamento, id_profissional: id, nome_medico: nome, valor_consulta: valor });
+        setAgendamento({ ...agendamento, id_profissional: id, nome_medico: nome, valor_consulta: valor, data_agendamento: '', horario: '' });
         setLoading(true); 
         
         try {
@@ -113,7 +111,6 @@ const NovoAgendamento = () => {
                 let lat = null;
                 let lng = null;
 
-                // 1. Busca as coordenadas da clínica por endereço
                 if (c.rua && c.cidade) {
                     try {
                         const query = `${c.rua}, ${c.numero ? c.numero + ', ' : ''}${c.cidade}, ${c.estado || 'SP'}, Brasil`;
@@ -124,27 +121,20 @@ const NovoAgendamento = () => {
                             lat = geoData[0].lat;
                             lng = geoData[0].lon;
                         }
-                        await new Promise(r => setTimeout(r, 300)); // Delay de segurança para a API
-                    } catch (e) { console.error(e); }
+                        await new Promise(r => setTimeout(r, 300));
+                    } catch (e) { }
                 }
 
-                // 2. BUSCA DA DISTÂNCIA REAL POR RUAS (Via OSRM)
                 let distanciaKm = null;
                 if (pacienteLatLng && lat && lng) {
                     try {
-                        // OSRM espera os parâmetros no formato: longitude,latitude;longitude,latitude
                         const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${pacienteLatLng.lng},${pacienteLatLng.lat};${lng},${lat}?overview=false`);
                         const osrmData = await osrmRes.json();
-                        
                         if (osrmData.routes && osrmData.routes.length > 0) {
-                            // A distância vem em metros do OSRM. Dividimos por 1000 para converter em KM
-                            const distanciaMetros = osrmData.routes[0].distance;
-                            distanciaKm = (distanciaMetros / 1000).toFixed(1);
+                            distanciaKm = (osrmData.routes[0].distance / 1000).toFixed(1); 
                         }
                     } catch (osrmError) {
-                        console.error("Erro ao calcular rota por ruas, usando linha reta como fallback:", osrmError);
-                        // Se o servidor de rotas falhar, usa a fórmula matemática antiga como plano B
-                        distanciaKm = calcularDistancia(pacienteLatLng.lat, pacienteLatLng.lng, lat, lng);
+                        distanciaKm = calcularDistanciaLinhaReta(pacienteLatLng.lat, pacienteLatLng.lng, lat, lng);
                     }
                 }
 
@@ -154,15 +144,31 @@ const NovoAgendamento = () => {
             setClinicas(clinicasComMapaEDistancia);
 
             const primeiraComMapa = clinicasComMapaEDistancia.find(c => c.latitude && c.longitude);
-            if (primeiraComMapa) {
-                setMapCenter([parseFloat(primeiraComMapa.latitude), parseFloat(primeiraComMapa.longitude)]);
-            }
+            if (primeiraComMapa) setMapCenter([parseFloat(primeiraComMapa.latitude), parseFloat(primeiraComMapa.longitude)]);
 
             setActiveStep(1);
-        } catch (err) { 
-            console.error(err); 
+        } catch (err) { console.error(err); } 
+        finally { setLoading(false); }
+    };
+
+    // FUNÇÃO INTELIGENTE QUE BUSCA OS HORÁRIOS QUANDO A DATA É SELECIONADA
+    const handleDataChange = async (e) => {
+        const dataSelecionada = e.target.value;
+        setAgendamento({ ...agendamento, data_agendamento: dataSelecionada, horario: '' });
+        
+        if (!dataSelecionada) {
+            setHorariosDisponiveis([]);
+            return;
+        }
+
+        setLoadingHorarios(true);
+        try {
+            const res = await api.get(`/agendamentos/horarios-disponiveis?id_profissional=${agendamento.id_profissional}&data=${dataSelecionada}`);
+            setHorariosDisponiveis(res.data);
+        } catch (err) {
+            console.error("Erro ao buscar horários", err);
         } finally {
-            setLoading(false);
+            setLoadingHorarios(false);
         }
     };
 
@@ -179,19 +185,12 @@ const NovoAgendamento = () => {
                 nome_medico: agendamento.nome_medico
             });
 
-            if (response.data && response.data.init_point) {
-                window.location.href = response.data.init_point;
-            } else {
-                navigate('/dashboard/meus-agendamentos');
-            }
-        } catch (err) { 
-            alert("Erro ao processar. Verifique sua conexão."); 
-        } finally {
-            setLoading(false);
-        }
+            if (response.data?.init_point) window.location.href = response.data.init_point;
+            else navigate('/dashboard/meus-agendamentos');
+        } catch (err) { alert("Erro ao processar."); } 
+        finally { setLoading(false); }
     };
 
-    // Renderizador inteligente de ícones para as comodidades
     const getIconForComodidade = (nome) => {
         const text = nome.toLowerCase();
         if (text.includes('estacionamento') || text.includes('vaga')) return <Car size={14} />;
@@ -202,35 +201,29 @@ const NovoAgendamento = () => {
 
     const modernInputStyle = {
         '& .MuiOutlinedInput-root': {
-            borderRadius: '12px',
-            backgroundColor: '#F8FAFC',
-            transition: 'all 0.2s ease-in-out',
+            borderRadius: '12px', bgcolor: '#F8FAFC', transition: 'all 0.2s',
             '& fieldset': { borderColor: 'transparent' },
             '&:hover fieldset': { borderColor: '#E2E8F0' },
             '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
-            '&.Mui-focused': { backgroundColor: '#FFFFFF', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
+            '&.Mui-focused': { bgcolor: '#FFFFFF', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' },
+            '&.Mui-disabled': { bgcolor: '#F1F5F9' }
         }
     };
 
     return (
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', overflow: 'hidden' }}>
             
-            {/* TOP BAR MINIMALISTA */}
+            {/* TOP BAR */}
             <Box sx={{ px: { xs: 2, md: 4 }, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#FFF', borderBottom: '1px solid #F1F5F9', zIndex: 10 }}>
                 <Stepper activeStep={activeStep} sx={{ width: '100%', maxWidth: 800, '& .MuiStepLabel-label': { fontWeight: 700, fontSize: '0.9rem', color: '#64748B' }, '& .MuiStepLabel-label.Mui-active': { color: '#0F172A', fontWeight: 900 } }}>
-                    {['Especialista', 'Localização', 'Agendamento', 'Pagamento'].map(label => (
-                        <Step key={label}><StepLabel>{label}</StepLabel></Step>
-                    ))}
+                    {['Especialista', 'Localização', 'Agendamento', 'Pagamento'].map(label => (<Step key={label}><StepLabel>{label}</StepLabel></Step>))}
                 </Stepper>
-
-                <Button variant="outlined" onClick={() => navigate(-1)} sx={{ ml: 2, borderRadius: '12px', textTransform: 'none', fontWeight: 700, color: '#64748B', borderColor: '#E2E8F0', '&:hover': { bgcolor: '#F1F5F9', borderColor: '#CBD5E1' } }}>  
-                    Cancelar
-                </Button>
+                <Button variant="outlined" onClick={() => navigate(-1)} sx={{ ml: 2, borderRadius: '12px', textTransform: 'none', fontWeight: 700, color: '#64748B', borderColor: '#E2E8F0', '&:hover': { bgcolor: '#F1F5F9', borderColor: '#CBD5E1' } }}>Cancelar</Button>
             </Box>
 
             <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                 
-                {/* PASSO 0: GRID DE PROFISSIONAIS MODERNO */}
+                {/* PASSO 0: PROFISSIONAIS */}
                 {activeStep === 0 && (
                     <Fade in={activeStep === 0}>
                         <Box sx={{ height: '100%', overflowY: 'auto', p: { xs: 3, md: 6 } }}>
@@ -249,10 +242,7 @@ const NovoAgendamento = () => {
                                     </Box>
                                     <Divider orientation="vertical" flexItem sx={{ height: 40, mx: 2, borderColor: '#F1F5F9' }} />
                                     <Box sx={{ flex: 1, px: 2 }}>
-                                        <FormControlLabel 
-                                            control={<Switch checked={apenasConvenio} onChange={e => setApenasConvenio(e.target.checked)} sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#32B5FE' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#32B5FE' } }} />} 
-                                            label={<Typography variant="subtitle2" fontWeight={800} color="#64748B">ACEITA CONVÊNIO</Typography>} 
-                                        />
+                                        <FormControlLabel control={<Switch checked={apenasConvenio} onChange={e => setApenasConvenio(e.target.checked)} sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#32B5FE' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#32B5FE' } }} />} label={<Typography variant="subtitle2" fontWeight={800} color="#64748B">ACEITA CONVÊNIO</Typography>} />
                                     </Box>
                                 </Paper>
 
@@ -285,9 +275,7 @@ const NovoAgendamento = () => {
                                                                         <Typography variant="caption" color="#94A3B8" fontWeight={800} letterSpacing="0.5px">VALOR DA SESSÃO</Typography>
                                                                         <Typography variant="h5" fontWeight={900} color="#10B981">R$ {prof.valor_consulta || '0,00'}</Typography>
                                                                     </Box>
-                                                                    <IconButton sx={{ bgcolor: '#F8FAFC', color: '#0F172A', transition: 'all 0.2s', '&:hover': { bgcolor: '#32B5FE', color: '#FFF', transform: 'translateX(4px)' } }}>
-                                                                        <ChevronRight />
-                                                                    </IconButton>
+                                                                    <IconButton sx={{ bgcolor: '#F8FAFC', color: '#0F172A', transition: 'all 0.2s', '&:hover': { bgcolor: '#32B5FE', color: '#FFF', transform: 'translateX(4px)' } }}><ChevronRight /></IconButton>
                                                                 </Box>
                                                             </Stack>
                                                         </CardActionArea>
@@ -302,7 +290,7 @@ const NovoAgendamento = () => {
                     </Fade>
                 )}
 
-                {/* PASSO 1: LOCALIZAÇÃO COM DISTÂNCIA E COMODIDADES */}
+                {/* PASSO 1: LOCALIZAÇÃO */}
                 {activeStep === 1 && (
                     <Box sx={{ display: 'flex', height: '100%' }}>
                         <Box sx={{ width: { xs: '100%', md: 460 }, borderRight: '1px solid #F1F5F9', bgcolor: '#FFF', display: 'flex', flexDirection: 'column', zIndex: 5, boxShadow: '20px 0 40px -20px rgba(0,0,0,0.05)' }}>
@@ -317,14 +305,10 @@ const NovoAgendamento = () => {
                                     const lng = c.longitude ? parseFloat(c.longitude) : -47.3581 + (i * 0.01);
 
                                     let enderecoCompleto = c.endereco || 'Endereço não cadastrado';
-                                    if (c.rua) {
-                                        enderecoCompleto = `${c.rua}${c.numero ? `, ${c.numero}` : ''} • ${c.bairro || c.cidade}${c.estado ? `/${c.estado}` : ''}`;
-                                    }
-
-                                    const imagemClinica = c.foto_perfil || c.logo;
+                                    if (c.rua) enderecoCompleto = `${c.rua}${c.numero ? `, ${c.numero}` : ''} • ${c.bairro || c.cidade}${c.estado ? `/${c.estado}` : ''}`;
                                     
-                                    // Processa as comodidades do banco
                                     const comodidadesArray = c.comodidades ? c.comodidades.split(',').map(item => item.trim()) : [];
+                                    const imagemClinica = c.foto_perfil || c.logo;
 
                                     return (
                                         <CardActionArea 
@@ -345,11 +329,9 @@ const NovoAgendamento = () => {
                                                         <Typography variant="body2" color="#64748B" fontWeight={500} sx={{ lineHeight: 1.3 }}>{enderecoCompleto}</Typography>
                                                     </Box>
                                                     <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ gap: '8px 0' }}>
-                                                        {/* TAG DE DISTÂNCIA DINÂMICA */}
                                                         {c.distancia && (
                                                             <Chip label={`${c.distancia} km`} size="small" sx={{ fontWeight: 800, bgcolor: '#F1F5F9', color: '#64748B', borderRadius: '8px', height: 24, fontSize: '0.7rem' }} icon={<LocateFixed size={12}/>} />
                                                         )}
-                                                        {/* TAGS DE COMODIDADES DINÂMICAS */}
                                                         {comodidadesArray.map((comodidade, index) => (
                                                             <Stack key={index} direction="row" spacing={0.5} alignItems="center" sx={{ color: '#10B981', bgcolor: '#ECFDF5', px: 1, py: 0.5, borderRadius: '8px' }}>
                                                                 {getIconForComodidade(comodidade)}
@@ -392,7 +374,7 @@ const NovoAgendamento = () => {
                     </Box>
                 )}
 
-                {/* PASSO 2: CONFIRMAÇÃO (REVISÃO DE DADOS E DATA) */}
+                {/* PASSO 2: REVISÃO DE HORÁRIO (COM BUSCA INTELIGENTE) */}
                 {activeStep === 2 && (
                     <Fade in={activeStep === 2}>
                         <Box sx={{ height: '100%', overflowY: 'auto', p: { xs: 2, md: 6 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -408,20 +390,13 @@ const NovoAgendamento = () => {
                                         <Stack spacing={4}>
                                             <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                                                 <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.1)', width: 56, height: 56, borderRadius: '16px' }}><User color="#32B5FE" /></Avatar>
-                                                <Box>
-                                                    <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 800, letterSpacing: '0.5px' }}>ESPECIALISTA</Typography>
-                                                    <Typography variant="h6" fontWeight={800} sx={{color: '#FFFFFF'}}>{agendamento.nome_medico}</Typography>
-                                                </Box>
+                                                <Box><Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 800, letterSpacing: '0.5px' }}>ESPECIALISTA</Typography><Typography variant="h6" fontWeight={800} sx={{color: '#FFFFFF'}}>{agendamento.nome_medico}</Typography></Box>
                                             </Box>
                                             <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                                                 <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.1)', width: 56, height: 56, borderRadius: '16px' }}><Building2 color="#32B5FE" /></Avatar>
-                                                <Box>
-                                                    <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 800, letterSpacing: '0.5px' }}>UNIDADE</Typography>
-                                                    <Typography variant="h6" fontWeight={800} sx={{color: '#FFFFFF'}}>{agendamento.nome_clinica}</Typography>
-                                                </Box>
+                                                <Box><Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 800, letterSpacing: '0.5px' }}>UNIDADE</Typography><Typography variant="h6" fontWeight={800} sx={{color: '#FFFFFF'}}>{agendamento.nome_clinica}</Typography></Box>
                                             </Box>
                                         </Stack>
-
                                         <Button startIcon={<ChevronLeft />} onClick={() => setActiveStep(1)} sx={{ mt: 10, color: '#32B5FE', fontWeight: 800, textTransform: 'none', '&:hover': { bgcolor: 'rgba(50,181,254,0.1)' } }}>Alterar Unidade</Button>
                                     </Box>
                                 </Box>
@@ -431,30 +406,34 @@ const NovoAgendamento = () => {
                                     <Stack spacing={4}>
                                         <Box>
                                             <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ display: 'block', mb: 1.5, letterSpacing: '0.5px' }}>DATA DA CONSULTA</Typography>
-                                            <TextField fullWidth type="date" variant="outlined" sx={modernInputStyle} onChange={e => setAgendamento({...agendamento, data_agendamento: e.target.value})} />
+                                            <TextField 
+                                                fullWidth type="date" variant="outlined" sx={modernInputStyle} 
+                                                value={agendamento.data_agendamento} 
+                                                onChange={handleDataChange} 
+                                            />
                                         </Box>
                                         <Box>
                                             <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ display: 'block', mb: 1.5, letterSpacing: '0.5px' }}>HORÁRIO DISPONÍVEL</Typography>
-                                            <TextField fullWidth select variant="outlined" sx={modernInputStyle} value={agendamento.horario} onChange={e => setAgendamento({...agendamento, horario: e.target.value})}>
-                                                {['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'].map(h => <MenuItem key={h} value={h} sx={{ fontWeight: 700, color: '#0F172A' }}>{h}</MenuItem>)}
+                                            <TextField 
+                                                fullWidth select variant="outlined" sx={modernInputStyle} 
+                                                value={agendamento.horario} 
+                                                onChange={e => setAgendamento({...agendamento, horario: e.target.value})}
+                                                disabled={!agendamento.data_agendamento || loadingHorarios}
+                                            >
+                                                {loadingHorarios ? (
+                                                    <MenuItem disabled sx={{ fontWeight: 700 }}><CircularProgress size={16} sx={{ mr: 1 }}/> Carregando grade...</MenuItem>
+                                                ) : horariosDisponiveis.length === 0 ? (
+                                                    <MenuItem disabled sx={{ fontWeight: 700 }}>
+                                                        {agendamento.data_agendamento ? 'Nenhum horário livre neste dia' : 'Selecione uma data primeiro'}
+                                                    </MenuItem>
+                                                ) : (
+                                                    horariosDisponiveis.map(h => <MenuItem key={h} value={h} sx={{ fontWeight: 700, color: '#0F172A' }}>{h}</MenuItem>)
+                                                )}
                                             </TextField>
                                         </Box>
                                         
                                         <Box sx={{ pt: 2 }}>
-                                            <Button 
-                                                fullWidth variant="contained" size="large" 
-                                                onClick={() => setActiveStep(3)}
-                                                disabled={!agendamento.data_agendamento || !agendamento.horario}
-                                                endIcon={<ArrowRight />}
-                                                sx={{ 
-                                                    py: 2, borderRadius: '12px', color: '#FFFFFF', bgcolor: '#0F172A', fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)',
-                                                    transition: 'all 0.3s',
-                                                    '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 15px 25px -10px rgba(50, 181, 254, 0.5)' },
-                                                    '&:disabled': { bgcolor: '#E2E8F0', color: '#94A3B8' }
-                                                }}
-                                            >
-                                                Avançar para Pagamento
-                                            </Button>
+                                            <Button fullWidth variant="contained" size="large" onClick={() => setActiveStep(3)} disabled={!agendamento.data_agendamento || !agendamento.horario} endIcon={<ArrowRight />} sx={{ py: 2, borderRadius: '12px', color: '#FFFFFF', bgcolor: '#0F172A', fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)', transition: 'all 0.3s', '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 15px 25px -10px rgba(50, 181, 254, 0.5)' }, '&:disabled': { bgcolor: '#E2E8F0', color: '#94A3B8' } }}>Avançar para Pagamento</Button>
                                         </Box>
                                     </Stack>
                                 </Box>
@@ -468,94 +447,26 @@ const NovoAgendamento = () => {
                     <Fade in={activeStep === 3}>
                         <Box sx={{ height: '100%', overflowY: 'auto', p: { xs: 2, md: 6 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Paper elevation={0} sx={{ maxWidth: 1000, width: '100%', borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, border: '1px solid #F1F5F9', boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.08)' }}>
-                                
                                 <Box sx={{ flex: 1, p: 6, bgcolor: '#F8FAFC', borderRight: '1px solid #F1F5F9' }}>
                                     <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 4, letterSpacing: '-0.5px' }}>Resumo do Pedido</Typography>
-                                    
                                     <Stack spacing={3} sx={{ mb: 5 }}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <Typography variant="body2" color="#64748B" fontWeight={700}>Serviço</Typography>
-                                            <Typography variant="body1" fontWeight={800} color="#0F172A">Consulta Médica</Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <Typography variant="body2" color="#64748B" fontWeight={700}>Especialista</Typography>
-                                            <Typography variant="body1" fontWeight={800} color="#0F172A">{agendamento.nome_medico}</Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <Typography variant="body2" color="#64748B" fontWeight={700}>Data e Hora</Typography>
-                                            <Typography variant="body1" fontWeight={800} color="#0F172A">{agendamento.data_agendamento.split('-').reverse().join('/')} às {agendamento.horario}</Typography>
-                                        </Box>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><Typography variant="body2" color="#64748B" fontWeight={700}>Serviço</Typography><Typography variant="body1" fontWeight={800} color="#0F172A">Consulta Médica</Typography></Box>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><Typography variant="body2" color="#64748B" fontWeight={700}>Especialista</Typography><Typography variant="body1" fontWeight={800} color="#0F172A">{agendamento.nome_medico}</Typography></Box>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><Typography variant="body2" color="#64748B" fontWeight={700}>Data e Hora</Typography><Typography variant="body1" fontWeight={800} color="#0F172A">{agendamento.data_agendamento.split('-').reverse().join('/')} às {agendamento.horario}</Typography></Box>
                                     </Stack>
-
                                     <Divider sx={{ borderStyle: 'dashed', borderColor: '#CBD5E1', mb: 4 }} />
-
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Typography variant="subtitle1" color="#64748B" fontWeight={800}>Total a pagar</Typography>
-                                        <Typography variant="h4" fontWeight={900} color="#10B981" sx={{ letterSpacing: '-1px' }}>R$ {agendamento.valor_consulta || '0,00'}</Typography>
-                                    </Box>
-
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><Typography variant="subtitle1" color="#64748B" fontWeight={800}>Total a pagar</Typography><Typography variant="h4" fontWeight={900} color="#10B981" sx={{ letterSpacing: '-1px' }}>R$ {agendamento.valor_consulta || '0,00'}</Typography></Box>
                                     <Button startIcon={<ChevronLeft />} onClick={() => setActiveStep(2)} sx={{ mt: 6, color: '#64748B', fontWeight: 800, textTransform: 'none', borderRadius: '10px', '&:hover': { bgcolor: '#E2E8F0' } }}>Voltar e editar horário</Button>
                                 </Box>
 
                                 <Box sx={{ flex: 1.3, p: 6, bgcolor: '#FFF' }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
-                                        <Box sx={{ p: 1, bgcolor: '#ECFDF5', borderRadius: '8px', display: 'flex' }}><Lock size={16} color="#10B981" /></Box>
-                                        <Typography variant="caption" fontWeight={900} color="#10B981" sx={{ letterSpacing: '1px' }}>CHECKOUT SEGURO</Typography>
-                                    </Box>
-                                    
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}><Box sx={{ p: 1, bgcolor: '#ECFDF5', borderRadius: '8px', display: 'flex' }}><Lock size={16} color="#10B981" /></Box><Typography variant="caption" fontWeight={900} color="#10B981" sx={{ letterSpacing: '1px' }}>CHECKOUT SEGURO</Typography></Box>
                                     <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 4, letterSpacing: '-0.5px' }}>Como você prefere pagar?</Typography>
-
                                     <Grid container spacing={2} sx={{ mb: 5 }}>
-                                        <Grid item xs={6}>
-                                            <Paper 
-                                                elevation={0}
-                                                onClick={() => setMetodoPagamento('pix')}
-                                                sx={{ 
-                                                    p: 3, borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s',
-                                                    border: metodoPagamento === 'pix' ? '2px solid #009EE3' : '2px solid #F1F5F9', 
-                                                    bgcolor: metodoPagamento === 'pix' ? alpha('#009EE3', 0.05) : '#FFFFFF', 
-                                                    '&:hover': { borderColor: '#009EE3' }
-                                                }}
-                                            >
-                                                <QrCode size={32} color={metodoPagamento === 'pix' ? '#009EE3' : '#64748B'} style={{ margin: '0 auto 12px' }} />
-                                                <Typography variant="subtitle2" fontWeight={800} color={metodoPagamento === 'pix' ? '#009EE3' : '#0F172A'}>Pix</Typography>
-                                                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">Aprovação imediata</Typography>
-                                            </Paper>
-                                        </Grid>
-                                        <Grid item xs={6}>
-                                            <Paper 
-                                                elevation={0}
-                                                onClick={() => setMetodoPagamento('cartao')}
-                                                sx={{ 
-                                                    p: 3, borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s',
-                                                    border: metodoPagamento === 'cartao' ? '2px solid #009EE3' : '2px solid #F1F5F9', 
-                                                    bgcolor: metodoPagamento === 'cartao' ? alpha('#009EE3', 0.05) : '#FFFFFF', 
-                                                    '&:hover': { borderColor: '#009EE3' }
-                                                }}
-                                            >
-                                                <CreditCard size={32} color={metodoPagamento === 'cartao' ? '#009EE3' : '#64748B'} style={{ margin: '0 auto 12px' }} />
-                                                <Typography variant="subtitle2" fontWeight={800} color={metodoPagamento === 'cartao' ? '#009EE3' : '#0F172A'}>Cartão de Crédito</Typography>
-                                                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">Até 12x sem juros</Typography>
-                                            </Paper>
-                                        </Grid>
+                                        <Grid item xs={6}><Paper elevation={0} onClick={() => setMetodoPagamento('pix')} sx={{ p: 3, borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', border: metodoPagamento === 'pix' ? '2px solid #009EE3' : '2px solid #F1F5F9', bgcolor: metodoPagamento === 'pix' ? alpha('#009EE3', 0.05) : '#FFFFFF', '&:hover': { borderColor: '#009EE3' } }}><QrCode size={32} color={metodoPagamento === 'pix' ? '#009EE3' : '#64748B'} style={{ margin: '0 auto 12px' }} /><Typography variant="subtitle2" fontWeight={800} color={metodoPagamento === 'pix' ? '#009EE3' : '#0F172A'}>Pix</Typography><Typography variant="caption" color="text.secondary" fontWeight={600} display="block">Aprovação imediata</Typography></Paper></Grid>
+                                        <Grid item xs={6}><Paper elevation={0} onClick={() => setMetodoPagamento('cartao')} sx={{ p: 3, borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', border: metodoPagamento === 'cartao' ? '2px solid #009EE3' : '2px solid #F1F5F9', bgcolor: metodoPagamento === 'cartao' ? alpha('#009EE3', 0.05) : '#FFFFFF', '&:hover': { borderColor: '#009EE3' } }}><CreditCard size={32} color={metodoPagamento === 'cartao' ? '#009EE3' : '#64748B'} style={{ margin: '0 auto 12px' }} /><Typography variant="subtitle2" fontWeight={800} color={metodoPagamento === 'cartao' ? '#009EE3' : '#0F172A'}>Cartão de Crédito</Typography><Typography variant="caption" color="text.secondary" fontWeight={600} display="block">Até 12x sem juros</Typography></Paper></Grid>
                                     </Grid>
-
-                                    <Box sx={{ pt: 2 }}>
-                                        <Button 
-                                            fullWidth variant="contained" size="large" 
-                                            onClick={processarPagamentoEAgendar}
-                                            sx={{ 
-                                                py: 2, borderRadius: '12px', color: '#FFFFFF', bgcolor: '#009EE3', fontWeight: 800, fontSize: '1rem', textTransform: 'none',
-                                                boxShadow: '0 10px 20px -10px rgba(0, 158, 227, 0.6)', transition: 'all 0.3s',
-                                                '&:hover': { bgcolor: '#008ACA', transform: 'translateY(-2px)', boxShadow: '0 15px 25px -10px rgba(0, 158, 227, 0.8)' } 
-                                            }}
-                                        >
-                                            Pagar com Mercado Pago
-                                        </Button>
-                                        <Typography variant="caption" textAlign="center" display="block" color="#94A3B8" fontWeight={600} sx={{ mt: 3 }}>
-                                            Ambiente seguro criptografado de ponta a ponta.
-                                        </Typography>
-                                    </Box>
+                                    <Box sx={{ pt: 2 }}><Button fullWidth variant="contained" size="large" onClick={processarPagamentoEAgendar} sx={{ py: 2, borderRadius: '12px', color: '#FFFFFF', bgcolor: '#009EE3', fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 10px 20px -10px rgba(0, 158, 227, 0.6)', transition: 'all 0.3s', '&:hover': { bgcolor: '#008ACA', transform: 'translateY(-2px)', boxShadow: '0 15px 25px -10px rgba(0, 158, 227, 0.8)' } }}>Pagar com Mercado Pago</Button><Typography variant="caption" textAlign="center" display="block" color="#94A3B8" fontWeight={600} sx={{ mt: 3 }}>Ambiente seguro criptografado de ponta a ponta.</Typography></Box>
                                 </Box>
                             </Paper>
                         </Box>

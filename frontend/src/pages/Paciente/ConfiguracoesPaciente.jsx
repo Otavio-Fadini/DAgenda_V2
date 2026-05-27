@@ -20,11 +20,10 @@ const ConfiguracoesPaciente = () => {
         cep: '', rua: '', numero: '', bairro: '', cidade: '', estado: ''
     });
 
-    // 1. CARREGAR DADOS DO PACIENTE
     useEffect(() => {
         const fetchPerfil = async () => {
             try {
-                const response = await api.get('/paciente/perfil'); // Ajuste a rota se necessário
+                const response = await api.get('/paciente/perfil');
                 const data = response.data;
                 
                 setFormData({
@@ -32,7 +31,7 @@ const ConfiguracoesPaciente = () => {
                     cpf: data.cpf || '',
                     telefone: data.telefone || '',
                     email: data.email || '',
-                    senha: '', // Mantemos vazio por segurança
+                    senha: '', 
                     foto_perfil: data.foto_perfil || '',
                     cep: data.cep || '',
                     rua: data.rua || '',
@@ -54,7 +53,6 @@ const ConfiguracoesPaciente = () => {
         fetchPerfil();
     }, []);
 
-    // 2. CONVERSÃO DE IMAGEM PARA BASE64
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -67,14 +65,10 @@ const ConfiguracoesPaciente = () => {
         }
     };
 
-    // 3. BUSCA INTELIGENTE DE CEP (VIACEP)
     const handleCepChange = async (e) => {
         let value = e.target.value.replace(/\D/g, ""); 
-        
         let formatado = value;
-        if (value.length > 5) {
-            formatado = value.replace(/^(\d{5})(\d)/, "$1-$2");
-        }
+        if (value.length > 5) formatado = value.replace(/^(\d{5})(\d)/, "$1-$2");
         
         setFormData({ ...formData, cep: formatado });
 
@@ -104,16 +98,16 @@ const ConfiguracoesPaciente = () => {
         }
     };
 
-    // 4. SALVAR ALTERAÇÕES
     const handleSubmit = async () => {
         setSalvando(true);
         try {
             const dataToSend = { ...formData };
             if (!dataToSend.senha || dataToSend.senha.trim() === '') {
-                delete dataToSend.senha; // Não envia a senha se o campo estiver vazio
+                delete dataToSend.senha;
             }
 
-            await api.put('/paciente/perfil', dataToSend); // Ajuste a rota se necessário
+            // Garante que o estado atual do formData (incluindo foto_perfil) seja enviado
+            await api.put('/paciente/perfil', dataToSend);
             showNotification("Perfil atualizado com sucesso!", "success");
         } catch (error) {
             showNotification("Erro ao atualizar os dados.", "error");
@@ -141,8 +135,6 @@ const ConfiguracoesPaciente = () => {
 
     return (
         <Box sx={{ height: 'calc(100vh - 64px)', overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', p: { xs: 2, md: 4 }, boxSizing: 'border-box' }}>
-            
-            {/* CABEÇALHO */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
                     <Typography variant="h4" fontWeight={900} sx={{ color: '#0F172A', letterSpacing: '-1px' }}>Meu Perfil</Typography>
@@ -157,7 +149,6 @@ const ConfiguracoesPaciente = () => {
                 </Button>
             </Box>
 
-            {/* ABAS */}
             <Tabs 
                 value={tabValue} onChange={(e, v) => setTabValue(v)} 
                 sx={{ mb: 3, borderBottom: '1px solid #E2E8F0', '& .MuiTab-root': { fontWeight: 800, textTransform: 'none' }, '& .Mui-selected': { color: '#32B5FE !important' }, '& .MuiTabs-indicator': { backgroundColor: '#32B5FE', height: 3 } }}
@@ -166,12 +157,9 @@ const ConfiguracoesPaciente = () => {
                 <Tab icon={<Map size={18}/>} iconPosition="start" label="Meu Endereço" />
             </Tabs>
 
-            {/* ÁREA DE CONTEÚDO */}
             <Paper elevation={0} sx={{ flexGrow: 1, borderRadius: '24px', border: '1px solid #E2E8F0', p: 4, overflowY: 'auto', bgcolor: 'white' }}>
                 <Fade in={true} timeout={400} key={tabValue}>
                     <Box>
-                        
-                        {/* ABA 0: DADOS PESSOAIS */}
                         {tabValue === 0 && (
                             <Grid container spacing={4}>
                                 <Grid item xs={12} md={3} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRight: { md: '1px solid #F1F5F9' } }}>
@@ -186,75 +174,33 @@ const ConfiguracoesPaciente = () => {
                                             </IconButton>
                                         </label>
                                     </Box>
-                                    <Typography variant="caption" color="text.secondary" textAlign="center" fontWeight={600} sx={{ mt: 1 }}>
-                                        Formatos suportados: PNG ou JPG.<br/>Máx. 2MB.
-                                    </Typography>
                                 </Grid>
-                                
                                 <Grid item xs={12} md={9}>
-                                    <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>Informações Básicas</Typography>
                                     <Grid container spacing={3}>
-                                        <Grid item xs={12}>
-                                            <TextField fullWidth label="Nome Completo" value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#94A3B8"/></InputAdornment> }} />
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <TextField fullWidth label="CPF" disabled value={formData.cpf} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} helperText="O CPF não pode ser alterado." />
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <TextField fullWidth label="Telefone / WhatsApp" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} />
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <TextField fullWidth label="E-mail" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} />
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <TextField fullWidth label="Nova Senha" type="password" placeholder="Preencha para alterar" value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} />
-                                        </Grid>
+                                        <Grid item xs={12}><TextField fullWidth label="Nome Completo" value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
+                                        <Grid item xs={12} md={6}><TextField fullWidth label="CPF" disabled value={formData.cpf} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
+                                        <Grid item xs={12} md={6}><TextField fullWidth label="Telefone" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
+                                        <Grid item xs={12} md={6}><TextField fullWidth label="E-mail" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
+                                        <Grid item xs={12} md={6}><TextField fullWidth label="Nova Senha" type="password" value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
                                     </Grid>
                                 </Grid>
                             </Grid>
                         )}
-
-                        {/* ABA 1: MEU ENDEREÇO (VIA CEP) */}
                         {tabValue === 1 && (
                             <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-                                <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>Endereço Residencial</Typography>
                                 <Grid container spacing={3}>
-                                    <Grid item xs={12} md={4}>
-                                        <TextField 
-                                            fullWidth label="CEP" value={formData.cep} onChange={handleCepChange} 
-                                            inputProps={{ maxLength: 9 }} sx={inputStyle} 
-                                            InputProps={{ 
-                                                startAdornment: <InputAdornment position="start"><MapPin size={18} color="#94A3B8"/></InputAdornment>,
-                                                endAdornment: buscandoCep && <InputAdornment position="end"><CircularProgress size={20} color="inherit" /></InputAdornment>
-                                            }} 
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
-                                        <TextField fullWidth label="Rua / Logradouro" value={formData.rua} onChange={(e) => setFormData({...formData, rua: e.target.value})} sx={inputStyle} />
-                                    </Grid>
-                                    <Grid item xs={12} md={2}>
-                                        <TextField fullWidth label="Número" value={formData.numero} onChange={(e) => setFormData({...formData, numero: e.target.value})} sx={inputStyle} />
-                                    </Grid>
-                                    <Grid item xs={12} md={5}>
-                                        <TextField fullWidth label="Bairro" value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} sx={inputStyle} />
-                                    </Grid>
-                                    <Grid item xs={12} md={5}>
-                                        <TextField fullWidth label="Cidade" value={formData.cidade} onChange={(e) => setFormData({...formData, cidade: e.target.value})} sx={inputStyle} />
-                                    </Grid>
-                                    <Grid item xs={12} md={2}>
-                                        <TextField fullWidth label="Estado" inputProps={{ maxLength: 2 }} placeholder="UF" value={formData.estado} onChange={(e) => setFormData({...formData, estado: e.target.value})} sx={inputStyle} />
-                                    </Grid>
+                                    <Grid item xs={12} md={4}><TextField fullWidth label="CEP" value={formData.cep} onChange={handleCepChange} inputProps={{ maxLength: 9 }} sx={inputStyle} /></Grid>
+                                    <Grid item xs={12} md={6}><TextField fullWidth label="Rua" value={formData.rua} onChange={(e) => setFormData({...formData, rua: e.target.value})} sx={inputStyle} /></Grid>
+                                    <Grid item xs={12} md={2}><TextField fullWidth label="Número" value={formData.numero} onChange={(e) => setFormData({...formData, numero: e.target.value})} sx={inputStyle} /></Grid>
+                                    <Grid item xs={12} md={5}><TextField fullWidth label="Bairro" value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} sx={inputStyle} /></Grid>
+                                    <Grid item xs={12} md={5}><TextField fullWidth label="Cidade" value={formData.cidade} onChange={(e) => setFormData({...formData, cidade: e.target.value})} sx={inputStyle} /></Grid>
+                                    <Grid item xs={12} md={2}><TextField fullWidth label="Estado" inputProps={{ maxLength: 2 }} value={formData.estado} onChange={(e) => setFormData({...formData, estado: e.target.value})} sx={inputStyle} /></Grid>
                                 </Grid>
                             </Box>
                         )}
-
                     </Box>
                 </Fade>
             </Paper>
-
-            <Snackbar open={notification.open} autoHideDuration={4000} onClose={() => setNotification({...notification, open: false})} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-                <Alert severity={notification.type} variant="filled" sx={{ borderRadius: '12px', fontWeight: 700 }}>{notification.message}</Alert>
-            </Snackbar>
         </Box>
     );
 };

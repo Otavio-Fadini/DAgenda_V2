@@ -139,7 +139,7 @@ const NovoAgendamento = () => {
                         if (osrmData.routes && osrmData.routes.length > 0) {
                             // A distância vem em metros do OSRM. Dividimos por 1000 para converter em KM
                             const distanciaMetros = osrmData.routes[0].distance;
-                            distanciaKm = (distanciaMetros / 1000).toFixed(1); // Ex: 0.8 ou 0.7
+                            distanciaKm = (distanciaMetros / 1000).toFixed(1);
                         }
                     } catch (osrmError) {
                         console.error("Erro ao calcular rota por ruas, usando linha reta como fallback:", osrmError);

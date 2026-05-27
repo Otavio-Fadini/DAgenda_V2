@@ -22,6 +22,7 @@ import NovoAgendamento from './pages/Paciente/NovoAgendamento';
 import MeusAgendamentos from './pages/Paciente/MeusAgendamentos';
 import ProntuarioPaciente from './pages/Paciente/ProntuarioPaciente';
 import FinanceiroPaciente from './pages/Paciente/FinanceiroPaciente';
+import ConfiguracoesPaciente from './pages/Paciente/ConfiguracoesPaciente';
 
 // Páginas Funcionais do Profissional 
 import AgendaMedica from './pages/Profissional/AgendaMedica';
@@ -116,6 +117,7 @@ function SystemLayout({ userType, onLogout }) {
                 <Route path="meus-agendamentos" element={<MeusAgendamentos />} />
                 <Route path="prontuario" element={<ProntuarioPaciente />} />
                 <Route path="financeiro" element={<FinanceiroPaciente />} />
+                <Route path="configuracao" element={<ConfiguracoesPaciente />} />
               </>
             )}
 

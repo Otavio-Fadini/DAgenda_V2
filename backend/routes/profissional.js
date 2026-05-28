@@ -350,7 +350,7 @@ router.get('/meus-convites', verifyToken, async (req, res) => {
 
     try {
         const query = `
-            SELECT c.id AS convite_id, c.data_envio, u.nome_fantasia, u.cidade, u.logo 
+            SELECT c.id AS convite_id, c.data_envio, u.nome_fantasia, u.cidade, u.foto_perfil 
             FROM convites_clinica c
             INNER JOIN usuarios_cnpj u ON c.clinica_id = u.id
             WHERE c.profissional_id = ? AND c.status = 'pendente'

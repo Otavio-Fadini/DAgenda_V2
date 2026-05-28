@@ -103,7 +103,7 @@ const Header = ({ userName, userFoto }) => {
                     <Box key={convite.convite_id}>
                       <ListItem sx={{ flexDirection: 'column', alignItems: 'flex-start', p: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5, width: '100%' }}>
-                          <Avatar src={convite.logo} sx={{ width: 40, height: 40, bgcolor: '#F1F5F9' }}>
+                          <Avatar src={convite.foto_perfil} sx={{ width: 40, height: 40, bgcolor: '#F1F5F9' }}>
                             <Building2 size={20} color="#32B5FE" />
                           </Avatar>
                           <Box sx={{ flexGrow: 1 }}>

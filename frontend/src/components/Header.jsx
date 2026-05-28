@@ -111,7 +111,7 @@ const Header = ({ userName, userFoto }) => {
                               {convite.nome_fantasia}
                             </Typography>
                             <Typography variant="caption" color="#64748B">
-                              Convidou-o(a) para a equipa clínica ({convite.cidade})
+                              Convidou-o(a) para se juntar à equipe clínica ({convite.cidade})
                             </Typography>
                           </Box>
                         </Box>

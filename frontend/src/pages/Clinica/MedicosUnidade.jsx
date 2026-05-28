@@ -171,7 +171,7 @@ const MedicosUnidade = () => {
                 >
                     <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
                         <Box>
-                            <Typography variant="h6" fontWeight={900} color="#0F172A">Adicionar à Equipa</Typography>
+                            <Typography variant="h6" fontWeight={900} color="#0F172A">Adicionar à equipe clínica</Typography>
                             <Typography variant="body2" color="text.secondary" fontWeight={500}>Encontre profissionais na sua cidade.</Typography>
                         </Box>
                         <IconButton onClick={handleCloseModal} sx={{ bgcolor: '#F1F5F9', '&:hover': { bgcolor: '#E2E8F0' } }}>

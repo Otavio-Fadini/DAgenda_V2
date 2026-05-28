@@ -359,7 +359,10 @@ router.get('/meus-convites', verifyToken, async (req, res) => {
         res.json(convites);
     } catch (error) {
         console.error("Erro ao listar convites:", error);
-        res.status(500).json({ error: "Erro ao buscar notificações." });
+        res.status(500).json({ 
+            error: "Erro ao buscar notificações.",
+            motivoReal: error.sqlMessage || error.message 
+        });
     }
 });
 

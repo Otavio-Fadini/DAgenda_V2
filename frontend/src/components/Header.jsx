@@ -12,6 +12,8 @@ const Header = ({ userName, userFoto }) => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   // Verifica se o utilizador logado é um profissional através da chave 'userType'
+  const userName = localStorage.getItem('userName') || 'Usuário';
+  const userFoto = localStorage.getItem('userFoto'); 
   const userType = localStorage.getItem('userType');
   const isProfissional = userType === 'profissionais';
 

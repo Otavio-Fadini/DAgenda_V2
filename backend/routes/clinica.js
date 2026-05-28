@@ -21,18 +21,25 @@ router.get('/dashboard', verifyToken, async (req, res) => {
 // ==========================================
 // ROTA: LISTAR MÉDICOS VINCULADOS À CLÍNICA
 // ==========================================
+// --- ROTA: LISTAR MÉDICOS VINCULADOS À CLÍNICA ---
 router.get('/medicos-unidade', verifyToken, async (req, res) => {
+    const clinicaId = req.userId;
+
     try {
+        // AQUI: Adicionamos o p.foto_perfil para a imagem ir para o React
         const query = `
-            SELECT p.id, p.nome, p.especialidade, p.conselho 
+            SELECT p.id, p.nome, p.especialidade, p.conselho, p.foto_perfil 
             FROM profissionais p
-            JOIN vinculo_profissional_clinica v ON p.id = v.id_profissional
+            INNER JOIN vinculo_profissional_clinica v ON p.id = v.id_profissional
             WHERE v.id_clinica = ?
         `;
-        const [rows] = await pool.query(query, [req.userId]);
-        res.json(rows);
+        
+        const [medicos] = await pool.query(query, [clinicaId]);
+        res.json(medicos);
+
     } catch (error) {
-        res.status(500).json({ error: "Erro ao listar médicos" });
+        console.error("Erro ao carregar médicos da unidade:", error);
+        res.status(500).json({ error: "Erro interno.", motivoReal: error.message });
     }
 });
 

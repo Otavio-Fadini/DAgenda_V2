@@ -4,7 +4,7 @@ import {
     Box, Typography, Paper, Grid, TextField, InputAdornment, Switch, 
     Button, CircularProgress, Alert, Snackbar, Divider, Avatar, IconButton, Tabs, Tab, Stack 
 } from '@mui/material';
-import { DollarSign, Clock, Shield, User, Briefcase, FileText, Camera, Lock, Calendar, Save } from 'lucide-react';
+import { DollarSign, Clock, Shield, User, Briefcase, FileText, Camera, Lock, Calendar, Save, Building2 } from 'lucide-react';
 
 const ConfiguracoesPerfil = () => {
     const [tabValue, setTabValue] = useState(0);
@@ -16,7 +16,7 @@ const ConfiguracoesPerfil = () => {
     const [formData, setFormData] = useState({
         nome: '', email: '', conselho: '', especialidade: '', 
         valor_consulta: '', duracao_sessao: '', atende_convenio: false,
-        senha: '', foto_perfil: ''
+        aceita_convites: true, senha: '', foto_perfil: ''
     });
 
     const [horarios, setHorarios] = useState([
@@ -43,6 +43,7 @@ const ConfiguracoesPerfil = () => {
                     valor_consulta: data.valor_consulta || '',
                     duracao_sessao: data.duracao_sessao || '30',
                     atende_convenio: data.atende_convenio === 1 || data.atende_convenio === true,
+                    aceita_convites: data.aceita_convites !== 0,
                     senha: '',
                     foto_perfil: data.foto_perfil || ''
                 });
@@ -91,6 +92,20 @@ const ConfiguracoesPerfil = () => {
         const novosHorarios = [...horarios];
         novosHorarios[index][field] = value;
         setHorarios(novosHorarios);
+    };
+
+    const handlePrivacyToggle = async (e) => {
+        const isAtivo = e.target.checked;
+        setFormData({ ...formData, aceita_convites: isAtivo });
+        
+        try {
+            await api.put('/profissional/config-privacidade', { aceita_convites: isAtivo ? 1 : 0 });
+            showNotification(isAtivo ? "Agora está visível para convites!" : "Perfil oculto para convites.", "success");
+        } catch (error) {
+            console.error(error);
+            showNotification("Erro ao atualizar privacidade.", "error");
+            setFormData({ ...formData, aceita_convites: !isAtivo });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -171,6 +186,30 @@ const ConfiguracoesPerfil = () => {
                                 <Grid item xs={12} md={6}><TextField fullWidth label="Nova Senha de Segurança" type="password" placeholder="Preencha apenas para alterar" value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
                                 <Grid item xs={12} md={6}><TextField fullWidth label="Inscrição no Conselho (Ex: CRM-SP)" value={formData.conselho} onChange={(e) => setFormData({...formData, conselho: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
                                 <Grid item xs={12} md={6}><TextField fullWidth label="Especialidade Principal" value={formData.especialidade} onChange={(e) => setFormData({...formData, especialidade: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Briefcase size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
+                                
+                                {/* O NOVO BLOCO DE PRIVACIDADE ENTRA AQUI */}
+                                <Grid item xs={12}>
+                                    <Box sx={{ mt: 2, p: 3, borderRadius: '20px', bgcolor: formData.aceita_convites ? '#F0FDF4' : '#FEF2F2', border: '1px solid', borderColor: formData.aceita_convites ? '#BBF7D0' : '#FECACA', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.3s' }}>
+                                        <Stack direction="row" spacing={2} alignItems="center">
+                                            <Box sx={{ p: 1, bgcolor: formData.aceita_convites ? '#DCFCE7' : '#FEE2E2', borderRadius: '10px', color: formData.aceita_convites ? '#16A34A' : '#EF4444', display: 'flex' }}>
+                                                <Building2 size={20} />
+                                            </Box>
+                                            <Box>
+                                                <Typography fontWeight={800} color={formData.aceita_convites ? '#166534' : '#991B1B'}>
+                                                    Receber Convites de Clínicas
+                                                </Typography>
+                                                <Typography variant="caption" color={formData.aceita_convites ? '#15803D' : '#B91C1C'} fontWeight={600}>
+                                                    {formData.aceita_convites ? 'O seu perfil aparece nas buscas de clínicas da sua região.' : 'O seu perfil está bloqueado e invisível nas buscas.'}
+                                                </Typography>
+                                            </Box>
+                                        </Stack>
+                                        <Switch 
+                                            checked={formData.aceita_convites} 
+                                            onChange={handlePrivacyToggle} 
+                                            sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#16A34A' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#16A34A' } }} 
+                                        />
+                                    </Box>
+                                </Grid>
                             </Grid>
                         </Grid>
                     </Grid>

@@ -11,8 +11,8 @@ import logoImg from '../../assets/logo.png';
 const CadastroClinica = () => {
     const [tabValue, setTabValue] = useState(0); // Controle das Abas
     const [formData, setFormData] = useState({ 
-        nome_fantasia: '', cnpj: '', email: '', senha: '', telefone: '', logo: '',
-        cep: '', rua: '', numero: '', bairro: '', cidade: '', estado: ''
+        nome_fantasia: '', razao_social: '', cnpj: '', email: '', senha: '', telefone: '',
+        logo: '', cep: '', rua: '', numero: '', bairro: '', cidade: '', estado: ''
     });
     
     const [preview, setPreview] = useState(null);
@@ -154,6 +154,12 @@ const CadastroClinica = () => {
                                                 value={formData.nome_fantasia}
                                                 InputProps={{ startAdornment: <InputAdornment position="start"><Building2 size={18} color="#94A3B8"/></InputAdornment> }} 
                                                 sx={modernInputStyle} onChange={(e) => setFormData({...formData, nome_fantasia: e.target.value})} required />
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <TextField fullWidth label="Razão Social" variant="outlined" 
+                                                value={formData.razao_social}
+                                                InputProps={{ startAdornment: <InputAdornment position="start"><Building2 size={18} color="#94A3B8"/></InputAdornment> }} 
+                                                sx={modernInputStyle} onChange={(e) => setFormData({...formData, razao_social: e.target.value})} required />
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
                                             <TextField fullWidth label="CNPJ" variant="outlined" 

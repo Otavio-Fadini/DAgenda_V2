@@ -98,17 +98,28 @@ router.post('/cadastro-profissional', async (req, res) => {
 
 // --- ROTA DE CADASTRO DE CLÍNICA ---
 router.post('/cadastro-clinica', async (req, res) => {
-    const { nome_fantasia, email, senha, cnpj, telefone } = req.body;
+    const { nome_fantasia, razao_social, email, senha, cnpj, telefone,
+            logo, cep, rua, numero, bairro, cidade, estado 
+     } = req.body;
     try {
         const senhaHash = await bcrypt.hash(senha, saltRounds);
-        const query = `INSERT INTO usuarios_cnpj (nome_fantasia, email, senha, cnpj, telefone) VALUES (?, ?, ?, ?, ?)`;
-        await pool.query(query, [nome_fantasia, email.toLowerCase(), senhaHash, cnpj, telefone]);
+        const query = `INSERT INTO usuarios_cnpj (nome_fantasia, razao_social, email, senha, cnpj, telefone,
+                        logo, cep, rua, numero, bairro, cidade, estado
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        // 3. Array de valores na mesma ordem dos '?' da query
+        const values = [
+            nome_fantasia, razao_social, email.toLowerCase(), senhaHash, cnpj, telefone,
+            logo, cep, rua, numero, bairro, cidade, estado
+        ];
+
+        await pool.query(query, values);
         res.status(201).json({ message: "Clínica cadastrada com sucesso!" });
     } catch (error) {
         console.error("Erro no cadastro de clínica:", error);
         res.status(500).json({ error: "Erro ao realizar cadastro." });
     }
 });
+
 
 // MIDDLEWARE PARA PROTEGER ROTAS
 const verifyToken = (req, res, next) => {

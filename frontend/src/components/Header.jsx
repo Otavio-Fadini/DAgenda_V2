@@ -11,10 +11,9 @@ const Header = ({ userName, userFoto }) => {
   const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  // Verifica se o utilizador logado é um profissional (ajuste conforme a sua estrutura no localStorage)
-  const userStr = localStorage.getItem('usuario');
-  const usuario = userStr ? JSON.parse(userStr) : null;
-  const isProfissional = usuario?.tipo === 'profissionais';
+  // Verifica se o utilizador logado é um profissional através da chave 'userType'
+  const userType = localStorage.getItem('userType');
+  const isProfissional = userType === 'profissionais';
 
   useEffect(() => {
     if (isProfissional) {

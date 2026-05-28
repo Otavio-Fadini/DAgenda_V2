@@ -380,12 +380,11 @@ router.put('/responder-convite', verifyToken, async (req, res) => {
 
         // Se ele aceitou, cria o vínculo oficial!
         if (resposta === 'aceito') {
-            // Primeiro precisamos descobrir qual era a clinica_id desse convite
             const [convite] = await pool.query(`SELECT clinica_id FROM convites_clinica WHERE id = ?`, [convite_id]);
             
             if (convite.length > 0) {
                 await pool.query(
-                    `INSERT IGNORE INTO clinica_profissional (clinica_id, profissional_id) VALUES (?, ?)`, 
+                    `INSERT IGNORE INTO vinculo_profissional_clinica (id_clinica, id_profissional) VALUES (?, ?)`, 
                     [convite[0].clinica_id, profissionalId]
                 );
             }

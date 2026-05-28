@@ -169,7 +169,7 @@ router.get('/buscar-profissionais', verifyToken, async (req, res) => {
             FROM profissionais 
             WHERE cidade = ? 
             AND aceita_convites = 1
-            AND id NOT IN (SELECT profissional_id FROM clinica_profissional WHERE clinica_id = ?)
+            AND id NOT IN (SELECT id_profissional FROM vinculo_profissional_clinica WHERE id_clinica = ?)
             AND id NOT IN (SELECT profissional_id FROM convites_clinica WHERE clinica_id = ? AND status = 'pendente')
         `;
 

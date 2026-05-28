@@ -67,29 +67,93 @@ router.post('/login', async (req, res) => {
 
 // --- ROTA DE CADASTRO DE PACIENTE ---
 router.post('/cadastro-paciente', async (req, res) => {
-    const { nome, email, senha, cpf, telefone } = req.body;
+    const { 
+        nome, email, senha, cpf, telefone,
+        foto_perfil, cep, rua, numero, complemento, bairro, cidade, estado 
+    } = req.body;
+    
     try {
         const senhaHash = await bcrypt.hash(senha, saltRounds);
-        const query = `INSERT INTO usuarios_cpf (nome, email, senha, cpf, telefone) VALUES (?, ?, ?, ?, ?)`;
-        await pool.query(query, [nome, email.toLowerCase(), senhaHash, cpf, telefone]);
+        
+        const query = `INSERT INTO usuarios_cpf (
+                        nome, email, senha, cpf, telefone,
+                        foto_perfil, cep, rua, numero, complemento, bairro, cidade, estado
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        
+        const values = [
+            nome || null, 
+            email ? email.toLowerCase() : null, 
+            senhaHash, 
+            cpf || null, 
+            telefone || null,
+            foto_perfil || null,
+            cep || null,
+            rua || null,
+            numero || null,
+            complemento || null,
+            bairro || null,
+            cidade || null,
+            estado || null
+        ];
+
+        await pool.query(query, values);
         res.status(201).json({ message: "Paciente cadastrado com sucesso!" });
+        
     } catch (error) {
         console.error("Erro no cadastro de paciente:", error);
-        res.status(500).json({ error: "Erro ao realizar cadastro." });
+        res.status(500).json({ 
+            error: "Erro ao realizar cadastro.",
+            motivoReal: error.sqlMessage || error.message 
+        });
     }
 });
 
 // --- ROTA DE CADASTRO DE PROFISSIONAL ---
 router.post('/cadastro-profissional', async (req, res) => {
-    const { nome, email, senha, crm, especialidade } = req.body; 
+    const { 
+        nome, email, senha, cpf, telefone, registro_conselho, crm, especialidade, duracao_sessao,
+        foto_perfil, cep, rua, numero, complemento, bairro, cidade, estado 
+    } = req.body; 
+    
     try {
         const senhaHash = await bcrypt.hash(senha, saltRounds);
-        const query = `INSERT INTO profissionais (nome, email, senha, conselho, especialidade) VALUES (?, ?, ?, ?, ?)`;
-        await pool.query(query, [nome, email.toLowerCase(), senhaHash, crm, especialidade]);
+        
+        // Cobre as duas nomenclaturas caso o front mande uma ou outra
+        const conselhoValue = registro_conselho || crm || null; 
+        
+        const query = `INSERT INTO profissionais (
+                        nome, email, senha, cpf, telefone, conselho, especialidade, duracao_sessao,
+                        foto_perfil, cep, rua, numero, complemento, bairro, cidade, estado
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        
+        const values = [
+            nome || null, 
+            email ? email.toLowerCase() : null, 
+            senhaHash, 
+            cpf || null,
+            telefone || null,
+            conselhoValue, 
+            especialidade || null,
+            duracao_sessao || null,
+            foto_perfil || null,
+            cep || null,
+            rua || null,
+            numero || null,
+            complemento || null,
+            bairro || null,
+            cidade || null,
+            estado || null
+        ];
+
+        await pool.query(query, values);
         res.status(201).json({ message: "Profissional cadastrado com sucesso!" });
+        
     } catch (error) {
         console.error("Erro no cadastro de profissional:", error);
-        res.status(500).json({ error: "Erro ao realizar cadastro." });
+        res.status(500).json({ 
+            error: "Erro ao realizar cadastro.",
+            motivoReal: error.sqlMessage || error.message 
+        });
     }
 });
 
@@ -97,7 +161,7 @@ router.post('/cadastro-profissional', async (req, res) => {
 router.post('/cadastro-clinica', async (req, res) => {
     const { 
         nome_fantasia, razao_social, email, senha, cnpj, telefone,
-        logo, cep, rua, numero, bairro, cidade, estado 
+        foto_perfil, cep, rua, numero, bairro, cidade, estado 
     } = req.body;
     
     try {
@@ -107,8 +171,6 @@ router.post('/cadastro-clinica', async (req, res) => {
                         foto_perfil, cep, rua, numero, bairro, cidade, estado
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         
-        // Proteção: Usamos "|| null" para garantir que, se um campo vier vazio do frontend, 
-        // ele salve em branco no banco ao invés de estourar um Erro 500.
         const values = [
             nome_fantasia || null, 
             razao_social || null, 
@@ -116,7 +178,7 @@ router.post('/cadastro-clinica', async (req, res) => {
             senhaHash, 
             cnpj || null, 
             telefone || null,
-            logo || null, 
+            foto_perfil || null, 
             cep || null, 
             rua || null, 
             numero || null, 

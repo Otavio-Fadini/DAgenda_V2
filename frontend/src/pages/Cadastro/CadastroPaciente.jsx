@@ -174,11 +174,11 @@ const CadastroPaciente = () => {
                                         <Grid item xs={12} sm={6}>
                                             <TextField fullWidth label="Telefone / WhatsApp" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} required />
                                         </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="Senha" type="password" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} required />
-                                        </Grid>
                                         <Grid item xs={12}>
                                             <TextField fullWidth label="E-mail" variant="outlined" type="email" InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <TextField fullWidth label="Senha" type="password" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} required />
                                         </Grid>
                                     </Grid>
 

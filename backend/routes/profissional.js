@@ -342,4 +342,76 @@ router.get('/dashboard', verifyToken, async (req, res) => {
     }
 });
 
+// ==========================================
+// ROTA: LISTAR CONVITES PENDENTES
+// ==========================================
+router.get('/meus-convites', verifyToken, async (req, res) => {
+    const profissionalId = req.userId;
+
+    try {
+        const query = `
+            SELECT c.id AS convite_id, c.data_envio, u.nome_fantasia, u.cidade, u.logo 
+            FROM convites_clinica c
+            INNER JOIN usuarios_cnpj u ON c.clinica_id = u.id
+            WHERE c.profissional_id = ? AND c.status = 'pendente'
+        `;
+        const [convites] = await pool.query(query, [profissionalId]);
+        res.json(convites);
+    } catch (error) {
+        console.error("Erro ao listar convites:", error);
+        res.status(500).json({ error: "Erro ao buscar notificações." });
+    }
+});
+
+// ==========================================
+// ROTA: RESPONDER CONVITE DE CLÍNICA
+// ==========================================
+router.put('/responder-convite', verifyToken, async (req, res) => {
+    const profissionalId = req.userId;
+    const { convite_id, resposta } = req.body; // 'resposta' deve ser 'aceito' ou 'recusado'
+
+    if (!['aceito', 'recusado'].includes(resposta)) {
+        return res.status(400).json({ error: "Resposta inválida." });
+    }
+
+    try {
+        // Atualiza o status do convite
+        await pool.query(`UPDATE convites_clinica SET status = ? WHERE id = ? AND profissional_id = ?`, [resposta, convite_id, profissionalId]);
+
+        // Se ele aceitou, cria o vínculo oficial!
+        if (resposta === 'aceito') {
+            // Primeiro precisamos descobrir qual era a clinica_id desse convite
+            const [convite] = await pool.query(`SELECT clinica_id FROM convites_clinica WHERE id = ?`, [convite_id]);
+            
+            if (convite.length > 0) {
+                await pool.query(
+                    `INSERT IGNORE INTO clinica_profissional (clinica_id, profissional_id) VALUES (?, ?)`, 
+                    [convite[0].clinica_id, profissionalId]
+                );
+            }
+        }
+
+        res.json({ message: `Convite ${resposta} com sucesso!` });
+    } catch (error) {
+        console.error("Erro ao responder convite:", error);
+        res.status(500).json({ error: "Erro ao processar resposta.", motivoReal: error.message });
+    }
+});
+
+// ==========================================
+// ROTA: CONFIGURAÇÕES DE PRIVACIDADE
+// ==========================================
+router.put('/config-privacidade', verifyToken, async (req, res) => {
+    const profissionalId = req.userId;
+    const { aceita_convites } = req.body; // 1 para SIM, 0 para NÃO
+
+    try {
+        await pool.query(`UPDATE profissionais SET aceita_convites = ? WHERE id = ?`, [aceita_convites, profissionalId]);
+        res.json({ message: "Preferência de privacidade atualizada!" });
+    } catch (error) {
+        console.error("Erro ao atualizar privacidade:", error);
+        res.status(500).json({ error: "Erro ao salvar configuração." });
+    }
+});
+
 module.exports = router;

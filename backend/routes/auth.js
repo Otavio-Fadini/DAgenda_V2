@@ -95,25 +95,47 @@ router.post('/cadastro-profissional', async (req, res) => {
 
 // --- ROTA DE CADASTRO DE CLÍNICA ---
 router.post('/cadastro-clinica', async (req, res) => {
-    const { nome_fantasia, razao_social, email, senha, cnpj, telefone,
-            logo, cep, rua, numero, bairro, cidade, estado 
-     } = req.body;
+    const { 
+        nome_fantasia, razao_social, email, senha, cnpj, telefone,
+        logo, cep, rua, numero, bairro, cidade, estado 
+    } = req.body;
+    
     try {
         const senhaHash = await bcrypt.hash(senha, saltRounds);
+        
         const query = `INSERT INTO usuarios_cnpj (nome_fantasia, razao_social, email, senha, cnpj, telefone,
                         logo, cep, rua, numero, bairro, cidade, estado
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        // 3. Array de valores na mesma ordem dos '?' da query
+        
+        // Proteção: Usamos "|| null" para garantir que, se um campo vier vazio do frontend, 
+        // ele salve em branco no banco ao invés de estourar um Erro 500.
         const values = [
-            nome_fantasia, razao_social, email.toLowerCase(), senhaHash, cnpj, telefone,
-            logo, cep, rua, numero, bairro, cidade, estado
+            nome_fantasia || null, 
+            razao_social || null, 
+            email ? email.toLowerCase() : null, 
+            senhaHash, 
+            cnpj || null, 
+            telefone || null,
+            logo || null, 
+            cep || null, 
+            rua || null, 
+            numero || null, 
+            bairro || null, 
+            cidade || null, 
+            estado || null
         ];
 
         await pool.query(query, values);
         res.status(201).json({ message: "Clínica cadastrada com sucesso!" });
+        
     } catch (error) {
         console.error("Erro no cadastro de clínica:", error);
-        res.status(500).json({ error: "Erro ao realizar cadastro." });
+        
+        // O "DEDO DURO": Enviando o erro real do MySQL direto para o F12 do navegador
+        res.status(500).json({ 
+            error: "Erro ao realizar cadastro.",
+            motivoReal: error.sqlMessage || error.message 
+        });
     }
 });
 

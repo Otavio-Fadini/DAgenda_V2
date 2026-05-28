@@ -229,6 +229,9 @@ const ConfiguracoesPaciente = () => {
                                     <Grid item xs={12} md={6}>
                                         <TextField fullWidth label="Rua / Logradouro" value={formData.rua} onChange={(e) => setFormData({...formData, rua: e.target.value})} sx={inputStyle} />
                                     </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <TextField fullWidth label="Complemento" value={formData.complemento} onChange={(e) => setFormData({...formData, complemento: e.target.value})} sx={inputStyle} />
+                                    </Grid>
                                     <Grid item xs={12} md={2}>
                                         <TextField fullWidth label="Número" value={formData.numero} onChange={(e) => setFormData({...formData, numero: e.target.value})} sx={inputStyle} />
                                     </Grid>

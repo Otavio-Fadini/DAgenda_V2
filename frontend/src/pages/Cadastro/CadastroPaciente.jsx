@@ -203,6 +203,9 @@ const CadastroPaciente = () => {
                                         <Grid item xs={12} sm={4}>
                                             <TextField fullWidth label="Número" value={formData.numero} sx={modernInputStyle} onChange={(e) => setFormData({...formData, numero: e.target.value})} required />
                                         </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <TextField fullWidth label="Complemento" value={formData.complemento} sx={modernInputStyle} onChange={(e) => setFormData({...formData, complemento: e.target.value})} />
+                                        </Grid>
                                         <Grid item xs={12} sm={8}>
                                             <TextField fullWidth label="Bairro" value={formData.bairro} sx={modernInputStyle} onChange={(e) => setFormData({...formData, bairro: e.target.value})} required />
                                         </Grid>

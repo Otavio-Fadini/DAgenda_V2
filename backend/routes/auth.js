@@ -104,7 +104,7 @@ router.post('/cadastro-clinica', async (req, res) => {
         const senhaHash = await bcrypt.hash(senha, saltRounds);
         
         const query = `INSERT INTO usuarios_cnpj (nome_fantasia, razao_social, email, senha, cnpj, telefone,
-                        logo, cep, rua, numero, bairro, cidade, estado
+                        foto_perfil, cep, rua, numero, bairro, cidade, estado
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         
         // Proteção: Usamos "|| null" para garantir que, se um campo vier vazio do frontend, 

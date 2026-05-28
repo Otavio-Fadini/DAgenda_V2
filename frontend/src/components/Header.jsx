@@ -6,7 +6,7 @@ import {
 import { Bell, Check, X, Building2 } from 'lucide-react';
 import api from '../services/api'; // Ajuste o caminho se necessário
 
-const Header = ({ userName, userFoto }) => {
+const Header = () => {
   const [convites, setConvites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);

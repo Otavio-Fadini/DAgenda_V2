@@ -24,9 +24,6 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: "Tipo de usuário inválido." });
         }
 
-        // Log para debug (aparecerá no Visualizador de Eventos se rodar como serviço)
-        console.log(`[DEBUG] Tentativa de login: ${emailBusca} na tabela ${tabela}`);
-
         const [rows] = await pool.query(`SELECT * FROM ${tabela} WHERE email = ?`, [emailBusca]);
 
         if (rows.length === 0) {

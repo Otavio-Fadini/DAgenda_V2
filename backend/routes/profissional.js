@@ -40,16 +40,38 @@ router.get('/perfil', verifyToken, async (req, res) => {
 router.put('/perfil', verifyToken, async (req, res) => {
     try {
         const id = req.userId;
-        const { nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio, senha, foto_perfil, horarios } = req.body;
+        const { 
+            nome, email, conselho, especialidade, valor_consulta, duracao_sessao, 
+            atende_convenio, senha, foto_perfil, horarios,
+            cep, rua, numero, complemento, bairro, cidade, estado
+        } = req.body;
 
-        // 1. Atualiza os dados básicos e a foto_perfil (Base64)
+        // 2. Atualiza os dados básicos, foto, e agora o endereço completo
         let query = `
             UPDATE profissionais 
-            SET nome=?, email=?, conselho=?, especialidade=?, valor_consulta=?, duracao_sessao=?, atende_convenio=?, foto_perfil=?
+            SET nome=?, email=?, conselho=?, especialidade=?, valor_consulta=?, duracao_sessao=?, atende_convenio=?, foto_perfil=?,
+                cep=?, rua=?, numero=?, complemento=?, bairro=?, cidade=?, estado=?
         `;
-        let queryParams = [nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio ? 1 : 0, foto_perfil];
+        
+        let queryParams = [
+            nome || null, 
+            email || null, 
+            conselho || null, 
+            especialidade || null, 
+            valor_consulta || null, 
+            duracao_sessao || null, 
+            atende_convenio ? 1 : 0, 
+            foto_perfil || null,
+            cep || null, 
+            rua || null, 
+            numero || null, 
+            complemento || null, 
+            bairro || null, 
+            cidade || null, 
+            estado || null
+        ];
 
-        // 2. Se uma nova senha foi enviada, adiciona a criptografia dinamicamente
+        // 3. Se uma nova senha foi enviada, adiciona a criptografia dinamicamente
         if (senha && senha.trim() !== '') {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(senha, salt);
@@ -62,7 +84,7 @@ router.put('/perfil', verifyToken, async (req, res) => {
 
         await pool.query(query, queryParams);
 
-        // 3. Atualiza a tabela de disponibilidade_profissional (Limpa e reinsere)
+        // 4. Atualiza a tabela de disponibilidade_profissional (Limpa e reinsere)
         if (horarios && horarios.length > 0) {
             await pool.query('DELETE FROM disponibilidade_profissional WHERE profissional_id = ?', [id]);
 
@@ -80,7 +102,6 @@ router.put('/perfil', verifyToken, async (req, res) => {
         res.status(500).json({ error: "Erro ao atualizar as configurações do perfil" });
     }
 });
-
 // ==========================================
 // ROTA: AGENDA
 // ==========================================

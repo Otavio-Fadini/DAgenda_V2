@@ -159,6 +159,7 @@ const ConfiguracoesPerfil = () => {
                 <Tab icon={<User size={18}/>} iconPosition="start" label="Perfil Profissional" />
                 <Tab icon={<Calendar size={18}/>} iconPosition="start" label="Grade de Atendimento" />
                 <Tab icon={<DollarSign size={18}/>} iconPosition="start" label="Financeiro & Regras" />
+                <Tab icon={<MapPin size={18}/>} iconPosition="start" label="Endereço" />
             </Tabs>
 
             {/* PAINEL INTERNO AUTO-CONTAINER (EVITA SCROLL GLOBAL) */}
@@ -186,30 +187,6 @@ const ConfiguracoesPerfil = () => {
                                 <Grid item xs={12} md={6}><TextField fullWidth label="Nova Senha de Segurança" type="password" placeholder="Preencha apenas para alterar" value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
                                 <Grid item xs={12} md={6}><TextField fullWidth label="Inscrição no Conselho (Ex: CRM-SP)" value={formData.conselho} onChange={(e) => setFormData({...formData, conselho: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
                                 <Grid item xs={12} md={6}><TextField fullWidth label="Especialidade Principal" value={formData.especialidade} onChange={(e) => setFormData({...formData, especialidade: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Briefcase size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
-                                
-                                {/* O NOVO BLOCO DE PRIVACIDADE ENTRA AQUI */}
-                                <Grid item xs={12}>
-                                    <Box sx={{ mt: 2, p: 3, borderRadius: '20px', bgcolor: formData.aceita_convites ? '#F0FDF4' : '#FEF2F2', border: '1px solid', borderColor: formData.aceita_convites ? '#BBF7D0' : '#FECACA', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.3s' }}>
-                                        <Stack direction="row" spacing={2} alignItems="center">
-                                            <Box sx={{ p: 1, bgcolor: formData.aceita_convites ? '#DCFCE7' : '#FEE2E2', borderRadius: '10px', color: formData.aceita_convites ? '#16A34A' : '#EF4444', display: 'flex' }}>
-                                                <Building2 size={20} />
-                                            </Box>
-                                            <Box>
-                                                <Typography fontWeight={800} color={formData.aceita_convites ? '#166534' : '#991B1B'}>
-                                                    Receber Convites de Clínicas
-                                                </Typography>
-                                                <Typography variant="caption" color={formData.aceita_convites ? '#15803D' : '#B91C1C'} fontWeight={600}>
-                                                    {formData.aceita_convites ? 'O seu perfil aparece nas buscas de clínicas da sua região.' : 'O seu perfil está bloqueado e invisível nas buscas.'}
-                                                </Typography>
-                                            </Box>
-                                        </Stack>
-                                        <Switch 
-                                            checked={formData.aceita_convites} 
-                                            onChange={handlePrivacyToggle} 
-                                            sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#16A34A' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#16A34A' } }} 
-                                        />
-                                    </Box>
-                                </Grid>
                             </Grid>
                         </Grid>
                     </Grid>
@@ -263,7 +240,49 @@ const ConfiguracoesPerfil = () => {
                                 <Switch checked={formData.atende_convenio} onChange={(e) => setFormData({...formData, atende_convenio: e.target.checked})} sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#16A34A' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#16A34A' } }} />
                             </Box>
                         </Grid>
+                        {/* O NOVO BLOCO DE PRIVACIDADE ENTRA AQUI */}
+                        <Grid item xs={12}>
+                            <Box sx={{ mt: 2, p: 3, borderRadius: '20px', bgcolor: formData.aceita_convites ? '#F0FDF4' : '#FEF2F2', border: '1px solid', borderColor: formData.aceita_convites ? '#BBF7D0' : '#FECACA', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.3s' }}>
+                                <Stack direction="row" spacing={2} alignItems="center">
+                                    <Box sx={{ p: 1, bgcolor: formData.aceita_convites ? '#DCFCE7' : '#FEE2E2', borderRadius: '10px', color: formData.aceita_convites ? '#16A34A' : '#EF4444', display: 'flex' }}>
+                                        <Building2 size={20} />
+                                    </Box>
+                                    <Box>
+                                        <Typography fontWeight={800} color={formData.aceita_convites ? '#166534' : '#991B1B'}>
+                                            Receber Convites de Clínicas
+                                        </Typography>
+                                        <Typography variant="caption" color={formData.aceita_convites ? '#15803D' : '#B91C1C'} fontWeight={600}>
+                                            {formData.aceita_convites ? 'O seu perfil aparece nas buscas de clínicas da sua região.' : 'O seu perfil está bloqueado e invisível nas buscas.'}
+                                        </Typography>
+                                    </Box>
+                                </Stack>
+                                <Switch 
+                                    checked={formData.aceita_convites} 
+                                    onChange={handlePrivacyToggle} 
+                                    sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#16A34A' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#16A34A' } }} 
+                                />
+                            </Box>
+                        </Grid>
                     </Grid>
+                )}
+                {/* ABA 3: ENDEREÇO */}
+                {tabValue === 3 && (
+                    <Box sx={{ maxWidth: 720, mx: 'auto' }}>
+                        <Alert icon={<EyeOff size={22} />} severity="info" sx={{ mb: 4, borderRadius: '16px', '& .MuiAlert-message': { width: '100%' }, bgcolor: '#F0F9FF', color: '#0369A1', border: '1px solid #BAE6FD' }}>
+                            <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 0.5 }}>Privacidade Garantida</Typography>
+                            <Typography variant="body2" fontWeight={500}>O seu endereço não será exibido no seu perfil público nem para clínicas ou pacientes. Ele é utilizado <strong>exclusivamente</strong> pelo nosso algoritmo para conectar o seu perfil a oportunidades em clínicas próximas de si.</Typography>
+                        </Alert>
+
+                        <Grid container spacing={2.5}>
+                            <Grid item xs={12} md={4}><TextField fullWidth label="CEP" value={formData.cep} onChange={(e) => setFormData({...formData, cep: e.target.value})} sx={inputStyle} /></Grid>
+                            <Grid item xs={12} md={8}><TextField fullWidth label="Endereço / Rua" value={formData.rua} onChange={(e) => setFormData({...formData, rua: e.target.value})} sx={inputStyle} /></Grid>
+                            <Grid item xs={12} md={4}><TextField fullWidth label="Número" value={formData.numero} onChange={(e) => setFormData({...formData, numero: e.target.value})} sx={inputStyle} /></Grid>
+                            <Grid item xs={12} md={8}><TextField fullWidth label="Complemento" value={formData.complemento} onChange={(e) => setFormData({...formData, complemento: e.target.value})} sx={inputStyle} /></Grid>
+                            <Grid item xs={12} md={5}><TextField fullWidth label="Bairro" value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} sx={inputStyle} /></Grid>
+                            <Grid item xs={12} md={5}><TextField fullWidth label="Cidade" value={formData.cidade} onChange={(e) => setFormData({...formData, cidade: e.target.value})} sx={inputStyle} /></Grid>
+                            <Grid item xs={12} md={2}><TextField fullWidth label="UF" value={formData.estado} onChange={(e) => setFormData({...formData, estado: e.target.value})} sx={inputStyle} /></Grid>
+                        </Grid>
+                    </Box>
                 )}
             </Paper>
 

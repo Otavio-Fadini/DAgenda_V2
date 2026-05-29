@@ -76,6 +76,104 @@ router.put('/perfil', verifyToken, async (req, res) => {
 });
 
 // ==========================================
+// ROTA: LISTAR OS AGENDAMENTOS DO PACIENTE
+// ==========================================
+router.get('/meus-agendamentos', verifyToken, async (req, res) => {
+    const pacienteId = req.userId;
+
+    try {
+        const query = `
+            SELECT 
+                a.id, a.data_agendamento, a.horario, a.status, a.link_pagamento,
+                p.nome AS nome_medico, p.especialidade, p.foto_perfil
+            FROM agendamentos a
+            INNER JOIN profissionais p ON a.id_profissional = p.id
+            WHERE a.id_paciente = ?
+            ORDER BY a.data_agendamento DESC, a.horario DESC
+        `;
+        
+        const [agendamentos] = await pool.query(query, [pacienteId]);
+        res.json(agendamentos);
+
+    } catch (error) {
+        console.error("Erro ao listar agendamentos do paciente:", error);
+        res.status(500).json({ error: "Erro interno.", motivoReal: error.message });
+    }
+});
+
+// ==========================================
+// ROTA: CANCELAR AGENDAMENTO
+// ==========================================
+router.put('/agendamento/:id/cancelar', verifyToken, async (req, res) => {
+    const pacienteId = req.userId;
+    const agendamentoId = req.params.id;
+    const { motivo } = req.body;
+
+    try {
+        // 1. Verifica se o agendamento pertence mesmo a este paciente
+        const [agendamento] = await pool.query(
+            `SELECT id, status FROM agendamentos WHERE id = ? AND id_paciente = ?`, 
+            [agendamentoId, pacienteId]
+        );
+
+        if (agendamento.length === 0) {
+            return res.status(404).json({ error: "Agendamento não encontrado ou não autorizado." });
+        }
+
+        // 2. Atualiza o status e regista o motivo e a data do cancelamento
+        const queryUpdate = `
+            UPDATE agendamentos 
+            SET status = 'Cancelado', motivo_cancelamento = ?, data_cancelamento = NOW() 
+            WHERE id = ?
+        `;
+        await pool.query(queryUpdate, [motivo, agendamentoId]);
+
+        res.json({ message: "Agendamento cancelado com sucesso." });
+
+    } catch (error) {
+        console.error("Erro ao cancelar agendamento:", error);
+        res.status(500).json({ error: "Erro ao processar o cancelamento.", motivoReal: error.message });
+    }
+});
+
+// ==========================================
+// ROTA: ANEXAR EXAME (BASE64)
+// ==========================================
+router.post('/exames', verifyToken, async (req, res) => {
+    const pacienteId = req.userId;
+    const { agendamento_id, nome_arquivo, arquivo_base64 } = req.body;
+
+    if (!agendamento_id || !nome_arquivo || !arquivo_base64) {
+        return res.status(400).json({ error: "Dados do exame incompletos." });
+    }
+
+    try {
+        // 1. Segurança: Garantir que o paciente não está a anexar exames na consulta de outra pessoa
+        const [agendamento] = await pool.query(
+            `SELECT id FROM agendamentos WHERE id = ? AND id_paciente = ?`, 
+            [agendamento_id, pacienteId]
+        );
+
+        if (agendamento.length === 0) {
+            return res.status(403).json({ error: "Acesso negado a este agendamento." });
+        }
+
+        // 2. Insere o ficheiro na tabela de exames
+        const queryInsert = `
+            INSERT INTO exames_agendamento (agendamento_id, nome_arquivo, arquivo_base64)
+            VALUES (?, ?, ?)
+        `;
+        await pool.query(queryInsert, [agendamento_id, nome_arquivo, arquivo_base64]);
+
+        res.status(201).json({ message: "Exame anexado com sucesso!" });
+
+    } catch (error) {
+        console.error("Erro ao anexar exame:", error);
+        res.status(500).json({ error: "Erro ao guardar o ficheiro.", motivoReal: error.message });
+    }
+});
+
+// ==========================================
 // ROTA: BUSCAR PRONTUÁRIO
 // ==========================================
 router.get('/meu-prontuario', verifyToken, async (req, res) => {

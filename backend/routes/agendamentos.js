@@ -142,7 +142,7 @@ router.post('/agendar', verifyToken, async (req, res) => {
 });
 
 // BUSCAR AGENDAMENTOS DO PACIENTE
-router.get('/meus-agendamentos', verifyToken, async (req, res) => {
+/*router.get('/meus-agendamentos', verifyToken, async (req, res) => {
     try {
         const query = `
             SELECT a.id, a.data_agendamento, a.horario, COALESCE(a.status, 'Confirmado') as status,
@@ -158,7 +158,7 @@ router.get('/meus-agendamentos', verifyToken, async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: "Erro ao carregar agendamentos" });
     }
-});
+});*/
 
 // EXCLUIR AGENDAMENTO
 router.delete('/:id', verifyToken, async (req, res) => {

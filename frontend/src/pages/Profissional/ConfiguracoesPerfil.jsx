@@ -4,7 +4,7 @@ import {
     Box, Typography, Paper, Grid, TextField, InputAdornment, Switch, 
     Button, CircularProgress, Alert, Snackbar, Divider, Avatar, IconButton, Tabs, Tab, Stack 
 } from '@mui/material';
-import { DollarSign, Clock, Shield, User, Briefcase, FileText, Camera, Lock, Calendar, Save, Building2 } from 'lucide-react';
+import { DollarSign, Clock, Shield, User, Briefcase, FileText, Camera, Lock, Calendar, Save, Building2, MapPin, EyeOff } from 'lucide-react';
 
 const ConfiguracoesPerfil = () => {
     const [tabValue, setTabValue] = useState(0);
@@ -16,7 +16,8 @@ const ConfiguracoesPerfil = () => {
     const [formData, setFormData] = useState({
         nome: '', email: '', conselho: '', especialidade: '', 
         valor_consulta: '', duracao_sessao: '', atende_convenio: false,
-        aceita_convites: true, senha: '', foto_perfil: ''
+        aceita_convites: true, senha: '', foto_perfil: '', 
+        cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', estado: ''
     });
 
     const [horarios, setHorarios] = useState([
@@ -45,7 +46,14 @@ const ConfiguracoesPerfil = () => {
                     atende_convenio: data.atende_convenio === 1 || data.atende_convenio === true,
                     aceita_convites: data.aceita_convites !== 0,
                     senha: '',
-                    foto_perfil: data.foto_perfil || ''
+                    foto_perfil: data.foto_perfil || '',
+                    cep: data.cep || '',
+                    rua: data.rua || '',
+                    numero: data.numero || '',
+                    complemento: data.complemento || '',
+                    bairro: data.bairro || '',
+                    cidade: data.cidade || '',
+                    estado: data.estado || ''
                 });
 
                 if (data.horarios && data.horarios.length > 0) {

@@ -21,7 +21,6 @@ router.get('/dashboard', verifyToken, async (req, res) => {
 // ==========================================
 // ROTA: LISTAR MÉDICOS VINCULADOS À CLÍNICA
 // ==========================================
-// --- ROTA: LISTAR MÉDICOS VINCULADOS À CLÍNICA ---
 router.get('/medicos-unidade', verifyToken, async (req, res) => {
     const clinicaId = req.userId;
 

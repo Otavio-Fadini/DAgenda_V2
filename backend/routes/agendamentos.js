@@ -48,25 +48,32 @@ router.get('/meu-endereco', verifyToken, async (req, res) => {
 });
 
 // BUSCAR HORÁRIOS DISPONÍVEIS
+// --- ROTA: BUSCAR HORÁRIOS DISPONÍVEIS DE UM MÉDICO ---
 router.get('/horarios-disponiveis', verifyToken, async (req, res) => {
     try {
         const { id_profissional, data } = req.query;
+        
+        // Desmembra a data para evitar problemas de fuso horário (Timezone) do servidor
         const [ano, mes, dia] = data.split('-');
         const dataObj = new Date(ano, mes - 1, dia);
         const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
         const nomeDia = diasSemana[dataObj.getDay()];
 
+        // 1. Busca a duração da sessão do profissional
         const [prof] = await pool.query('SELECT duracao_sessao FROM profissionais WHERE id = ?', [id_profissional]);
         if (prof.length === 0) return res.status(404).json({ error: "Profissional não encontrado." });
         const duracaoMinutos = parseInt(prof[0].duracao_sessao || 30);
 
+        // 2. Busca a grade de horários para este dia específico
         const [disp] = await pool.query(
             'SELECT hora_inicio, hora_fim FROM disponibilidade_profissional WHERE profissional_id = ? AND dia_semana LIKE ? AND ativo = 1', 
             [id_profissional, `${nomeDia}%`]
         );
 
+        // Se ele não trabalhar neste dia, devolve array vazio (nenhum horário)
         if (disp.length === 0) return res.json([]);
 
+        // 3. Busca os horários ocupados (Ignora APENAS os cancelados. Os pendentes de pagamento bloqueiam a agenda!)
         const [agendados] = await pool.query(
             'SELECT horario FROM agendamentos WHERE id_profissional = ? AND data_agendamento = ? AND status != "Cancelado"', 
             [id_profissional, data]
@@ -77,14 +84,29 @@ router.get('/horarios-disponiveis', verifyToken, async (req, res) => {
         let atual = new Date(`1970-01-01T${disp[0].hora_inicio.length === 5 ? disp[0].hora_inicio + ':00' : disp[0].hora_inicio}`);
         const fim = new Date(`1970-01-01T${disp[0].hora_fim.length === 5 ? disp[0].hora_fim + ':00' : disp[0].hora_fim}`);
 
-        while (atual < fim) {
+        // 4. Montagem matemática dos slots de tempo
+        while (true) {
+            // Calcula em que momento esta consulta terminaria
+            const fimDestaConsulta = new Date(atual.getTime() + duracaoMinutos * 60000); // 60000 ms = 1 minuto
+            
+            // Trava de segurança: Se a consulta for acabar DEPOIS do horário do médico ir embora, quebra o loop
+            if (fimDestaConsulta > fim) break;
+
             const horaStr = atual.toTimeString().substring(0, 5);
-            if (!horariosOcupados.includes(horaStr)) horarios.push(horaStr);
+            
+            // Se não estiver no banco como ocupado/pendente, o horário está livre
+            if (!horariosOcupados.includes(horaStr)) {
+                horarios.push(horaStr);
+            }
+            
+            // Pula para o próximo horário somando a duração
             atual.setMinutes(atual.getMinutes() + duracaoMinutos);
         }
+        
         res.json(horarios);
     } catch (error) {
-        res.status(500).json({ error: "Erro ao gerar horários." });
+        console.error("Erro ao gerar horários:", error);
+        res.status(500).json({ error: "Erro ao gerar horários.", motivoReal: error.message });
     }
 });
 

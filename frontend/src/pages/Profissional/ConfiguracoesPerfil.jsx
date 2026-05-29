@@ -116,6 +116,50 @@ const ConfiguracoesPerfil = () => {
         }
     };
 
+    // Busca o CEP na API dos Correios/ViaCEP
+    const buscarCep = async (cep) => {
+        const cepLimpo = cep.replace(/\D/g, ''); // Remove o traço
+        if (cepLimpo.length !== 8) return;
+
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+            const data = await response.json();
+
+            if (!data.erro) {
+                setFormData(prev => ({
+                    ...prev,
+                    rua: data.logradouro || '',
+                    bairro: data.bairro || '',
+                    cidade: data.localidade || '',
+                    estado: data.uf || ''
+                }));
+                showNotification("Endereço preenchido automaticamente!", "success");
+            } else {
+                showNotification("CEP não encontrado.", "error");
+            }
+        } catch (error) {
+            console.error("Erro ao buscar CEP:", error);
+            showNotification("Erro ao consultar o serviço de CEP.", "error");
+        }
+    };
+
+    // Aplica a máscara e dispara a busca
+    const handleCepChange = (e) => {
+        let value = e.target.value.replace(/\D/g, ''); // Só aceita números
+        
+        // Aplica a máscara visual XXXXX-XXX
+        if (value.length > 5) {
+            value = value.substring(0, 5) + '-' + value.substring(5, 8);
+        }
+        
+        setFormData(prev => ({ ...prev, cep: value }));
+
+        // Se chegou a 8 números, dispara a busca automática
+        if (value.replace(/\D/g, '').length === 8) {
+            buscarCep(value);
+        }
+    };
+
     const handleSubmit = async (e) => {
         if (e) e.preventDefault();
         setSaving(true);
@@ -282,7 +326,7 @@ const ConfiguracoesPerfil = () => {
                         </Alert>
 
                         <Grid container spacing={2.5}>
-                            <Grid item xs={12} md={4}><TextField fullWidth label="CEP" value={formData.cep} onChange={(e) => setFormData({...formData, cep: e.target.value})} sx={inputStyle} /></Grid>
+                            <Grid item xs={12} md={4}><TextField fullWidth label="CEP" value={formData.cep} onChange={handleCepChange} inputProps={{ maxLength: 9 }} sx={inputStyle} /></Grid>
                             <Grid item xs={12} md={8}><TextField fullWidth label="Endereço / Rua" value={formData.rua} onChange={(e) => setFormData({...formData, rua: e.target.value})} sx={inputStyle} /></Grid>
                             <Grid item xs={12} md={4}><TextField fullWidth label="Número" value={formData.numero} onChange={(e) => setFormData({...formData, numero: e.target.value})} sx={inputStyle} /></Grid>
                             <Grid item xs={12} md={8}><TextField fullWidth label="Complemento" value={formData.complemento} onChange={(e) => setFormData({...formData, complemento: e.target.value})} sx={inputStyle} /></Grid>

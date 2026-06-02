@@ -315,4 +315,51 @@ router.post('/agendamento/:id/pagar', verifyToken, async (req, res) => {
     }
 });
 
+// ==========================================
+// ROTA: WEBHOOK DO MERCADO PAGO (Porta dos fundos)
+// ==========================================
+router.post('/webhook/mercadopago', async (req, res) => {
+    // 1. O Mercado Pago exige que respondamos "200 OK" imediatamente, 
+    // senão ele acha que deu erro e fica a tentar enviar a mesma mensagem durante dias.
+    res.status(200).send('OK');
+
+    try {
+        const { type, data } = req.body;
+
+        // 2. Só nos interessa se for um aviso de "pagamento" e se tiver um ID
+        if (type === 'payment' && data && data.id) {
+            const paymentId = data.id;
+            const accessToken = process.env.MP_ACCESS_TOKEN;
+
+            if (!accessToken) return;
+
+            // 3. Vamos ao Mercado Pago perguntar: "O que é este pagamento com ID X?"
+            const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${accessToken}` }
+            });
+            
+            const paymentData = await mpResponse.json();
+
+            // 4. Se o status for "approved" (Pix pago com sucesso)
+            if (paymentData && paymentData.status === 'approved') {
+                
+                // Lembra-se do 'external_reference'? É o ID do nosso agendamento!
+                const agendamentoId = paymentData.external_reference; 
+
+                if (agendamentoId) {
+                    // 5. A MÁGICA ACONTECE AQUI: Atualizamos o banco de dados sozinhos!
+                    await pool.query(
+                        `UPDATE agendamentos SET status = 'Agendado' WHERE id = ? AND status = 'Pendente pagamento'`,
+                        [agendamentoId]
+                    );
+                    console.log(`[WEBHOOK] Sucesso! Agendamento ${agendamentoId} pago e confirmado.`);
+                }
+            }
+        }
+    } catch (error) {
+        console.error("[WEBHOOK] Erro ao processar aviso do Mercado Pago:", error);
+    }
+});
+
 module.exports = router;

@@ -277,7 +277,7 @@ const MeusAgendamentos = () => {
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 3 }}>
                     <Button onClick={() => setModalExameOpen(false)} sx={{ color: '#64748B', fontWeight: 700 }}>Cancelar</Button>
-                    <Button variant="contained" onClick={enviarExame} disabled={loadingAcao || !arquivoExame} sx={{ bgcolor: '#0F172A', borderRadius: '10px', fontWeight: 800, boxShadow: 'none' }}>
+                    <Button variant="contained" onClick={enviarExame} disabled={loadingAcao || !arquivoExame} sx={{ color: '#FFFFFF', bgcolor: '#0F172A', borderRadius: '12px', textTransform: 'none', fontWeight: 800, py: 1.2, boxShadow: 'none', '&:hover': { bgcolor: '#32B5FE' } }}>
                         {loadingAcao ? <CircularProgress size={24} color="inherit" /> : 'Enviar'}
                     </Button>
                 </DialogActions>

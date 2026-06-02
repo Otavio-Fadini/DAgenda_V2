@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Avatar, Button, Chip, Fade, CircularProgress, Divider, Stack } from '@mui/material';
-import { Calendar, Users, DollarSign, Clock, ChevronRight, Activity, TrendingUp } from 'lucide-react';
+import { Box, Typography, Grid, Paper, Avatar, Button, Chip, Fade, CircularProgress } from '@mui/material';
+import { Calendar, Users, TrendingUp, Clock, ChevronRight, Activity } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // Importação adicionada
 import api from '../../services/api';
 
 const DashboardProfissional = () => {
+    const navigate = useNavigate(); // Hook de navegação
     const [loading, setLoading] = useState(true);
     const [dados, setDados] = useState({
-        kpis: { consultasHoje: 0, novosPacientes: 0, faturamentoMes: 0 },
+        kpis: { consultasHoje: 0, totalPacientes: 0, faturamentoMes: 0 },
         proximasConsultas: []
     });
 
     useEffect(() => {
         const carregarDashboard = async () => {
             try {
-                // Busca os dados consolidados do médico logado
                 const response = await api.get('/profissional/dashboard');
                 if (response.data) {
                     setDados(response.data);
@@ -28,20 +29,21 @@ const DashboardProfissional = () => {
         carregarDashboard();
     }, []);
 
-    // Função auxiliar para definir as cores do Status
+    // Função auxiliar atualizada para as novas nomenclaturas de Status
     const getStatusStyle = (status) => {
         const s = (status || '').toLowerCase();
-        if (s === 'confirmado' || s === 'pago') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
-        if (s === 'em espera' || s === 'pendente') return { bg: '#FEFCE8', color: '#EAB308', border: '#FEF08A' };
+        if (s === 'agendado' || s === 'confirmado') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
+        if (s === 'pendente pagamento' || s === 'pendente') return { bg: '#FEFCE8', color: '#EAB308', border: '#FEF08A' };
+        if (s === 'concluido' || s === 'finalizado') return { bg: '#F0F9FF', color: '#32B5FE', border: '#BAE6FD' };
         if (s === 'cancelado') return { bg: '#FEF2F2', color: '#EF4444', border: '#FECACA' };
-        return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; // Default
+        return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
     };
 
     if (loading) {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#F8FAFC' }}>
                 <CircularProgress sx={{ color: '#32B5FE' }} size={48} thickness={4} />
-                <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 600, mt: 2 }}>Preparando sua agenda...</Typography>
+                <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 600, mt: 2 }}>Carregando métricas...</Typography>
             </Box>
         );
     }
@@ -63,11 +65,8 @@ const DashboardProfissional = () => {
                     <Chip 
                         label="SISTEMA OPERANTE" 
                         sx={{ 
-                            fontWeight: 800, 
-                            bgcolor: '#ECFDF5', 
-                            color: '#10B981', 
-                            border: '1px solid #A7F3D0',
-                            px: 1, height: 32, borderRadius: '8px'
+                            fontWeight: 800, bgcolor: '#ECFDF5', color: '#10B981', 
+                            border: '1px solid #A7F3D0', px: 1, height: 32, borderRadius: '8px'
                         }} 
                     />
                 </Box>
@@ -76,25 +75,14 @@ const DashboardProfissional = () => {
                 <Grid container spacing={3} sx={{ mb: 5 }}>
                     {[
                         { label: 'Consultas Hoje', val: dados.kpis.consultasHoje, icon: <Calendar color="#32B5FE" size={28} strokeWidth={2.5}/>, color: '#32B5FE', bg: 'rgba(50, 181, 254, 0.1)' },
-                        { label: 'Total de Pacientes', val: dados.kpis.novosPacientes, icon: <Users color="#F97316" size={28} strokeWidth={2.5}/>, color: '#F97316', bg: '#FFF7ED' },
+                        { label: 'Total de Pacientes', val: dados.kpis.totalPacientes, icon: <Users color="#F97316" size={28} strokeWidth={2.5}/>, color: '#F97316', bg: '#FFF7ED' },
                         { label: 'Faturamento Bruto (Mês)', val: `R$ ${Number(dados.kpis.faturamentoMes || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, icon: <TrendingUp color="#10B981" size={28} strokeWidth={2.5}/>, color: '#10B981', bg: '#ECFDF5' },
                     ].map((kpi, i) => (
                         <Grid item xs={12} md={4} key={i}>
                             <Paper elevation={0} sx={{ 
-                                p: 3.5, 
-                                borderRadius: '24px', 
-                                border: '1px solid #F1F5F9', 
-                                bgcolor: 'white',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 3,
-                                boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)',
-                                transition: 'all 0.3s ease',
-                                '&:hover': {
-                                    transform: 'translateY(-4px)',
-                                    boxShadow: '0 15px 35px -10px rgba(0, 0, 0, 0.08)',
-                                    borderColor: kpi.color
-                                }
+                                p: 3.5, borderRadius: '24px', border: '1px solid #F1F5F9', bgcolor: 'white',
+                                display: 'flex', alignItems: 'center', gap: 3, boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)',
+                                transition: 'all 0.3s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 15px 35px -10px rgba(0, 0, 0, 0.08)', borderColor: kpi.color }
                             }}>
                                 <Box sx={{ p: 2.5, bgcolor: kpi.bg, borderRadius: '20px' }}>{kpi.icon}</Box>
                                 <Box>
@@ -115,30 +103,25 @@ const DashboardProfissional = () => {
                     <Typography variant="h6" fontWeight={900} sx={{ color: '#0F172A' }}>
                         Próximos Atendimentos
                     </Typography>
-                    <Button endIcon={<ChevronRight size={16} />} sx={{ fontWeight: 800, color: '#32B5FE', textTransform: 'none' }}>Ver todos</Button>
+                    <Button 
+                        endIcon={<ChevronRight size={16} />} 
+                        onClick={() => navigate('/dashboard/agenda-medica')} 
+                        sx={{ fontWeight: 800, color: '#32B5FE', textTransform: 'none' }}
+                    >
+                        Ver todos
+                    </Button>
                 </Box>
                 
-                <Paper elevation={0} sx={{ 
-                    borderRadius: '24px', 
-                    border: '1px solid #F1F5F9', 
-                    overflow: 'hidden', 
-                    bgcolor: 'white',
-                    boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)'
-                }}>
+                <Paper elevation={0} sx={{ borderRadius: '24px', border: '1px solid #F1F5F9', overflow: 'hidden', bgcolor: 'white', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)' }}>
                     {dados.proximasConsultas && dados.proximasConsultas.length > 0 ? dados.proximasConsultas.map((c, index) => {
                         const style = getStatusStyle(c.status);
                         
                         return (
                             <Box key={c.id} sx={{ 
-                                p: { xs: 2.5, md: 3.5 }, 
-                                display: 'flex', 
-                                flexDirection: { xs: 'column', md: 'row' },
-                                alignItems: { xs: 'flex-start', md: 'center' }, 
-                                justifyContent: 'space-between', 
-                                gap: { xs: 3, md: 0 },
+                                p: { xs: 2.5, md: 3.5 }, display: 'flex', flexDirection: { xs: 'column', md: 'row' },
+                                alignItems: { xs: 'flex-start', md: 'center' }, justifyContent: 'space-between', gap: { xs: 3, md: 0 },
                                 borderBottom: index !== dados.proximasConsultas.length - 1 ? '1px solid #F8FAFC' : 'none', 
-                                transition: 'all 0.2s',
-                                '&:hover': { bgcolor: '#F8FAFC' } 
+                                transition: 'all 0.2s', '&:hover': { bgcolor: '#F8FAFC' } 
                             }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                                     <Avatar sx={{ width: 56, height: 56, bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 900, border: '2px solid #E2E8F0', fontSize: '1.2rem' }}>
@@ -150,10 +133,10 @@ const DashboardProfissional = () => {
                                         </Typography>
                                         <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1, letterSpacing: '0.5px' }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: '#F1F5F9', px: 1, py: 0.5, borderRadius: '6px', color: '#0F172A' }}>
-                                                <Clock size={12}/> {c.horario}
+                                                <Clock size={12}/> {c.horario || c.hora}
                                             </Box>
                                             <Box component="span" sx={{ color: '#CBD5E1' }}>•</Box> 
-                                            {c.data_agendamento}
+                                            {c.data_agendamento || c.data}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -162,27 +145,17 @@ const DashboardProfissional = () => {
                                     <Chip 
                                         label={(c.status || 'Pendente').toUpperCase()} 
                                         size="small" 
-                                        sx={{ 
-                                            fontWeight: 800, fontSize: '0.7rem', height: 28, px: 1, borderRadius: '8px', letterSpacing: '0.5px',
-                                            bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border
-                                        }} 
+                                        sx={{ fontWeight: 800, fontSize: '0.7rem', height: 28, px: 1, borderRadius: '8px', letterSpacing: '0.5px', bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border }} 
                                     />
                                     <Button 
-                                        variant="contained"
-                                        size="small" 
-                                        endIcon={<ChevronRight size={16}/>} 
+                                        variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
+                                        onClick={() => navigate('/dashboard/atendimento', { state: c })} // Envia os dados para a tela de atendimento
                                         sx={{ 
-                                            fontWeight: 800, 
-                                            textTransform: 'none', 
-                                            borderRadius: '10px', 
-                                            bgcolor: '#0F172A', 
-                                            color: '#FFF',
-                                            py: 1, px: 2,
-                                            boxShadow: 'none',
+                                            fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFF', py: 1, px: 2, boxShadow: 'none',
                                             '&:hover': { bgcolor: '#32B5FE', boxShadow: '0 4px 10px rgba(50, 181, 254, 0.3)' }
                                         }}
                                     >
-                                        Abrir Prontuário
+                                        {c.status === 'Concluido' ? 'Ver Resumo' : 'Abrir Prontuário'}
                                     </Button>
                                 </Box>
                             </Box>

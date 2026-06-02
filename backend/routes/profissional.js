@@ -343,60 +343,67 @@ router.post('/disponibilidade', verifyToken, async (req, res) => {
 });
 
 // ==========================================
-// ROTA: DASHBOARD DO MÉDICO
+// ROTA: DASHBOARD DO PROFISSIONAL
 // ==========================================
 router.get('/dashboard', verifyToken, async (req, res) => {
     try {
-        const profissionalId = req.userId;
+        const id_profissional = req.userId;
 
-        const [consultasHojeRow] = await pool.query(
-            `SELECT COUNT(*) as total FROM agendamentos 
-             WHERE id_profissional = ? AND data_agendamento = CURDATE()`,
-            [profissionalId]
+        // KPI 1: Quantas consultas (Agendadas, Pagas ou Concluídas) existem para a data de hoje
+        const [resConsultasHoje] = await pool.query(
+            `SELECT COUNT(*) AS total FROM agendamentos 
+             WHERE id_profissional = ? AND data_agendamento = CURDATE() AND status != 'Cancelado'`,
+            [id_profissional]
         );
 
-        const [pacientesRow] = await pool.query(
-            `SELECT COUNT(DISTINCT id_paciente) as total FROM agendamentos 
+        // KPI 2: Total de pacientes únicos que esse médico já atendeu/agendou
+        const [resTotalPacientes] = await pool.query(
+            `SELECT COUNT(DISTINCT id_paciente) AS total FROM agendamentos 
              WHERE id_profissional = ?`,
-            [profissionalId]
+            [id_profissional]
         );
 
-        const [faturamentoRow] = await pool.query(
-            `SELECT (COUNT(a.id) * p.valor_consulta) as total 
-             FROM agendamentos a
-             JOIN profissionais p ON a.id_profissional = p.id
-             WHERE a.id_profissional = ? 
-             AND a.data_agendamento LIKE CONCAT(DATE_FORMAT(CURDATE(), '%Y-%m'), '%')`,
-            [profissionalId]
+        // KPI 3: Faturamento Bruto do Mês Atual (Soma do valor das consultas Pagas/Agendadas e Concluídas)
+        const [resFaturamento] = await pool.query(
+            `SELECT SUM(CAST(valor_consulta AS DECIMAL(10,2))) AS total 
+             FROM agendamentos 
+             WHERE id_profissional = ? 
+               AND MONTH(data_agendamento) = MONTH(CURDATE()) 
+               AND YEAR(data_agendamento) = YEAR(CURDATE())
+               AND status IN ('Agendado', 'Concluido')`,
+            [id_profissional]
         );
 
-        const [proximasConsultas] = await pool.query(
-            `SELECT a.id, u.nome as paciente, a.data_agendamento, a.horario
+        // Próximos Atendimentos: Busca os próximos 5 pacientes agendados a partir de hoje
+        const [resProximas] = await pool.query(
+            `SELECT 
+                a.id, 
+                a.id_paciente,
+                DATE_FORMAT(a.data_agendamento, '%d/%m/%Y') as data_agendamento,
+                TIME_FORMAT(a.horario, '%H:%i') as horario,
+                a.status,
+                a.tipo_agendamento as tipo,
+                p.nome as paciente
              FROM agendamentos a
-             LEFT JOIN usuarios_cpf u ON a.id_paciente = u.id
+             JOIN usuarios_cpf p ON a.id_paciente = p.id
              WHERE a.id_profissional = ? AND a.data_agendamento >= CURDATE()
              ORDER BY a.data_agendamento ASC, a.horario ASC
              LIMIT 5`,
-            [profissionalId]
+            [id_profissional]
         );
 
         res.json({
             kpis: {
-                consultasHoje: consultasHojeRow[0]?.total || 0,
-                novosPacientes: pacientesRow[0]?.total || 0,
-                faturamentoMes: faturamentoRow[0]?.total || 0
+                consultasHoje: resConsultasHoje[0].total || 0,
+                totalPacientes: resTotalPacientes[0].total || 0,
+                faturamentoMes: resFaturamento[0].total || 0
             },
-            proximasConsultas: proximasConsultas.map(consulta => ({
-                ...consulta,
-                status: 'Confirmado',
-                tipo: 'Consulta Padrão',
-                data_agendamento: consulta.data_agendamento.split('-').reverse().join('/')
-            }))
+            proximasConsultas: resProximas
         });
 
     } catch (error) {
-        console.error("Erro ao carregar dashboard do médico:", error);
-        res.status(500).json({ error: "Erro interno ao carregar dados do dashboard." });
+        console.error("Erro na rota do Dashboard:", error);
+        res.status(500).json({ error: "Erro ao carregar dados do dashboard" });
     }
 });
 

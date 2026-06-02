@@ -19,7 +19,7 @@ const AgendaMedica = () => {
     
     // Filtros
     const [filtroData, setFiltroData] = useState('');
-    const [filtroStatus, setFiltroStatus] = useState('Todos'); // Agora controlado pelas Abas
+    const [filtroStatus, setFiltroStatus] = useState('Todos'); 
     const [buscaNome, setBuscaNome] = useState('');
     
     const navigate = useNavigate();
@@ -69,7 +69,6 @@ const AgendaMedica = () => {
         }
     };
 
-    // Novas Funções de Exame e Cancelamento
     const baixarExame = (base64, nomeArquivo) => {
         const link = document.createElement('a');
         link.href = base64;
@@ -111,6 +110,33 @@ const AgendaMedica = () => {
         return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
     };
 
+    // ==========================================
+    // LÓGICA DE ORDENAÇÃO CUSTOMIZADA DA AGENDA
+    // ==========================================
+    const getPesoStatus = (status) => {
+        const s = (status || '').toLowerCase();
+        if (s === 'agendado' || s === 'confirmado') return 1;        // 1º Prioridade
+        if (s === 'pendente pagamento' || s === 'pendente') return 2; // 2º Prioridade
+        if (s === 'cancelado') return 3;                              // 3º Prioridade
+        if (s === 'concluido' || s === 'finalizado') return 4;        // 4º Prioridade
+        return 5;
+    };
+
+    const agendaOrdenada = [...agenda].sort((a, b) => {
+        const pesoA = getPesoStatus(a.status);
+        const pesoB = getPesoStatus(b.status);
+
+        // Se tiverem pesos diferentes, ordena pela regra de prioridade acima
+        if (pesoA !== pesoB) {
+            return pesoA - pesoB; 
+        }
+        
+        // Se tiverem o mesmo status (peso igual), organiza pelo horário mais cedo
+        const horaA = a.horario || a.hora || '00:00';
+        const horaB = b.horario || b.hora || '00:00';
+        return horaA.localeCompare(horaB);
+    });
+
     return (
         <Fade in={true} timeout={600}>
             <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', boxSizing: 'border-box' }}>
@@ -122,7 +148,7 @@ const AgendaMedica = () => {
                             Painel de Atendimento
                         </Typography>
                         <Box sx={{ display: 'flex', gap: 2, mt: 1.5 }}>
-                            <Chip icon={<Activity size={14} color="#64748B"/>} label={`${agenda.length} Agendamentos`} size="small" sx={{ fontWeight: 800, bgcolor: '#F1F5F9', color: '#64748B', borderRadius: '8px' }} />
+                            <Chip icon={<Activity size={14} color="#64748B"/>} label={`${agendaOrdenada.length} Agendamentos`} size="small" sx={{ fontWeight: 800, bgcolor: '#F1F5F9', color: '#64748B', borderRadius: '8px' }} />
                         </Box>
                     </Box>
                     
@@ -172,7 +198,7 @@ const AgendaMedica = () => {
                     </Tooltip>
                 </Paper>
 
-                {/* ABAS DE STATUS (Substituindo o antigo Select) */}
+                {/* ABAS DE STATUS */}
                 <Box sx={{ borderBottom: 1, borderColor: '#E2E8F0', mb: 4 }}>
                     <Tabs 
                         value={filtroStatus} 
@@ -193,21 +219,21 @@ const AgendaMedica = () => {
                     </Tabs>
                 </Box>
 
-                {/* LISTA DE CARDS DE AGENDAMENTO */}
+                {/* LISTA DE CARDS DE AGENDAMENTO (AGORA RENDERIZANDO A AGENDA ORDENADA) */}
                 <Grid container spacing={3}>
                     {loading ? (
                         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', py: 10 }}>
                             <CircularProgress sx={{ color: '#32B5FE' }} size={48} thickness={4} />
                             <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 600, mt: 2 }}>Buscando agenda...</Typography>
                         </Box>
-                    ) : agenda.length === 0 ? (
+                    ) : agendaOrdenada.length === 0 ? (
                         <Box sx={{ width: '100%', textAlign: 'center', py: 10, opacity: 0.6 }}>
                             <AlertCircle size={50} color="#CBD5E1" strokeWidth={1.5} style={{ marginBottom: '16px' }} />
                             <Typography variant="h6" color="#64748B" fontWeight={800}>Nenhum agendamento encontrado.</Typography>
                             <Typography variant="body2" color="#94A3B8" fontWeight={500}>Tente alterar os filtros de busca.</Typography>
                         </Box>
                     ) : (
-                        agenda.map((item) => {
+                        agendaOrdenada.map((item) => {
                             const style = getStatusStyle(item.status || 'Confirmado');
                             const nomePaciente = item.paciente || item.paciente_nome || 'Paciente N/I';
 
@@ -216,7 +242,7 @@ const AgendaMedica = () => {
                                     <Paper elevation={0} sx={{ 
                                         borderRadius: '24px', border: '1px solid #F1F5F9', overflow: 'hidden', transition: 'all 0.3s ease',
                                         bgcolor: 'white', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)',
-                                        opacity: item.status === 'Cancelado' ? 0.75 : 1, // Leve transparência para cancelados
+                                        opacity: item.status === 'Cancelado' ? 0.75 : 1, 
                                         '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 15px 35px -10px rgba(50, 181, 254, 0.15)', borderColor: '#32B5FE' }
                                     }}>
                                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
@@ -266,7 +292,7 @@ const AgendaMedica = () => {
                                                 {/* Botões de Ação Dinâmicos */}
                                                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', width: { xs: '100%', lg: 'auto' } }}>
                                                     
-                                                    {/* Botão de Histórico (Sempre visível) */}
+                                                    {/* Botão de Histórico */}
                                                     <Button 
                                                         onClick={() => verHistorico(item.id_paciente)}
                                                         variant="outlined" size="small" startIcon={<History size={16}/>}
@@ -286,7 +312,7 @@ const AgendaMedica = () => {
                                                         </Button>
                                                     )}
 
-                                                    {/* Botões de Status (Atender, Ver Resumo ou Ver Cancelamento) */}
+                                                    {/* Botões de Status */}
                                                     {item.status === 'Cancelado' ? (
                                                         <Button 
                                                             variant="outlined" color="error" startIcon={<AlertCircle size={16} />} 
@@ -326,7 +352,7 @@ const AgendaMedica = () => {
                     )}
                 </Grid>
 
-                {/* MODAL DE HISTÓRICO PREMIUM (Mantido Original) */}
+                {/* MODAL DE HISTÓRICO PREMIUM */}
                 <Dialog open={openHistorico} onClose={() => setOpenHistorico(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
                     <DialogTitle sx={{ fontWeight: 900, color: '#0F172A', pb: 1 }}>Histórico Clínico</DialogTitle>
                     <DialogContent dividers sx={{ borderColor: '#F1F5F9' }}>
@@ -368,7 +394,7 @@ const AgendaMedica = () => {
                     </DialogActions>
                 </Dialog>
 
-                {/* NOVO MODAL: MOTIVO DO CANCELAMENTO */}
+                {/* MODAL: MOTIVO DO CANCELAMENTO */}
                 <Dialog open={modalMotivoOpen} onClose={() => setModalMotivoOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
                     <DialogTitle sx={{ pb: 1 }}>
                         <Typography variant="h6" fontWeight={900} color="#0F172A">Consulta Cancelada</Typography>

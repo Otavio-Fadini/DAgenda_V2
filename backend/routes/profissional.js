@@ -250,6 +250,27 @@ router.post('/finalizar-atendimento', verifyToken, async (req, res) => {
 });
 
 // ==========================================
+// ROTA: BUSCAR PRONTUÁRIO (RESUMO)
+// ==========================================
+router.get('/prontuario/:id_agendamento', verifyToken, async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            'SELECT evolucao, prescricao FROM prontuarios WHERE id_agendamento = ?',
+            [req.params.id_agendamento]
+        );
+        
+        if (rows.length > 0) {
+            res.json(rows[0]); // Devolve os textos gravados
+        } else {
+            res.json({ evolucao: '', prescricao: '' });
+        }
+    } catch (error) {
+        console.error("Erro ao buscar prontuário:", error);
+        res.status(500).json({ error: "Erro ao carregar o resumo." });
+    }
+});
+
+// ==========================================
 // ROTA: HISTÓRICO DO PACIENTE
 // ==========================================
 router.get('/historico-paciente/:id_paciente', verifyToken, async (req, res) => {

@@ -286,10 +286,11 @@ router.post('/agendamento/:id/pagar', verifyToken, async (req, res) => {
                 ],
                 external_reference: agendamentoId.toString(),
                 auto_return: "approved",
+                // URLS DE RETORNO APONTANDO PARA O DOMÍNIO OFICIAL EM HTTPS:
                 back_urls: {
-                    success: "http://localhost:5173/paciente/agendamentos", 
-                    failure: "http://localhost:5173/paciente/agendamentos",
-                    pending: "http://localhost:5173/paciente/agendamentos"
+                    success: "https://www.dagenda.com.br/paciente/agendamentos",
+                    failure: "https://www.dagenda.com.br/paciente/agendamentos",
+                    pending: "https://www.dagenda.com.br/paciente/agendamentos"
                 }
             })
         });

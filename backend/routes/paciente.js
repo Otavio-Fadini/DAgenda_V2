@@ -2,7 +2,6 @@ const router = require('express').Router();
 const pool = require('../config/db');
 const { verifyToken } = require('./auth');
 const bcrypt = require('bcrypt'); // Adicionado para criptografar a nova senha do paciente
-const axios = require('axios');
 
 // ==========================================
 // ROTA: BUSCAR PERFIL DO PACIENTE

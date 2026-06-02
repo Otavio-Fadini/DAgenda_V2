@@ -2,13 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react';
 import api from '../../services/api';
 import { 
     Box, Typography, Paper, Grid, Avatar, Chip, Button, 
-    IconButton, CircularProgress, TextField, MenuItem, 
-    InputAdornment, Tooltip, Divider, Badge,
-    Dialog, DialogTitle, DialogContent, DialogActions, Fade, Stack
+    IconButton, CircularProgress, TextField, InputAdornment, 
+    Tooltip, Badge, Dialog, DialogTitle, DialogContent, 
+    DialogActions, Fade, Stack, Tabs, Tab, Alert, AlertTitle
 } from '@mui/material';
 import { 
     Search, FilterX, MapPin, Play, FileText, 
-    History, Calendar as CalIcon, Activity, Clock, AlertCircle
+    History, Calendar as CalIcon, Activity, AlertCircle, 
+    Download, XCircle, Paperclip
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,7 +19,7 @@ const AgendaMedica = () => {
     
     // Filtros
     const [filtroData, setFiltroData] = useState('');
-    const [filtroStatus, setFiltroStatus] = useState('Todos');
+    const [filtroStatus, setFiltroStatus] = useState('Todos'); // Agora controlado pelas Abas
     const [buscaNome, setBuscaNome] = useState('');
     
     const navigate = useNavigate();
@@ -27,6 +28,10 @@ const AgendaMedica = () => {
     const [openHistorico, setOpenHistorico] = useState(false);
     const [dadosHistorico, setDadosHistorico] = useState([]);
     const [loadingHist, setLoadingHist] = useState(false);
+
+    // Estados do Modal de Cancelamento
+    const [modalMotivoOpen, setModalMotivoOpen] = useState(false);
+    const [motivoTexto, setMotivoTexto] = useState('');
 
     const carregarAgenda = useCallback(async () => {
         setLoading(true);
@@ -64,6 +69,19 @@ const AgendaMedica = () => {
         }
     };
 
+    // Novas Funções de Exame e Cancelamento
+    const baixarExame = (base64, nomeArquivo) => {
+        const link = document.createElement('a');
+        link.href = base64;
+        link.download = nomeArquivo || 'exame_paciente.pdf';
+        link.click();
+    };
+
+    const abrirMotivo = (motivo) => {
+        setMotivoTexto(motivo || 'O paciente não informou um motivo específico.');
+        setModalMotivoOpen(true);
+    };
+
     const limparFiltros = () => {
         setFiltroData('');
         setFiltroStatus('Todos');
@@ -86,9 +104,10 @@ const AgendaMedica = () => {
     // Definir as cores do Status
     const getStatusStyle = (status) => {
         const s = (status || '').toLowerCase();
-        if (s === 'confirmado' || s === 'pago') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
-        if (s === 'em espera' || s === 'pendente') return { bg: '#FEFCE8', color: '#EAB308', border: '#FEF08A' };
-        if (s === 'finalizado') return { bg: '#F0F9FF', color: '#32B5FE', border: '#BAE6FD' };
+        if (s === 'agendado' || s === 'confirmado') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
+        if (s === 'pendente pagamento' || s === 'pendente') return { bg: '#FEFCE8', color: '#EAB308', border: '#FEF08A' };
+        if (s === 'concluido' || s === 'finalizado') return { bg: '#F0F9FF', color: '#32B5FE', border: '#BAE6FD' };
+        if (s === 'cancelado') return { bg: '#FEF2F2', color: '#EF4444', border: '#FECACA' };
         return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
     };
 
@@ -120,9 +139,9 @@ const AgendaMedica = () => {
                     </Button>
                 </Box>
 
-                {/* BARRA DE FILTROS */}
+                {/* BARRA DE FILTROS: Busca e Data */}
                 <Paper elevation={0} sx={{ 
-                    p: 2.5, mb: 5, borderRadius: '20px', border: '1px solid #F1F5F9', 
+                    p: 2.5, mb: 2, borderRadius: '20px', border: '1px solid #F1F5F9', 
                     display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', 
                     bgcolor: '#FFFFFF', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)'
                 }}>
@@ -136,20 +155,6 @@ const AgendaMedica = () => {
                             startAdornment: (<InputAdornment position="start"><Search size={18} color="#94A3B8"/></InputAdornment>)
                         }}
                     />
-
-                    <TextField
-                        select
-                        size="small"
-                        value={filtroStatus}
-                        onChange={(e) => setFiltroStatus(e.target.value)}
-                        sx={{ width: 180, ...modernInputStyle }}
-                        InputProps={{ sx: { fontWeight: 700, color: '#0F172A' } }}
-                    >
-                        <MenuItem value="Todos" sx={{ fontWeight: 600 }}>Todos os Status</MenuItem>
-                        <MenuItem value="Confirmado" sx={{ fontWeight: 600 }}>Confirmados</MenuItem>
-                        <MenuItem value="Pendente" sx={{ fontWeight: 600 }}>Pendentes</MenuItem>
-                        <MenuItem value="Finalizado" sx={{ fontWeight: 600 }}>Finalizados</MenuItem>
-                    </TextField>
 
                     <TextField
                         type="date"
@@ -167,6 +172,27 @@ const AgendaMedica = () => {
                     </Tooltip>
                 </Paper>
 
+                {/* ABAS DE STATUS (Substituindo o antigo Select) */}
+                <Box sx={{ borderBottom: 1, borderColor: '#E2E8F0', mb: 4 }}>
+                    <Tabs 
+                        value={filtroStatus} 
+                        onChange={(e, newValue) => setFiltroStatus(newValue)} 
+                        variant="scrollable" 
+                        scrollButtons="auto"
+                        sx={{ 
+                            '& .MuiTab-root': { textTransform: 'none', fontWeight: 800, fontSize: '0.95rem', minWidth: 'auto', px: 3 }, 
+                            '& .Mui-selected': { color: '#32B5FE' }, 
+                            '& .MuiTabs-indicator': { backgroundColor: '#32B5FE', height: 3, borderRadius: '3px 3px 0 0' } 
+                        }}
+                    >
+                        <Tab label="Todos" value="Todos" />
+                        <Tab label="Agendados (Pagos)" value="Agendado" />
+                        <Tab label="Pendentes" value="Pendente pagamento" />
+                        <Tab label="Concluídos" value="Concluido" />
+                        <Tab label="Cancelados" value="Cancelado" />
+                    </Tabs>
+                </Box>
+
                 {/* LISTA DE CARDS DE AGENDAMENTO */}
                 <Grid container spacing={3}>
                     {loading ? (
@@ -182,14 +208,15 @@ const AgendaMedica = () => {
                         </Box>
                     ) : (
                         agenda.map((item) => {
-                            const style = getStatusStyle(item.status || 'Confirmado'); // Fallback para Confirmado
-                            const nomePaciente = item.paciente || item.nome_paciente || 'Paciente N/I';
+                            const style = getStatusStyle(item.status || 'Confirmado');
+                            const nomePaciente = item.paciente || item.paciente_nome || 'Paciente N/I';
 
                             return (
                                 <Grid item xs={12} key={item.id}>
                                     <Paper elevation={0} sx={{ 
                                         borderRadius: '24px', border: '1px solid #F1F5F9', overflow: 'hidden', transition: 'all 0.3s ease',
                                         bgcolor: 'white', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)',
+                                        opacity: item.status === 'Cancelado' ? 0.75 : 1, // Leve transparência para cancelados
                                         '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 15px 35px -10px rgba(50, 181, 254, 0.15)', borderColor: '#32B5FE' }
                                     }}>
                                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
@@ -200,7 +227,7 @@ const AgendaMedica = () => {
                                                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 4
                                             }}>
                                                 <Typography variant="h3" fontWeight={900} color="#0F172A" sx={{ letterSpacing: '-1px' }}>{item.horario || item.hora}</Typography>
-                                                <Typography variant="caption" fontWeight={900} color="#32B5FE" sx={{ letterSpacing: 1, mt: 0.5 }}>{item.data_agendamento || item.data}</Typography>
+                                                <Typography variant="caption" fontWeight={900} color="#32B5FE" sx={{ letterSpacing: 1, mt: 0.5 }}>{item.data || item.data_formatada}</Typography>
                                                 <Chip label={item.tipo || 'Consulta'} size="small" sx={{ mt: 2, fontWeight: 800, fontSize: '0.65rem', bgcolor: '#E2E8F0', color: '#475569', borderRadius: '6px' }} />
                                             </Box>
 
@@ -216,44 +243,79 @@ const AgendaMedica = () => {
                                                     
                                                     <Box>
                                                         <Typography variant="h6" fontWeight={900} color="#0F172A" sx={{ mb: 0.5 }}>{nomePaciente}</Typography>
-                                                        <Stack direction="row" spacing={2} alignItems="center">
+                                                        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
                                                             <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B', fontWeight: 700 }}>
-                                                                <MapPin size={14} color="#94A3B8"/> {item.clinica || item.nome_clinica || 'Unidade Padrão'}
+                                                                <MapPin size={14} color="#94A3B8"/> {item.clinica || item.clinica_nome || 'Unidade Padrão'}
                                                             </Typography>
                                                             <Chip 
                                                                 label={(item.status || 'Confirmado').toUpperCase()} 
                                                                 size="small" 
                                                                 sx={{ fontWeight: 800, fontSize: '0.65rem', height: 24, bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border, borderRadius: '6px' }} 
                                                             />
+                                                            {/* Aviso visual caso o paciente tenha enviado um exame */}
+                                                            {item.exame_base64 && (
+                                                                <Chip 
+                                                                    icon={<Paperclip size={12} />} label="Exame Anexado" size="small"
+                                                                    sx={{ fontWeight: 800, fontSize: '0.65rem', height: 24, bgcolor: '#ECFDF5', color: '#047857', border: '1px solid #A7F3D0', borderRadius: '6px' }} 
+                                                                />
+                                                            )}
                                                         </Stack>
                                                     </Box>
                                                 </Box>
 
-                                                {/* Botões de Ação */}
-                                                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', width: { xs: '100%', lg: 'auto' } }}>
+                                                {/* Botões de Ação Dinâmicos */}
+                                                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', width: { xs: '100%', lg: 'auto' } }}>
+                                                    
+                                                    {/* Botão de Histórico (Sempre visível) */}
                                                     <Button 
                                                         onClick={() => verHistorico(item.id_paciente)}
                                                         variant="outlined" size="small" startIcon={<History size={16}/>}
-                                                        sx={{ 
-                                                            flex: { xs: 1, lg: 'initial' }, borderRadius: '10px', fontWeight: 800, border: '2px solid #E2E8F0', color: '#64748B', textTransform: 'none', py: 1,
-                                                            '&:hover': { bgcolor: '#F8FAFC', borderColor: '#CBD5E1' }
-                                                        }}
+                                                        sx={{ flex: { xs: 1, sm: 'initial' }, borderRadius: '10px', fontWeight: 800, border: '2px solid #E2E8F0', color: '#64748B', textTransform: 'none', py: 1, '&:hover': { bgcolor: '#F8FAFC', borderColor: '#CBD5E1' } }}
                                                     >
                                                         Histórico
                                                     </Button>
 
-                                                    <Button 
-                                                        variant="contained" startIcon={item.status === 'Finalizado' ? <FileText size={16}/> : <Play size={16} fill="currentColor" />}
-                                                        onClick={() => navigate('/dashboard/atendimento', { state: item })}
-                                                        sx={{ 
-                                                            flex: { xs: 1, lg: 'initial' }, bgcolor: item.status === 'Finalizado' ? '#F1F5F9' : '#0F172A', 
-                                                            color: item.status === 'Finalizado' ? '#0F172A' : '#FFFFFF',
-                                                            '&:hover': { bgcolor: item.status === 'Finalizado' ? '#E2E8F0' : '#32B5FE' }, 
-                                                            borderRadius: '10px', px: 3, py: 1, fontWeight: 800, textTransform: 'none', boxShadow: 'none' 
-                                                        }}
-                                                    >
-                                                        {item.status === 'Finalizado' ? 'Ver Resumo' : 'Atender'}
-                                                    </Button>
+                                                    {/* Botão de Exame */}
+                                                    {item.exame_base64 && (
+                                                        <Button 
+                                                            variant="outlined" size="small" startIcon={<Download size={16} />} 
+                                                            onClick={() => baixarExame(item.exame_base64, item.exame_nome)}
+                                                            sx={{ flex: { xs: 1, sm: 'initial' }, borderRadius: '10px', fontWeight: 800, border: '2px solid #E2E8F0', color: '#0F172A', textTransform: 'none', py: 1, '&:hover': { bgcolor: '#F8FAFC', borderColor: '#CBD5E1' } }}
+                                                        >
+                                                            Exame
+                                                        </Button>
+                                                    )}
+
+                                                    {/* Botões de Status (Atender, Ver Resumo ou Ver Cancelamento) */}
+                                                    {item.status === 'Cancelado' ? (
+                                                        <Button 
+                                                            variant="outlined" color="error" startIcon={<AlertCircle size={16} />} 
+                                                            onClick={() => abrirMotivo(item.motivo_cancelamento)}
+                                                            sx={{ flex: { xs: '100%', sm: 'initial' }, borderRadius: '10px', textTransform: 'none', fontWeight: 800, py: 1 }}
+                                                        >
+                                                            Ver Motivo
+                                                        </Button>
+                                                    ) : item.status === 'Concluido' || item.status === 'Finalizado' ? (
+                                                        <Button 
+                                                            variant="contained" startIcon={<FileText size={16}/>}
+                                                            onClick={() => navigate('/dashboard/atendimento', { state: item })}
+                                                            sx={{ flex: { xs: '100%', sm: 'initial' }, bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#1E293B' }, borderRadius: '10px', px: 3, py: 1, fontWeight: 800, textTransform: 'none', boxShadow: 'none' }}
+                                                        >
+                                                            Ver Resumo
+                                                        </Button>
+                                                    ) : item.status === 'Pendente pagamento' ? (
+                                                        <Typography variant="body2" color="#94A3B8" fontWeight={700} sx={{ flex: { xs: '100%', sm: 'initial' }, textAlign: 'center' }}>
+                                                            Aguardando pagamento
+                                                        </Typography>
+                                                    ) : (
+                                                        <Button 
+                                                            variant="contained" startIcon={<Play size={16} fill="currentColor" />}
+                                                            onClick={() => navigate('/dashboard/atendimento', { state: item })}
+                                                            sx={{ flex: { xs: '100%', sm: 'initial' }, bgcolor: '#32B5FE', color: '#FFFFFF', '&:hover': { bgcolor: '#0284C7' }, borderRadius: '10px', px: 3, py: 1, fontWeight: 800, textTransform: 'none', boxShadow: 'none' }}
+                                                        >
+                                                            Atender
+                                                        </Button>
+                                                    )}
                                                 </Box>
                                             </Box>
                                         </Box>
@@ -264,7 +326,7 @@ const AgendaMedica = () => {
                     )}
                 </Grid>
 
-                {/* MODAL DE HISTÓRICO PREMIUM */}
+                {/* MODAL DE HISTÓRICO PREMIUM (Mantido Original) */}
                 <Dialog open={openHistorico} onClose={() => setOpenHistorico(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
                     <DialogTitle sx={{ fontWeight: 900, color: '#0F172A', pb: 1 }}>Histórico Clínico</DialogTitle>
                     <DialogContent dividers sx={{ borderColor: '#F1F5F9' }}>
@@ -305,6 +367,27 @@ const AgendaMedica = () => {
                         <Button onClick={() => setOpenHistorico(false)} sx={{ fontWeight: 800, color: '#64748B', borderRadius: '10px', '&:hover': { bgcolor: '#F1F5F9' } }}>Fechar Janela</Button>
                     </DialogActions>
                 </Dialog>
+
+                {/* NOVO MODAL: MOTIVO DO CANCELAMENTO */}
+                <Dialog open={modalMotivoOpen} onClose={() => setModalMotivoOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
+                    <DialogTitle sx={{ pb: 1 }}>
+                        <Typography variant="h6" fontWeight={900} color="#0F172A">Consulta Cancelada</Typography>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Alert severity="error" icon={<XCircle size={24} />} sx={{ mt: 2, borderRadius: '12px', '& .MuiAlert-message': { width: '100%' } }}>
+                            <AlertTitle sx={{ fontWeight: 800 }}>Motivo informado pelo paciente:</AlertTitle>
+                            <Typography variant="body1" fontWeight={500} sx={{ mt: 1, fontStyle: 'italic' }}>
+                                "{motivoTexto}"
+                            </Typography>
+                        </Alert>
+                    </DialogContent>
+                    <DialogActions sx={{ px: 3, pb: 3 }}>
+                        <Button variant="contained" onClick={() => setModalMotivoOpen(false)} sx={{ bgcolor: '#0F172A', borderRadius: '10px', fontWeight: 800, boxShadow: 'none', textTransform: 'none', '&:hover': { bgcolor: '#1E293B' } }}>
+                            Fechar
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
             </Box>
         </Fade>
     );

@@ -102,6 +102,7 @@ router.put('/perfil', verifyToken, async (req, res) => {
         res.status(500).json({ error: "Erro ao atualizar as configurações do perfil" });
     }
 });
+
 // ==========================================
 // ROTA: AGENDA
 // ==========================================
@@ -116,11 +117,15 @@ router.get('/agenda', verifyToken, async (req, res) => {
                 TIME_FORMAT(a.horario, '%H:%i') as horario, 
                 a.status, 
                 a.tipo_agendamento,
+                a.motivo_cancelamento,
                 p.nome as paciente_nome,
-                c.nome_fantasia as clinica_nome
+                c.nome_fantasia as clinica_nome,
+                e.nome_arquivo as exame_nome,
+                e.arquivo_base64 as exame_base64
             FROM agendamentos a
             LEFT JOIN usuarios_cpf p ON a.id_paciente = p.id
             LEFT JOIN usuarios_cnpj c ON a.id_clinica = c.id
+            LEFT JOIN exames_agendamento e ON e.agendamento_id = a.id
             WHERE a.id_profissional = ?
         `;
 
@@ -134,8 +139,9 @@ router.get('/agenda', verifyToken, async (req, res) => {
         }
 
         if (status && status !== 'Todos') {
+            // Removido o toLowerCase() para casar perfeitamente com 'Pendente pagamento', 'Agendado', etc.
             query += ` AND a.status = ? `;
-            queryParams.push(status.toLowerCase());
+            queryParams.push(status);
         }
 
         if (busca) {
@@ -150,14 +156,20 @@ router.get('/agenda', verifyToken, async (req, res) => {
         res.json(rows.map(row => ({
             id: row.id,
             id_paciente: row.id_paciente,
-            hora: row.horario,
+            hora: row.horario,             // Mantido para compatibilidade com outras telas antigas
+            horario: row.horario,          // Adicionado para o novo AgendaMedica.jsx
             data: row.data_formatada,
             paciente: row.paciente_nome || "Paciente não identificado",
+            paciente_nome: row.paciente_nome || "Paciente não identificado", // Adicionado para o novo AgendaMedica.jsx
             clinica: row.clinica_nome || "Unidade Principal",
-            status: row.status.charAt(0).toUpperCase() + row.status.slice(1),
-            tipo: row.tipo_agendamento || 'Consulta'
+            status: row.status,            // Mantém a formatação original do banco para os Chips de cores funcionarem
+            tipo: row.tipo_agendamento || 'Consulta',
+            motivo_cancelamento: row.motivo_cancelamento,
+            exame_nome: row.exame_nome,
+            exame_base64: row.exame_base64
         })));
     } catch (error) {
+        console.error("Erro na rota /agenda:", error);
         res.status(500).json({ error: "Erro ao filtrar agenda" });
     }
 });

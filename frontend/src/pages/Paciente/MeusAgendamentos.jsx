@@ -201,7 +201,7 @@ const MeusAgendamentos = () => {
                                     <Stack spacing={1.5}>
                                         {agendamento.status === 'Pendente pagamento' && (
                                             <>
-                                                <Button fullWidth variant="contained" startIcon={<CreditCard size={18} />} onClick={() => handlePagarAgora(agendamento.id)} sx={{ color: '#FFFFFF', bgcolor: '#32B5FE', borderRadius: '12px', textTransform: 'none', fontWeight: 800, py: 1.2, boxShadow: 'none', '&:hover': { bgcolor: '#0284C7', boxShadow: 'none' } }}>
+                                                <Button fullWidth variant="contained" startIcon={<CreditCard size={18} />} onClick={() => handlePagarAgora(agendamento.id)} sx={{ color: '#FFFFFF', bgcolor: '#0F172A', borderRadius: '12px', textTransform: 'none', fontWeight: 800, py: 1.2, boxShadow: 'none', '&:hover': { bgcolor: '#32B5FE' } }}>
                                                     Pagar Consulta
                                                 </Button>
                                                 <Button fullWidth variant="outlined" color="error" startIcon={<XCircle size={18} />} onClick={() => abrirModalCancelar(agendamento)} sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, py: 1.2 }}>
@@ -212,7 +212,7 @@ const MeusAgendamentos = () => {
 
                                         {agendamento.status === 'Agendado' && (
                                             <>
-                                                <Button fullWidth variant="contained" startIcon={<Paperclip size={18} />} onClick={() => abrirModalExame(agendamento)} sx={{ bgcolor: '#0F172A', borderRadius: '12px', textTransform: 'none', fontWeight: 800, py: 1.2, boxShadow: 'none', '&:hover': { bgcolor: '#1E293B' } }}>
+                                                <Button fullWidth variant="contained" startIcon={<Paperclip size={18} />} onClick={() => abrirModalExame(agendamento)} sx={{ color: '#FFFFFF', bgcolor: '#0F172A', borderRadius: '12px', textTransform: 'none', fontWeight: 800, py: 1.2, boxShadow: 'none', '&:hover': { bgcolor: '#32B5FE' } }}>
                                                     Anexar Exame
                                                 </Button>
                                                 <Button fullWidth variant="outlined" disabled={!podeCancelar} color="error" startIcon={<XCircle size={18} />} onClick={() => abrirModalCancelar(agendamento)} sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, py: 1.2 }}>

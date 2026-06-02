@@ -349,32 +349,31 @@ router.get('/dashboard', verifyToken, async (req, res) => {
     try {
         const id_profissional = req.userId;
 
-        // KPI 1: Quantas consultas (Agendadas, Pagas ou Concluídas) existem para a data de hoje
+        // KPI 1: Consultas Hoje (Ignora os cancelados)
         const [resConsultasHoje] = await pool.query(
             `SELECT COUNT(*) AS total FROM agendamentos 
              WHERE id_profissional = ? AND data_agendamento = CURDATE() AND status != 'Cancelado'`,
             [id_profissional]
         );
 
-        // KPI 2: Total de pacientes únicos que esse médico já atendeu/agendou
+        // KPI 2: Total de pacientes únicos
         const [resTotalPacientes] = await pool.query(
             `SELECT COUNT(DISTINCT id_paciente) AS total FROM agendamentos 
              WHERE id_profissional = ?`,
             [id_profissional]
         );
 
-        // KPI 3: Faturamento Bruto do Mês Atual (Soma do valor das consultas Pagas/Agendadas e Concluídas)
+        // KPI 3: Faturamento Dia (Soma a coluna 'valor' apenas das consultas de HOJE que estão pagas ou concluídas)
         const [resFaturamento] = await pool.query(
-            `SELECT SUM(CAST(valor_consulta AS DECIMAL(10,2))) AS total 
+            `SELECT SUM(CAST(valor AS DECIMAL(10,2))) AS total 
              FROM agendamentos 
              WHERE id_profissional = ? 
-               AND MONTH(data_agendamento) = MONTH(CURDATE()) 
-               AND YEAR(data_agendamento) = YEAR(CURDATE())
+               AND data_agendamento = CURDATE() 
                AND status IN ('Agendado', 'Concluido')`,
             [id_profissional]
         );
 
-        // Próximos Atendimentos: Busca os próximos 5 pacientes agendados a partir de hoje
+        // Próximas Consultas: Busca os próximos 5 pacientes agendados a partir de hoje
         const [resProximas] = await pool.query(
             `SELECT 
                 a.id, 
@@ -396,7 +395,7 @@ router.get('/dashboard', verifyToken, async (req, res) => {
             kpis: {
                 consultasHoje: resConsultasHoje[0].total || 0,
                 totalPacientes: resTotalPacientes[0].total || 0,
-                faturamentoMes: resFaturamento[0].total || 0
+                faturamentoDia: resFaturamento[0].total || 0 // <-- Alterado o nome da variável
             },
             proximasConsultas: resProximas
         });

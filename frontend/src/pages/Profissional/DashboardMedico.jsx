@@ -8,7 +8,7 @@ const DashboardProfissional = () => {
     const navigate = useNavigate(); // Hook de navegação
     const [loading, setLoading] = useState(true);
     const [dados, setDados] = useState({
-        kpis: { consultasHoje: 0, totalPacientes: 0, faturamentoMes: 0 },
+        kpis: { consultasHoje: 0, totalPacientes: 0, faturamentoDia: 0 },
         proximasConsultas: []
     });
 
@@ -76,7 +76,7 @@ const DashboardProfissional = () => {
                     {[
                         { label: 'Consultas Hoje', val: dados.kpis.consultasHoje, icon: <Calendar color="#32B5FE" size={28} strokeWidth={2.5}/>, color: '#32B5FE', bg: 'rgba(50, 181, 254, 0.1)' },
                         { label: 'Total de Pacientes', val: dados.kpis.totalPacientes, icon: <Users color="#F97316" size={28} strokeWidth={2.5}/>, color: '#F97316', bg: '#FFF7ED' },
-                        { label: 'Faturamento Bruto (Mês)', val: `R$ ${Number(dados.kpis.faturamentoMes || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, icon: <TrendingUp color="#10B981" size={28} strokeWidth={2.5}/>, color: '#10B981', bg: '#ECFDF5' },
+                        { label: 'Faturamento do Dia', val: `R$ ${Number(dados.kpis.faturamentoDia || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, icon: <TrendingUp color="#10B981" size={28} strokeWidth={2.5}/>, color: '#10B981', bg: '#ECFDF5' },
                     ].map((kpi, i) => (
                         <Grid item xs={12} md={4} key={i}>
                             <Paper elevation={0} sx={{ 

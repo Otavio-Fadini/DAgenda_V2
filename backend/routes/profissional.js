@@ -285,7 +285,7 @@ router.get('/historico-paciente/:id', verifyToken, async (req, res) => {
                 h.evolucao,
                 h.prescricao,
                 p.nome as profissional_nome,
-                p.crm as profissional_crm  -- Troque 'crm' pelo nome correto da sua coluna, se for diferente (ex: conselho, registro_conselho)
+                p.conselho as profissional_crm
             FROM prontuarios h
             LEFT JOIN profissionais p ON h.id_profissional = p.id
             WHERE h.id_paciente = ?

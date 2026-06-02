@@ -2,6 +2,7 @@ const router = require('express').Router();
 const pool = require('../config/db');
 const { verifyToken } = require('./auth');
 const bcrypt = require('bcrypt'); // Adicionado para criptografar a nova senha do paciente
+const axios = require('axios');
 
 // ==========================================
 // ROTA: BUSCAR PERFIL DO PACIENTE
@@ -256,12 +257,18 @@ router.post('/agendamento/:id/pagar', verifyToken, async (req, res) => {
         }
 
         const consulta = rows[0];
-        const valor = parseFloat(consulta.valor_consulta) || 150.00; // Valor de fallback caso esteja vazio
+        const valor = parseFloat(consulta.valor_consulta) || 150.00;
 
-        // 2. Integração REST com Mercado Pago (Usando fetch nativo do Node.js)
-        // ATENÇÃO: Substitua pelo seu Access Token real do Mercado Pago (Production ou Test)
-        const accessToken = "APP_USR-SEU-ACCESS-TOKEN-AQUI"; 
+        // 2. Puxar a credencial do ficheiro .env
+        const accessToken = process.env.MP_ACCESS_TOKEN;
 
+        // Trava de segurança caso esqueça de colocar no .env
+        if (!accessToken) {
+            console.error("ERRO GRAVE: MP_ACCESS_TOKEN não está definido no ficheiro .env");
+            return res.status(500).json({ error: "Erro de configuração no servidor de pagamentos." });
+        }
+
+        // 3. Integração REST com Mercado Pago
         const mpResponse = await fetch("https://api.mercadopago.com/checkout/preferences", {
             method: "POST",
             headers: {
@@ -278,11 +285,10 @@ router.post('/agendamento/:id/pagar', verifyToken, async (req, res) => {
                         currency_id: "BRL"
                     }
                 ],
-                external_reference: agendamentoId.toString(), // O "Dedo duro" para sabermos qual consulta foi paga depois
-                // notification_url: "http://sua-ec2-aws.com/webhook/mercadopago", <-- Usaremos isto a seguir para atualizar o status sozinho!
+                external_reference: agendamentoId.toString(),
                 auto_return: "approved",
                 back_urls: {
-                    success: "http://localhost:5173/paciente/agendamentos", // URL do seu frontend para voltar após pagar
+                    success: "http://localhost:5173/paciente/agendamentos", 
                     failure: "http://localhost:5173/paciente/agendamentos",
                     pending: "http://localhost:5173/paciente/agendamentos"
                 }
@@ -298,8 +304,9 @@ router.post('/agendamento/:id/pagar', verifyToken, async (req, res) => {
             // Devolve o link mágico (init_point) para o React
             res.json({ link: mpData.init_point });
         } else {
-            console.error("Erro no Mercado Pago:", mpData);
-            res.status(500).json({ error: "Falha ao gerar link do Mercado Pago." });
+            // O F12 do navegador ou o log da AWS vai mostrar exatamente qual foi o erro
+            console.error("Erro devolvido pelo Mercado Pago:", mpData);
+            res.status(500).json({ error: "Falha ao gerar link do Mercado Pago.", detalhes: mpData });
         }
 
     } catch (error) {

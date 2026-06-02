@@ -33,26 +33,23 @@ app.use('/api/agendamentos', agendamentoRoutes);
 app.use('/api/clinica', clinicaRoutes);
 
 // ==========================================
-// ROTA GLOBAL: WEBHOOK DO MERCADO PAGO
+// ROTA GLOBAL: WEBHOOK DO MERCADO PAGO (À PROVA DE BALAS)
 // ==========================================
-app.post('/api/webhook/mercadopago', async (req, res) => {
-    // 1. Responde 200 OK imediatamente
+
+// Função principal do webhook para não repetirmos código
+const processarWebhookMP = async (req, res) => {
+    // 1. Responde 200 OK imediatamente para o MP parar de tentar
     res.status(200).send('OK');
+    console.log(`[WEBHOOK] Recebido na rota: ${req.originalUrl}`);
 
     try {
         const { type, data } = req.body;
-
-        // 2. Só nos interessa se for um aviso de "pagamento" e se tiver um ID
         if (type === 'payment' && data && data.id) {
             const paymentId = data.id;
             const accessToken = process.env.MP_ACCESS_TOKEN;
 
-            if (!accessToken) {
-                console.error("[WEBHOOK] Erro: Token do MP não encontrado no .env");
-                return;
-            }
+            if (!accessToken) return console.error("[WEBHOOK] Erro: Token do MP não encontrado.");
 
-            // 3. Vamos ao Mercado Pago perguntar: "O que é este pagamento com ID X?"
             const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
                 method: "GET",
                 headers: { "Authorization": `Bearer ${accessToken}` }
@@ -60,25 +57,32 @@ app.post('/api/webhook/mercadopago', async (req, res) => {
             
             const paymentData = await mpResponse.json();
 
-            // 4. Se o status for "approved" (Pago com sucesso)
             if (paymentData && paymentData.status === 'approved') {
-                
-                // O 'external_reference' guarda o ID do nosso agendamento
                 const agendamentoId = paymentData.external_reference; 
-
                 if (agendamentoId) {
-                    // 5. A MÁGICA ACONTECE AQUI: Atualiza o banco de dados
                     await pool.query(
                         `UPDATE agendamentos SET status = 'Agendado' WHERE id = ? AND status = 'Pendente pagamento'`,
                         [agendamentoId]
                     );
-                    console.log(`[WEBHOOK] Sucesso! Agendamento ${agendamentoId} pago e confirmado.`);
+                    console.log(`[WEBHOOK] Sucesso! Agendamento ${agendamentoId} pago com Pix.`);
                 }
             }
         }
     } catch (error) {
-        console.error("[WEBHOOK] Erro ao processar aviso do Mercado Pago:", error);
+        console.error("[WEBHOOK] Erro:", error);
     }
+};
+
+// Criamos a rota POST de duas formas para driblar qualquer bloqueio do seu servidor Windows
+app.post('/api/webhook/mercadopago', processarWebhookMP);
+app.post('/webhook/mercadopago', processarWebhookMP);
+
+// ROTA DE TESTE: Para você testar no seu navegador
+app.get('/api/webhook/mercadopago', (req, res) => {
+    res.status(200).json({ status: "🟢 WEBHOOK ACESSÍVEL", mensagem: "O Mercado Pago consegue chegar aqui!" });
+});
+app.get('/webhook/mercadopago', (req, res) => {
+    res.status(200).json({ status: "🟢 WEBHOOK ACESSÍVEL", mensagem: "Sem o /api também funciona!" });
 });
 
 // Teste de conexão

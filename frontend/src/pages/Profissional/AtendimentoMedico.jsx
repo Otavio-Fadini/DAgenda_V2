@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { 
     Box, Typography, Paper, TextField, Button, Divider, 
     Avatar, Stack, CircularProgress, Alert, List, ListItem, 
-    ListItemIcon, ListItemText, Fade, IconButton 
+    ListItemIcon, ListItemText, Fade, IconButton, Tabs, Tab, Chip, Tooltip
 } from '@mui/material';
 import { 
     Save, ArrowLeft, ClipboardList, Pill, 
-    Clock, Activity, CheckCircle2, AlertCircle, Info, FileText 
+    Clock, Activity, CheckCircle2, AlertCircle, Info, FileText, 
+    Stethoscope, FileSignature, Timer
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -19,19 +20,41 @@ const AtendimentoMedico = () => {
     const [evolucao, setEvolucao] = useState('');
     const [prescricao, setPrescricao] = useState('');
     const [loading, setLoading] = useState(false);
+    
+    // Navegação por Abas
+    const [abaAtiva, setAbaAtiva] = useState(0);
 
-    // Proteção de rota caso o state venha vazio
+    // Cronômetro da Consulta
+    const [segundos, setSegundos] = useState(0);
+
+    // Iniciar cronômetro
+    useEffect(() => {
+        const timer = setInterval(() => setSegundos(s => s + 1), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const formatarTempo = (totalSegundos) => {
+        const m = Math.floor(totalSegundos / 60).toString().padStart(2, '0');
+        const s = (totalSegundos % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    };
+
+    // Proteção de rota
     if (!state) {
         navigate('/dashboard/agenda-medica');
         return null;
     }
 
+    const nomePaciente = state.paciente || state.paciente_nome || 'Paciente não identificado';
+
     const finalizarAtendimento = async () => {
-        if (!evolucao.trim()) return alert("A evolução clínica é obrigatória.");
+        if (!evolucao.trim()) {
+            setAbaAtiva(0); // Volta para a aba da Anamnese
+            return alert("A Anamnese/Evolução clínica é obrigatória para finalizar a consulta.");
+        }
         
         const pacienteIdReal = state.id_paciente || state.pacienteId || state.id_user;
         if (!pacienteIdReal) {
-            console.error("Dados do estado:", state);
             return alert("Erro: ID do paciente não encontrado nos dados da agenda.");
         }
 
@@ -53,113 +76,224 @@ const AtendimentoMedico = () => {
         }
     };
 
+    const salvarRascunho = () => {
+        // Apenas simulação visual para dar segurança ao médico
+        alert("Rascunho salvo localmente com sucesso!");
+    };
+
+    // Estilo Moderno para o Input do Prontuário
+    const modernInputStyle = {
+        '& .MuiOutlinedInput-root': { 
+            bgcolor: '#FAFAFA', borderRadius: '16px', fontSize: '1.05rem', lineHeight: 1.6,
+            transition: 'all 0.2s',
+            '& fieldset': { borderColor: '#E2E8F0', borderWidth: '1px' },
+            '&:hover fieldset': { borderColor: '#CBD5E1' },
+            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
+            '&.Mui-focused': { bgcolor: '#FFFFFF', boxShadow: '0 4px 20px rgba(50, 181, 254, 0.08)' }
+        }
+    };
+
     return (
         <Fade in={true} timeout={600}>
             <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', overflow: 'hidden' }}>
                 
-                {/* HEADER FIXO - Mantendo a estrutura original completa */}
-                <Paper elevation={0} sx={{ p: 2, px: 4, borderBottom: '1px solid #E2E8F0', borderRadius: 0, bgcolor: 'white', zIndex: 10 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Stack direction="row" spacing={3} alignItems="center">
-                            <Button onClick={() => navigate('/dashboard/agenda-medica')} startIcon={<ArrowLeft size={20} />} sx={{ color: '#64748B', fontWeight: 700, textTransform: 'none' }}>Voltar</Button>
-                            <Divider orientation="vertical" flexItem />
-                            <Avatar sx={{ bgcolor: '#0F172A', fontWeight: 900, width: 40, height: 40 }}>{state.paciente?.[0] || 'P'}</Avatar>
-                            <Box>
-                                <Typography variant="subtitle1" fontWeight={900} color="#0F172A">{state.paciente}</Typography>
-                                <Typography variant="caption" color="#64748B" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                    <Clock size={12} /> {state.hora} • <Activity size={12} /> {state.tipo || 'Consulta'}
+                {/* 1. CABEÇALHO FIXO PREMIUM (Sticky Header) */}
+                <Paper elevation={0} sx={{ px: 4, py: 2, borderBottom: '1px solid #E2E8F0', borderRadius: 0, bgcolor: 'white', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 20px -10px rgba(0,0,0,0.05)' }}>
+                    <Stack direction="row" spacing={3} alignItems="center">
+                        <Tooltip title="Voltar para Agenda" arrow>
+                            <IconButton onClick={() => navigate('/dashboard/agenda-medica')} sx={{ bgcolor: '#F1F5F9', '&:hover': { bgcolor: '#E2E8F0', color: '#0F172A' } }}>
+                                <ArrowLeft size={20} />
+                            </IconButton>
+                        </Tooltip>
+                        
+                        <Divider orientation="vertical" flexItem sx={{ borderColor: '#E2E8F0' }} />
+                        
+                        <Avatar sx={{ bgcolor: '#0F172A', color: '#FFF', fontWeight: 900, width: 48, height: 48, border: '2px solid #F1F5F9' }}>
+                            {nomePaciente[0].toUpperCase()}
+                        </Avatar>
+                        
+                        <Box>
+                            <Typography variant="h6" fontWeight={900} color="#0F172A" sx={{ lineHeight: 1.2 }}>
+                                {nomePaciente}
+                            </Typography>
+                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+                                <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Activity size={14} /> Atendimento Presencial
                                 </Typography>
-                            </Box>
-                        </Stack>
+                                <Typography variant="caption" color="#CBD5E1">•</Typography>
+                                {/* Exemplo de Tags Clínicas (Podem vir do banco no futuro) */}
+                                <Chip label="Alergia a Dipirona" size="small" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800, bgcolor: '#FEF2F2', color: '#EF4444' }} />
+                            </Stack>
+                        </Box>
+                    </Stack>
 
-                        <Button 
-                            variant="contained" 
-                            startIcon={loading ? <CircularProgress size={18} color="inherit"/> : <Save size={18}/>}
-                            onClick={finalizarAtendimento}
-                            disabled={loading}
-                            sx={{ 
-                                bgcolor: '#0F172A', borderRadius: 2.5, fontWeight: 900, px: 4, py: 1.2, textTransform: 'none', color: '#FFFFFF',
-                                '&:hover': { bgcolor: '#32B5FE' } 
-                            }}
-                        >
-                            {loading ? 'Salvando...' : 'Finalizar Atendimento'}
-                        </Button>
+                    {/* Cronômetro */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1, bgcolor: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                        <Timer size={18} color="#32B5FE" />
+                        <Typography variant="subtitle1" fontWeight={900} color="#0F172A" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                            {formatarTempo(segundos)}
+                        </Typography>
                     </Box>
                 </Paper>
 
-                {/* ÁREA DE TRABALHO (SPLIT) */}
+                {/* 2. ÁREA CENTRAL DE TRABALHO */}
                 <Box sx={{ flexGrow: 1, display: 'flex', overflow: 'hidden' }}>
                     
-                    {/* CAMPOS DE EDIÇÃO (ESQUERDA) */}
-                    <Box sx={{ flexGrow: 1, p: 4, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #E2E8F0', bgcolor: 'white' }}>
-                            <Typography variant="subtitle2" fontWeight={900} color="primary" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <ClipboardList size={18} /> ANAMNESE E EVOLUÇÃO CLÍNICA
-                            </Typography>
-                            <TextField
-                                multiline fullWidth minRows={10} value={evolucao} onChange={(e) => setEvolucao(e.target.value)}
-                                placeholder="Descreva o quadro clínico, exame físico e observações..."
-                                sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#F8FAFC', borderRadius: 3, fontSize: '1rem' }, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#F1F5F9' } }}
-                            />
-                        </Paper>
+                    {/* ESQUERDA: EDITOR DO PRONTUÁRIO */}
+                    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF' }}>
+                        
+                        {/* Menu de Abas */}
+                        <Box sx={{ borderBottom: 1, borderColor: '#E2E8F0', px: 4, pt: 2 }}>
+                            <Tabs 
+                                value={abaAtiva} 
+                                onChange={(e, newValue) => setAbaAtiva(newValue)}
+                                sx={{ 
+                                    '& .MuiTab-root': { textTransform: 'none', fontWeight: 800, fontSize: '1rem', minHeight: 60 },
+                                    '& .Mui-selected': { color: '#32B5FE' },
+                                    '& .MuiTabs-indicator': { bgcolor: '#32B5FE', height: 4, borderRadius: '4px 4px 0 0' }
+                                }}
+                            >
+                                <Tab icon={<Stethoscope size={18}/>} iconPosition="start" label="Anamnese e Evolução" />
+                                <Tab icon={<Pill size={18}/>} iconPosition="start" label="Prescrição Médica" />
+                                <Tab icon={<FileSignature size={18}/>} iconPosition="start" label="Atestados / Exames" />
+                            </Tabs>
+                        </Box>
 
-                        <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #E2E8F0', bgcolor: 'white' }}>
-                            <Typography variant="subtitle2" fontWeight={900} color="secondary" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Pill size={18} /> PRESCRIÇÃO E CONDUTA
-                            </Typography>
-                            <TextField
-                                multiline fullWidth minRows={5} value={prescricao} onChange={(e) => setPrescricao(e.target.value)}
-                                placeholder="Medicamentos, dosagens e orientações..."
-                                sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#F8FAFC', borderRadius: 3, fontSize: '1rem' }, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#F1F5F9' } }}
-                            />
-                        </Paper>
+                        {/* Conteúdo das Abas */}
+                        <Box sx={{ flexGrow: 1, p: 4, overflowY: 'auto', bgcolor: '#F8FAFC' }}>
+                            
+                            {/* ABA 0: ANAMNESE E EVOLUÇÃO */}
+                            {abaAtiva === 0 && (
+                                <Fade in={true}>
+                                    <Box>
+                                        <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 1 }}>Evolução Clínica</Typography>
+                                        <Typography variant="body2" color="#64748B" sx={{ mb: 3 }}>Registe as queixas principais, histórico de doenças e o exame físico objetivo.</Typography>
+                                        <TextField
+                                            multiline fullWidth minRows={15} 
+                                            value={evolucao} onChange={(e) => setEvolucao(e.target.value)}
+                                            placeholder="S (Subjetivo): Paciente relata dor...&#10;O (Objetivo): PA 120x80, corado...&#10;A (Avaliação): Hipótese diagnóstica...&#10;P (Plano): ..."
+                                            sx={modernInputStyle}
+                                        />
+                                    </Box>
+                                </Fade>
+                            )}
+
+                            {/* ABA 1: PRESCRIÇÃO */}
+                            {abaAtiva === 1 && (
+                                <Fade in={true}>
+                                    <Box>
+                                        <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 1 }}>Receituário e Conduta</Typography>
+                                        <Typography variant="body2" color="#64748B" sx={{ mb: 3 }}>Prescreva os medicamentos, dosagens e orientações para casa.</Typography>
+                                        <TextField
+                                            multiline fullWidth minRows={15} 
+                                            value={prescricao} onChange={(e) => setPrescricao(e.target.value)}
+                                            placeholder="1. Dipirona 500mg ------ 1 cx&#10;Tomar 1 comprimido de 8/8h em caso de dor.&#10;&#10;2. Repouso absoluto por 3 dias."
+                                            sx={modernInputStyle}
+                                        />
+                                    </Box>
+                                </Fade>
+                            )}
+
+                            {/* ABA 2: ATESTADOS (Visual Decorativo por enquanto) */}
+                            {abaAtiva === 2 && (
+                                <Fade in={true}>
+                                    <Box sx={{ textAlign: 'center', py: 10, px: 2 }}>
+                                        <FileText size={64} color="#CBD5E1" style={{ marginBottom: 16 }} />
+                                        <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 1 }}>Emissão de Documentos</Typography>
+                                        <Typography variant="body1" color="#64748B" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
+                                            Nesta área, você poderá gerar atestados médicos padronizados, pedidos de exames laboratoriais e encaminhamentos com a sua assinatura digital.
+                                        </Typography>
+                                        <Stack direction="row" spacing={2} justifyContent="center">
+                                            <Button variant="outlined" startIcon={<FileSignature size={18}/>} sx={{ borderRadius: '12px', fontWeight: 800, textTransform: 'none', py: 1.5, px: 3, borderColor: '#CBD5E1', color: '#0F172A' }}>Gerar Atestado Médico</Button>
+                                            <Button variant="outlined" startIcon={<Activity size={18}/>} sx={{ borderRadius: '12px', fontWeight: 800, textTransform: 'none', py: 1.5, px: 3, borderColor: '#CBD5E1', color: '#0F172A' }}>Pedir Exames</Button>
+                                        </Stack>
+                                    </Box>
+                                </Fade>
+                            )}
+                        </Box>
                     </Box>
 
-                    {/* PAINEL AUXILIAR (DIREITA) */}
-                    <Box sx={{ width: 380, bgcolor: 'white', borderLeft: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', p: 3 }}>
-                        <Typography variant="h6" fontWeight={900} sx={{ mb: 3, color: '#0F172A' }}>Painel Auxiliar</Typography>
+                    {/* DIREITA: PAINEL AUXILIAR (Resumo) */}
+                    <Box sx={{ width: 340, bgcolor: 'white', borderLeft: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column' }}>
+                        <Box sx={{ p: 3, borderBottom: '1px solid #F1F5F9' }}>
+                            <Typography variant="subtitle1" fontWeight={900} color="#0F172A">Resumo da Sessão</Typography>
+                        </Box>
                         
-                        <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-                            <Stack spacing={3}>
+                        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 3 }}>
+                            <Stack spacing={4}>
+                                {/* Auditoria Inteligente */}
                                 <Box>
-                                    <Typography variant="caption" fontWeight={900} color="#94A3B8" sx={{ letterSpacing: 1.2 }}>CHECKLIST DE AUDITORIA</Typography>
-                                    <List sx={{ mt: 1 }}>
-                                        <ListItem disablePadding sx={{ mb: 1 }}>
-                                            <ListItemIcon sx={{ minWidth: 35 }}>{evolucao.length > 20 ? <CheckCircle2 size={18} color="#10B981" /> : <AlertCircle size={18} color="#94A3B8" />}</ListItemIcon>
-                                            <ListItemText primary="Evolução detalhada" primaryTypographyProps={{ variant: 'body2', fontWeight: 700 }} />
+                                    <Typography variant="overline" fontWeight={900} color="#94A3B8" sx={{ letterSpacing: 1 }}>Status do Prontuário</Typography>
+                                    <List sx={{ mt: 1, p: 0 }}>
+                                        <ListItem disablePadding sx={{ mb: 1.5 }}>
+                                            <ListItemIcon sx={{ minWidth: 35 }}>{evolucao.length > 20 ? <CheckCircle2 size={20} color="#10B981" /> : <AlertCircle size={20} color="#CBD5E1" />}</ListItemIcon>
+                                            <ListItemText primary="Anamnese preenchida" primaryTypographyProps={{ variant: 'body2', fontWeight: evolucao.length > 20 ? 800 : 500, color: evolucao.length > 20 ? '#0F172A' : '#94A3B8' }} />
                                         </ListItem>
-                                        <ListItem disablePadding sx={{ mb: 1 }}>
-                                            <ListItemIcon sx={{ minWidth: 35 }}>{prescricao.length > 5 ? <CheckCircle2 size={18} color="#10B981" /> : <AlertCircle size={18} color="#94A3B8" />}</ListItemIcon>
-                                            <ListItemText primary="Conduta preenchida" primaryTypographyProps={{ variant: 'body2', fontWeight: 700 }} />
+                                        <ListItem disablePadding>
+                                            <ListItemIcon sx={{ minWidth: 35 }}>{prescricao.length > 5 ? <CheckCircle2 size={20} color="#10B981" /> : <AlertCircle size={20} color="#CBD5E1" />}</ListItemIcon>
+                                            <ListItemText primary="Conduta/Receita gerada" primaryTypographyProps={{ variant: 'body2', fontWeight: prescricao.length > 5 ? 800 : 500, color: prescricao.length > 5 ? '#0F172A' : '#94A3B8' }} />
                                         </ListItem>
                                     </List>
                                 </Box>
 
-                                <Divider />
+                                <Divider sx={{ borderColor: '#F1F5F9' }} />
 
+                                {/* Dados Técnicos */}
                                 <Box>
-                                    <Typography variant="caption" fontWeight={900} color="#94A3B8" sx={{ letterSpacing: 1.2 }}>DADOS DA SESSÃO</Typography>
-                                    <Paper variant="outlined" sx={{ mt: 2, p: 2, borderRadius: 3, bgcolor: '#F8FAFC', borderColor: '#E2E8F0' }}>
+                                    <Typography variant="overline" fontWeight={900} color="#94A3B8" sx={{ letterSpacing: 1 }}>Detalhes do Agendamento</Typography>
+                                    <Paper elevation={0} sx={{ mt: 1.5, p: 2, borderRadius: '16px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                                         <Stack spacing={1.5}>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography variant="caption" fontWeight={700} color="#64748B">ID Atendimento:</Typography><Typography variant="caption" fontWeight={800}>#{state.id}</Typography></Box>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography variant="caption" fontWeight={700} color="#64748B">Profissional:</Typography><Typography variant="caption" fontWeight={800}>Você</Typography></Box>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography variant="caption" fontWeight={700} color="#64748B">Início:</Typography><Typography variant="caption" fontWeight={800}>{state.hora}</Typography></Box>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography variant="body2" fontWeight={600} color="#64748B">ID da Consulta</Typography><Typography variant="body2" fontWeight={800}>#{state.id}</Typography></Box>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography variant="body2" fontWeight={600} color="#64748B">Horário Marcado</Typography><Typography variant="body2" fontWeight={800}>{state.hora || state.horario}</Typography></Box>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography variant="body2" fontWeight={600} color="#64748B">Status Atual</Typography><Typography variant="body2" fontWeight={800} color="#32B5FE">Em Atendimento</Typography></Box>
                                         </Stack>
                                     </Paper>
                                 </Box>
 
-                                <Alert icon={<Info size={18} />} severity="info" sx={{ borderRadius: 3, fontSize: '0.75rem', fontWeight: 600 }}>
-                                    Ao finalizar, este prontuário será criptografado e anexado permanentemente.
+                                <Alert icon={<Info size={20} />} severity="info" sx={{ borderRadius: '16px', bgcolor: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE', '& .MuiAlert-message': { fontSize: '0.8rem', fontWeight: 600 } }}>
+                                    Ao finalizar, este documento receberá um carimbo de tempo (timestamp) e será criptografado no histórico do paciente.
                                 </Alert>
                             </Stack>
                         </Box>
-
-                        <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #F1F5F9' }}>
-                            <Button fullWidth variant="outlined" size="small" sx={{ mb: 1, borderRadius: 2, fontWeight: 700, textTransform: 'none', color: '#64748B', borderColor: '#E2E8F0' }}>Solicitar Exames</Button>
-                            <Button fullWidth variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', color: '#64748B', borderColor: '#E2E8F0' }}>Atestado Médico</Button>
-                        </Box>
                     </Box>
                 </Box>
+
+                {/* 3. BARRA DE AÇÕES INFERIOR (Bottom Bar) */}
+                <Paper elevation={0} sx={{ p: 2, px: 4, borderTop: '1px solid #E2E8F0', bgcolor: 'white', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Button 
+                        variant="text" 
+                        onClick={() => navigate('/dashboard/agenda-medica')}
+                        sx={{ color: '#64748B', fontWeight: 800, textTransform: 'none', px: 3 }}
+                    >
+                        Cancelar
+                    </Button>
+                    
+                    <Stack direction="row" spacing={2}>
+                        <Button 
+                            variant="outlined" 
+                            startIcon={<Save size={18}/>}
+                            onClick={salvarRascunho}
+                            sx={{ borderRadius: '12px', fontWeight: 800, px: 3, py: 1.2, textTransform: 'none', borderColor: '#E2E8F0', color: '#0F172A', '&:hover': { bgcolor: '#F8FAFC', borderColor: '#CBD5E1' } }}
+                        >
+                            Salvar Rascunho
+                        </Button>
+                        
+                        <Button 
+                            variant="contained" 
+                            startIcon={loading ? <CircularProgress size={18} color="inherit"/> : <CheckCircle2 size={18}/>}
+                            onClick={finalizarAtendimento}
+                            disabled={loading}
+                            sx={{ 
+                                bgcolor: '#0F172A', borderRadius: '12px', fontWeight: 900, px: 4, py: 1.2, textTransform: 'none', color: '#FFFFFF', boxShadow: '0 8px 16px -8px rgba(15,23,42,0.5)',
+                                '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 12px 20px -8px rgba(50, 181, 254, 0.6)' },
+                                transition: 'all 0.3s'
+                            }}
+                        >
+                            {loading ? 'Processando...' : 'Finalizar Atendimento'}
+                        </Button>
+                    </Stack>
+                </Paper>
+
             </Box>
         </Fade>
     );

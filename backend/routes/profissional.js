@@ -382,7 +382,8 @@ router.get('/dashboard', verifyToken, async (req, res) => {
                 TIME_FORMAT(a.horario, '%H:%i') as horario,
                 a.status,
                 a.tipo_agendamento as tipo,
-                p.nome as paciente
+                p.nome as paciente,
+                p.foto_perfil
              FROM agendamentos a
              JOIN usuarios_cpf p ON a.id_paciente = p.id
              WHERE a.id_profissional = ? AND a.data_agendamento >= CURDATE()

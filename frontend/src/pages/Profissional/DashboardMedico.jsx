@@ -124,7 +124,7 @@ const DashboardProfissional = () => {
                                 transition: 'all 0.2s', '&:hover': { bgcolor: '#F8FAFC' } 
                             }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                                    <Avatar sx={{ width: 56, height: 56, bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 900, border: '2px solid #E2E8F0', fontSize: '1.2rem' }}>
+                                    <Avatar src={c.foto_perfil} sx={{ width: 56, height: 56, bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 900, border: '2px solid #E2E8F0', fontSize: '1.2rem' }}>
                                         {c.paciente ? c.paciente[0].toUpperCase() : 'P'}
                                     </Avatar>
                                     <Box>
@@ -147,16 +147,28 @@ const DashboardProfissional = () => {
                                         size="small" 
                                         sx={{ fontWeight: 800, fontSize: '0.7rem', height: 28, px: 1, borderRadius: '8px', letterSpacing: '0.5px', bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border }} 
                                     />
-                                    <Button 
-                                        variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
-                                        onClick={() => navigate('/dashboard/atendimento', { state: c })} // Envia os dados para a tela de atendimento
-                                        sx={{ 
-                                            fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFF', py: 1, px: 2, boxShadow: 'none',
-                                            '&:hover': { bgcolor: '#32B5FE', boxShadow: '0 4px 10px rgba(50, 181, 254, 0.3)' }
-                                        }}
-                                    >
-                                        {c.status === 'Concluido' ? 'Ver Resumo' : 'Abrir Prontuário'}
-                                    </Button>
+                                    
+                                    {/* 👇 AQUI: Lógica condicional! Só mostra o botão se NÃO estiver pendente de pagamento nem cancelado 👇 */}
+                                    {c.status === 'Pendente pagamento' || c.status === 'Pendente' ? (
+                                        <Typography variant="body2" color="#94A3B8" fontWeight={700} sx={{ textAlign: 'center', minWidth: 120 }}>
+                                            Aguardando pagamento
+                                        </Typography>
+                                    ) : c.status === 'Cancelado' ? (
+                                        <Typography variant="body2" color="#EF4444" fontWeight={700} sx={{ textAlign: 'center', minWidth: 120 }}>
+                                            Consulta Cancelada
+                                        </Typography>
+                                    ) : (
+                                        <Button 
+                                            variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
+                                            onClick={() => navigate('/dashboard/atendimento', { state: c })} 
+                                            sx={{ 
+                                                fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFF', py: 1, px: 2, boxShadow: 'none', minWidth: 120,
+                                                '&:hover': { bgcolor: '#32B5FE', boxShadow: '0 4px 10px rgba(50, 181, 254, 0.3)' }
+                                            }}
+                                        >
+                                            {c.status === 'Concluido' ? 'Ver Resumo' : 'Atender'}
+                                        </Button>
+                                    )}
                                 </Box>
                             </Box>
                         );

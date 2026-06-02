@@ -235,4 +235,77 @@ router.get('/financeiro', verifyToken, async (req, res) => {
     }
 });
 
+// ==========================================
+// ROTA: GERAR LINK DE PAGAMENTO (MERCADO PAGO)
+// ==========================================
+router.post('/agendamento/:id/pagar', verifyToken, async (req, res) => {
+    const pacienteId = req.userId;
+    const agendamentoId = req.params.id;
+
+    try {
+        // 1. Busca o valor da consulta e o nome do médico
+        const [rows] = await pool.query(`
+            SELECT a.id, p.nome, p.valor_consulta 
+            FROM agendamentos a
+            JOIN profissionais p ON a.id_profissional = p.id
+            WHERE a.id = ? AND a.id_paciente = ?
+        `, [agendamentoId, pacienteId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Agendamento não encontrado." });
+        }
+
+        const consulta = rows[0];
+        const valor = parseFloat(consulta.valor_consulta) || 150.00; // Valor de fallback caso esteja vazio
+
+        // 2. Integração REST com Mercado Pago (Usando fetch nativo do Node.js)
+        // ATENÇÃO: Substitua pelo seu Access Token real do Mercado Pago (Production ou Test)
+        const accessToken = "APP_USR-SEU-ACCESS-TOKEN-AQUI"; 
+
+        const mpResponse = await fetch("https://api.mercadopago.com/checkout/preferences", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                items: [
+                    {
+                        title: `DAGENDA - Consulta Dr(a). ${consulta.nome}`,
+                        description: `Pagamento de consulta médica (Ref: ${agendamentoId})`,
+                        unit_price: valor,
+                        quantity: 1,
+                        currency_id: "BRL"
+                    }
+                ],
+                external_reference: agendamentoId.toString(), // O "Dedo duro" para sabermos qual consulta foi paga depois
+                // notification_url: "http://sua-ec2-aws.com/webhook/mercadopago", <-- Usaremos isto a seguir para atualizar o status sozinho!
+                auto_return: "approved",
+                back_urls: {
+                    success: "http://localhost:5173/paciente/agendamentos", // URL do seu frontend para voltar após pagar
+                    failure: "http://localhost:5173/paciente/agendamentos",
+                    pending: "http://localhost:5173/paciente/agendamentos"
+                }
+            })
+        });
+
+        const mpData = await mpResponse.json();
+
+        if (mpData.id) {
+            // Guarda o link de pagamento na tabela para histórico
+            await pool.query('UPDATE agendamentos SET link_pagamento = ? WHERE id = ?', [mpData.init_point, agendamentoId]);
+            
+            // Devolve o link mágico (init_point) para o React
+            res.json({ link: mpData.init_point });
+        } else {
+            console.error("Erro no Mercado Pago:", mpData);
+            res.status(500).json({ error: "Falha ao gerar link do Mercado Pago." });
+        }
+
+    } catch (error) {
+        console.error("Erro ao processar pagamento:", error);
+        res.status(500).json({ error: "Erro interno no servidor.", motivoReal: error.message });
+    }
+});
+
 module.exports = router;

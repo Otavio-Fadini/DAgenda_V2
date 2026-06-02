@@ -48,8 +48,23 @@ const MeusAgendamentos = () => {
         return diferencaDias >= 7;
     };
 
-    const handlePagarAgora = (id) => {
-        alert(`Iniciando pagamento para o agendamento ${id}. (Integração na Fase 4)`);
+    const handlePagarAgora = async (id) => {
+        setLoadingAcao(true);
+        try {
+            const response = await api.post(`/paciente/agendamento/${id}/pagar`);
+            
+            if (response.data.link) {
+                // Abre a página de checkout seguro do Mercado Pago na mesma aba
+                window.location.href = response.data.link;
+            } else {
+                alert("Não foi possível gerar o link de pagamento.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao conectar com a plataforma de pagamentos.");
+        } finally {
+            setLoadingAcao(false);
+        }
     };
 
     const abrirModalCancelar = (agendamento) => {
@@ -186,7 +201,7 @@ const MeusAgendamentos = () => {
                                     <Stack spacing={1.5}>
                                         {agendamento.status === 'Pendente pagamento' && (
                                             <>
-                                                <Button fullWidth variant="contained" startIcon={<CreditCard size={18} />} onClick={() => handlePagarAgora(agendamento.id)} sx={{ bgcolor: '#32B5FE', borderRadius: '12px', textTransform: 'none', fontWeight: 800, py: 1.2, boxShadow: 'none', '&:hover': { bgcolor: '#0284C7', boxShadow: 'none' } }}>
+                                                <Button fullWidth variant="contained" startIcon={<CreditCard size={18} />} onClick={() => handlePagarAgora(agendamento.id)} sx={{ color: '#FFFFFF', bgcolor: '#32B5FE', borderRadius: '12px', textTransform: 'none', fontWeight: 800, py: 1.2, boxShadow: 'none', '&:hover': { bgcolor: '#0284C7', boxShadow: 'none' } }}>
                                                     Pagar Consulta
                                                 </Button>
                                                 <Button fullWidth variant="outlined" color="error" startIcon={<XCircle size={18} />} onClick={() => abrirModalCancelar(agendamento)} sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, py: 1.2 }}>

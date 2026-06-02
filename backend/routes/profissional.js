@@ -281,7 +281,7 @@ router.get('/historico-paciente/:id', verifyToken, async (req, res) => {
         const [historico] = await pool.query(`
             SELECT 
                 h.id,
-                DATE_FORMAT(h.data_registro, '%d/%m/%Y') as data_formatada,
+                DATE_FORMAT(h.data_atendimento, '%d/%m/%Y') as data_formatada,
                 h.evolucao,
                 h.prescricao,
                 p.nome as profissional_nome,
@@ -289,7 +289,7 @@ router.get('/historico-paciente/:id', verifyToken, async (req, res) => {
             FROM prontuarios h
             LEFT JOIN profissionais p ON h.id_profissional = p.id
             WHERE h.id_paciente = ?
-            ORDER BY h.data_registro DESC
+            ORDER BY h.data_atendimento DESC
         `, [pacienteId]);
 
         res.json(historico);

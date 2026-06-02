@@ -286,6 +286,10 @@ router.post('/agendamento/:id/pagar', verifyToken, async (req, res) => {
                 ],
                 external_reference: agendamentoId.toString(),
                 auto_return: "approved",
+                
+                // 👇 A BALA DE PRATA: Adicione esta linha exata! 👇
+                notification_url: "https://www.dagenda.com.br/api/webhook/mercadopago",
+                
                 // URLS DE RETORNO APONTANDO PARA O DOMÍNIO OFICIAL EM HTTPS:
                 back_urls: {
                     success: "https://www.dagenda.com.br/paciente/agendamentos",

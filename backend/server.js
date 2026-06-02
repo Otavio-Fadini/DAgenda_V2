@@ -45,7 +45,7 @@ app.post('/api/webhook/mercadopago', async (req, res) => {
         // 2. Só nos interessa se for um aviso de "pagamento" e se tiver um ID
         if (type === 'payment' && data && data.id) {
             const paymentId = data.id;
-            const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+            const accessToken = process.env.MP_ACCESS_TOKEN;
 
             if (!accessToken) {
                 console.error("[WEBHOOK] Erro: Token do MP não encontrado no .env");

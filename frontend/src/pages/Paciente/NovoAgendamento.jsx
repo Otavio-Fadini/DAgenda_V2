@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { 
     Box, Typography, Paper, Grid, MenuItem, TextField, Button, Stepper, Step, 
     StepLabel, Avatar, CardActionArea, Divider, FormControlLabel, Switch, 
-    Chip, Stack, CircularProgress, InputBase, alpha, IconButton, Fade, Zoom
+    Chip, Stack, CircularProgress, InputBase, alpha, IconButton, Fade, Zoom,
+    Alert, AlertTitle
 } from '@mui/material';
 import { 
     Search, MapPin, ShieldCheck, Star, ChevronLeft, ChevronRight, 
-    Building2, User, Car, LocateFixed, ArrowRight, CreditCard, QrCode, Lock, Wifi, Accessibility
+    Building2, User, Car, LocateFixed, ArrowRight, CheckCircle, Clock, Wifi, Accessibility
 } from 'lucide-react';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -52,9 +53,8 @@ const NovoAgendamento = () => {
 
     const [busca, setBusca] = useState('');
     const [apenasConvenio, setApenasConvenio] = useState(false);
-    const [metodoPagamento, setMetodoPagamento] = useState('pix');
 
-    // NOVOS ESTADOS PARA OS HORÁRIOS DINÂMICOS
+    // ESTADOS PARA OS HORÁRIOS DINÂMICOS
     const [horariosDisponiveis, setHorariosDisponiveis] = useState([]);
     const [loadingHorarios, setLoadingHorarios] = useState(false);
 
@@ -172,23 +172,27 @@ const NovoAgendamento = () => {
         }
     };
 
-    const processarPagamentoEAgendar = async () => {
+    // NOVA FUNÇÃO: PRÉ-AGENDAR E REDIRECIONAR PARA TELA DE PAGAMENTO
+    const handleConfirmarAgendamento = async () => {
         setLoading(true);
         try {
-            const response = await api.post('/agendamentos/agendar', {
+            await api.post('/agendamentos/agendar', {
                 id_profissional: agendamento.id_profissional,
                 id_clinica: agendamento.id_clinica,
                 data_agendamento: agendamento.data_agendamento,
                 horario: agendamento.horario,
-                metodo_pagamento: metodoPagamento,
                 valor_consulta: agendamento.valor_consulta,
                 nome_medico: agendamento.nome_medico
             });
 
-            if (response.data?.init_point) window.location.href = response.data.init_point;
-            else navigate('/dashboard/meus-agendamentos');
-        } catch (err) { alert("Erro ao processar."); } 
-        finally { setLoading(false); }
+            // Redireciona para o painel de agendamentos onde está o botão do Mercado Pago
+            navigate('/dashboard/meus-agendamentos');
+        } catch (err) { 
+            console.error(err);
+            alert("Erro ao realizar o pré-agendamento. Tente novamente."); 
+        } finally { 
+            setLoading(false); 
+        }
     };
 
     const getIconForComodidade = (nome) => {
@@ -216,7 +220,7 @@ const NovoAgendamento = () => {
             {/* TOP BAR */}
             <Box sx={{ px: { xs: 2, md: 4 }, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#FFF', borderBottom: '1px solid #F1F5F9', zIndex: 10 }}>
                 <Stepper activeStep={activeStep} sx={{ width: '100%', maxWidth: 800, '& .MuiStepLabel-label': { fontWeight: 700, fontSize: '0.9rem', color: '#64748B' }, '& .MuiStepLabel-label.Mui-active': { color: '#0F172A', fontWeight: 900 } }}>
-                    {['Especialista', 'Localização', 'Agendamento', 'Pagamento'].map(label => (<Step key={label}><StepLabel>{label}</StepLabel></Step>))}
+                    {['Especialista', 'Localização', 'Agendamento', 'Confirmação'].map(label => (<Step key={label}><StepLabel>{label}</StepLabel></Step>))}
                 </Stepper>
                 <Button variant="outlined" onClick={() => navigate(-1)} sx={{ ml: 2, borderRadius: '12px', textTransform: 'none', fontWeight: 700, color: '#64748B', borderColor: '#E2E8F0', '&:hover': { bgcolor: '#F1F5F9', borderColor: '#CBD5E1' } }}>Cancelar</Button>
             </Box>
@@ -442,7 +446,7 @@ const NovoAgendamento = () => {
                     </Fade>
                 )}
 
-                {/* PASSO 3: CHECKOUT DE PAGAMENTO */}
+                {/* PASSO 3: CONFIRMAÇÃO DE PRÉ-AGENDAMENTO */}
                 {activeStep === 3 && (
                     <Fade in={activeStep === 3}>
                         <Box sx={{ height: '100%', overflowY: 'auto', p: { xs: 2, md: 6 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -459,14 +463,48 @@ const NovoAgendamento = () => {
                                     <Button startIcon={<ChevronLeft />} onClick={() => setActiveStep(2)} sx={{ mt: 6, color: '#64748B', fontWeight: 800, textTransform: 'none', borderRadius: '10px', '&:hover': { bgcolor: '#E2E8F0' } }}>Voltar e editar horário</Button>
                                 </Box>
 
-                                <Box sx={{ flex: 1.3, p: 6, bgcolor: '#FFF' }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}><Box sx={{ p: 1, bgcolor: '#ECFDF5', borderRadius: '8px', display: 'flex' }}><Lock size={16} color="#10B981" /></Box><Typography variant="caption" fontWeight={900} color="#10B981" sx={{ letterSpacing: '1px' }}>CHECKOUT SEGURO</Typography></Box>
-                                    <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 4, letterSpacing: '-0.5px' }}>Como você prefere pagar?</Typography>
-                                    <Grid container spacing={2} sx={{ mb: 5 }}>
-                                        <Grid item xs={6}><Paper elevation={0} onClick={() => setMetodoPagamento('pix')} sx={{ p: 3, borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', border: metodoPagamento === 'pix' ? '2px solid #009EE3' : '2px solid #F1F5F9', bgcolor: metodoPagamento === 'pix' ? alpha('#009EE3', 0.05) : '#FFFFFF', '&:hover': { borderColor: '#009EE3' } }}><QrCode size={32} color={metodoPagamento === 'pix' ? '#009EE3' : '#64748B'} style={{ margin: '0 auto 12px' }} /><Typography variant="subtitle2" fontWeight={800} color={metodoPagamento === 'pix' ? '#009EE3' : '#0F172A'}>Pix</Typography><Typography variant="caption" color="text.secondary" fontWeight={600} display="block">Aprovação imediata</Typography></Paper></Grid>
-                                        <Grid item xs={6}><Paper elevation={0} onClick={() => setMetodoPagamento('cartao')} sx={{ p: 3, borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', border: metodoPagamento === 'cartao' ? '2px solid #009EE3' : '2px solid #F1F5F9', bgcolor: metodoPagamento === 'cartao' ? alpha('#009EE3', 0.05) : '#FFFFFF', '&:hover': { borderColor: '#009EE3' } }}><CreditCard size={32} color={metodoPagamento === 'cartao' ? '#009EE3' : '#64748B'} style={{ margin: '0 auto 12px' }} /><Typography variant="subtitle2" fontWeight={800} color={metodoPagamento === 'cartao' ? '#009EE3' : '#0F172A'}>Cartão de Crédito</Typography><Typography variant="caption" color="text.secondary" fontWeight={600} display="block">Até 12x sem juros</Typography></Paper></Grid>
-                                    </Grid>
-                                    <Box sx={{ pt: 2 }}><Button fullWidth variant="contained" size="large" onClick={processarPagamentoEAgendar} sx={{ py: 2, borderRadius: '12px', color: '#FFFFFF', bgcolor: '#009EE3', fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 10px 20px -10px rgba(0, 158, 227, 0.6)', transition: 'all 0.3s', '&:hover': { bgcolor: '#008ACA', transform: 'translateY(-2px)', boxShadow: '0 15px 25px -10px rgba(0, 158, 227, 0.8)' } }}>Pagar com Mercado Pago</Button><Typography variant="caption" textAlign="center" display="block" color="#94A3B8" fontWeight={600} sx={{ mt: 3 }}>Ambiente seguro criptografado de ponta a ponta.</Typography></Box>
+                                <Box sx={{ flex: 1.3, p: 6, bgcolor: '#FFF', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
+                                        <Box sx={{ p: 1, bgcolor: '#EFF6FF', borderRadius: '8px', display: 'flex' }}>
+                                            <Clock size={16} color="#3B82F6" />
+                                        </Box>
+                                        <Typography variant="caption" fontWeight={900} color="#3B82F6" sx={{ letterSpacing: '1px' }}>
+                                            PRÉ-AGENDAMENTO
+                                        </Typography>
+                                    </Box>
+                                    
+                                    <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 2, letterSpacing: '-0.5px' }}>
+                                        Confirmação de Horário
+                                    </Typography>
+
+                                    <Alert 
+                                        severity="info" 
+                                        icon={<Clock size={24} />} 
+                                        sx={{ mb: 4, borderRadius: '16px', bgcolor: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A', '& .MuiAlert-icon': { color: '#B45309' } }}
+                                    >
+                                        <AlertTitle sx={{ fontWeight: 800, color: '#B45309' }}>Regra de Reserva (24h)</AlertTitle>
+                                        Ao confirmar, este horário ficará reservado no seu nome com status <strong>Pendente</strong>. 
+                                        Você será redirecionado para a tela de agendamentos, onde terá <strong>até 24 horas</strong> para concluir a transação via Mercado Pago.
+                                    </Alert>
+
+                                    <Box sx={{ mt: 'auto' }}>
+                                        <Button 
+                                            fullWidth 
+                                            variant="contained" 
+                                            size="large" 
+                                            onClick={handleConfirmarAgendamento} 
+                                            disabled={loading}
+                                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <CheckCircle size={20} />}
+                                            sx={{ 
+                                                py: 2, borderRadius: '12px', color: '#FFFFFF', bgcolor: '#0F172A', 
+                                                fontWeight: 800, fontSize: '1.1rem', textTransform: 'none', 
+                                                boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)', transition: 'all 0.3s', 
+                                                '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 15px 25px -10px rgba(50, 181, 254, 0.5)' } 
+                                            }}
+                                        >
+                                            {loading ? 'Confirmando...' : 'Confirmar Pré-Agendamento'}
+                                        </Button>
+                                    </Box>
                                 </Box>
                             </Paper>
                         </Box>

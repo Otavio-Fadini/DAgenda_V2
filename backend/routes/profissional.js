@@ -4,15 +4,18 @@ const { verifyToken } = require('./auth');
 const bcrypt = require('bcrypt');
 
 // ==========================================
-// ROTA: BUSCAR PERFIL COMPLETO (ATUALIZADA)
+// ROTA: BUSCAR PERFIL COMPLETO
 // ==========================================
 router.get('/perfil', verifyToken, async (req, res) => {
     try {
         const id = req.userId;
-        
-        // Adicionado 'foto_perfil' na busca do banco
+
         const [rows] = await pool.query(
-            'SELECT nome, email, conselho, especialidade, valor_consulta, duracao_sessao, atende_convenio, foto_perfil FROM profissionais WHERE id = ?',
+            `SELECT 
+                nome, email, conselho, especialidade, valor_consulta, 
+                duracao_sessao, atende_convenio, foto_perfil,
+                cep, rua, numero, complemento, bairro, cidade, estado
+             FROM profissionais WHERE id = ?`,
             [id]
         );
 

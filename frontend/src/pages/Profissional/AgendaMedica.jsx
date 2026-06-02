@@ -370,10 +370,29 @@ const AgendaMedica = () => {
                         ) : (
                             dadosHistorico.map((h, i) => (
                                 <Box key={i} sx={{ mb: 3, p: 3, bgcolor: '#F8FAFC', borderRadius: '16px', border: '1px solid #F1F5F9' }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                                        <CalIcon size={14} color="#32B5FE" />
-                                        <Typography variant="caption" fontWeight={900} color="#32B5FE">{h.data_formatada || h.data}</Typography>
+                                    
+                                    {/* CABEÇALHO DO PRONTUÁRIO (Data + Médico) */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <CalIcon size={14} color="#32B5FE" />
+                                            <Typography variant="caption" fontWeight={900} color="#32B5FE">
+                                                {h.data_formatada || h.data}
+                                            </Typography>
+                                        </Box>
+
+                                        {/* SELO DO PROFISSIONAL */}
+                                        <Chip 
+                                            icon={<Stethoscope size={14} />} 
+                                            label={`Dr(a). ${h.profissional_nome || 'Não informado'} • CRM: ${h.profissional_crm || 'N/I'}`} 
+                                            size="small" 
+                                            sx={{ 
+                                                fontWeight: 800, fontSize: '0.65rem', bgcolor: '#E2E8F0', 
+                                                color: '#475569', borderRadius: '8px', 
+                                                '& .MuiChip-icon': { color: '#64748B' } 
+                                            }} 
+                                        />
                                     </Box>
+
                                     <Typography variant="body2" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>Evolução Clínica:</Typography>
                                     <Typography variant="body2" color="#475569" sx={{ mb: 2, lineHeight: 1.6 }}>{h.evolucao || h.notas}</Typography>
                                     

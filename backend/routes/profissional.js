@@ -273,21 +273,29 @@ router.get('/prontuario/:id_agendamento', verifyToken, async (req, res) => {
 // ==========================================
 // ROTA: HISTÓRICO DO PACIENTE
 // ==========================================
-router.get('/historico-paciente/:id_paciente', verifyToken, async (req, res) => {
+router.get('/historico-paciente/:id', verifyToken, async (req, res) => {
     try {
-        const query = `
+        const pacienteId = req.params.id;
+
+        // Fazemos um JOIN com a tabela de profissionais para buscar o nome e o CRM
+        const [historico] = await pool.query(`
             SELECT 
-                p.evolucao, 
-                p.prescricao, 
-                DATE_FORMAT(p.data_atendimento, '%d/%m/%Y %H:%i') as data_formatada
-            FROM prontuarios p
-            WHERE p.id_paciente = ?
-            ORDER BY p.data_atendimento DESC
-        `;
-        const [rows] = await pool.query(query, [req.params.id_paciente]);
-        res.json(rows);
+                h.id,
+                DATE_FORMAT(h.data_registro, '%d/%m/%Y') as data_formatada,
+                h.evolucao,
+                h.prescricao,
+                p.nome as profissional_nome,
+                p.crm as profissional_crm  -- Troque 'crm' pelo nome correto da sua coluna, se for diferente (ex: conselho, registro_conselho)
+            FROM prontuarios h
+            LEFT JOIN profissionais p ON h.id_profissional = p.id
+            WHERE h.id_paciente = ?
+            ORDER BY h.data_registro DESC
+        `, [pacienteId]);
+
+        res.json(historico);
     } catch (error) {
-        res.status(500).json({ error: "Erro ao buscar histórico" });
+        console.error("Erro ao buscar histórico:", error);
+        res.status(500).json({ error: "Erro ao buscar histórico do paciente." });
     }
 });
 

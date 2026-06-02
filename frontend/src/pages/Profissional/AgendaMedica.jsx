@@ -9,7 +9,7 @@ import {
 import { 
     Search, FilterX, MapPin, Play, FileText, 
     History, Calendar as CalIcon, Activity, AlertCircle, 
-    Download, XCircle, Paperclip
+    Download, XCircle, Paperclip, Stethoscope
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

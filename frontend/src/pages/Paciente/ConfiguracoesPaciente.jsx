@@ -201,7 +201,7 @@ const ConfiguracoesPaciente = () => {
                                         </Grid>
                                         {/* AQUI: O Novo Campo de Data de Nascimento */}
                                         <Grid item xs={12} md={6}>
-                                            <TextField fullWidth type="date" label="Data de Nascimento" value={formData.data_nascimento} onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} sx={inputStyle} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start"><Calendar size={18} color="#94A3B8"/></InputAdornment> }} />
+                                            <TextField fullWidth type="date" label="Data de Nascimento" value={formData.data_nascimento} onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} sx={inputStyle} InputLabelProps={{ shrink: true }} />
                                         </Grid>
                                         <Grid item xs={12} md={6}>
                                             <TextField fullWidth label="Telefone / WhatsApp" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} />

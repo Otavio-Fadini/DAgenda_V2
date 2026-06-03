@@ -5,7 +5,7 @@ import {
     Button, CircularProgress, Alert, Snackbar, Fade, Avatar, IconButton, 
     Tabs, Tab 
 } from '@mui/material';
-import { User, MapPin, Phone, Mail, Save, Camera, Lock, Map, Search, FileText } from 'lucide-react';
+import { User, MapPin, Phone, Mail, Save, Camera, Lock, Map, FileText, Calendar } from 'lucide-react';
 
 const ConfiguracoesPaciente = () => {
     const [tabValue, setTabValue] = useState(0);
@@ -15,8 +15,9 @@ const ConfiguracoesPaciente = () => {
     const [notification, setNotification] = useState({ open: false, message: '', type: 'success' });
     const [photoPreview, setPhotoPreview] = useState(null);
 
+    // Adicionado data_nascimento
     const [formData, setFormData] = useState({
-        nome: '', cpf: '', telefone: '', email: '', senha: '', foto_perfil: '',
+        nome: '', cpf: '', telefone: '', email: '', senha: '', foto_perfil: '', data_nascimento: '',
         cep: '', rua: '', numero: '', bairro: '', cidade: '', estado: ''
     });
 
@@ -32,6 +33,7 @@ const ConfiguracoesPaciente = () => {
                     cpf: data.cpf || '',
                     telefone: data.telefone || '',
                     email: data.email || '',
+                    data_nascimento: data.data_nascimento || '', // <-- Preenche a data
                     senha: '', 
                     foto_perfil: data.foto_perfil || '',
                     cep: data.cep || '',
@@ -105,18 +107,16 @@ const ConfiguracoesPaciente = () => {
         }
     };
 
-    // 4. SALVAR ALTERAÇÕES (Garanta que foto_perfil está sendo enviada)
+    // 4. SALVAR ALTERAÇÕES
     const handleSubmit = async () => {
         setSalvando(true);
         try {
             const dataToSend = { ...formData };
             
-            // Remove a senha se estiver vazia
             if (!dataToSend.senha || dataToSend.senha.trim() === '') {
                 delete dataToSend.senha; 
             }
 
-            // O foto_perfil já foi atualizado no estado pelo handlePhotoChange
             await api.put('/paciente/perfil', dataToSend); 
             showNotification("Perfil atualizado com sucesso!", "success");
         } catch (error) {
@@ -199,13 +199,17 @@ const ConfiguracoesPaciente = () => {
                                         <Grid item xs={12} md={6}>
                                             <TextField fullWidth label="CPF" disabled value={formData.cpf} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} helperText="O CPF não pode ser alterado." />
                                         </Grid>
+                                        {/* AQUI: O Novo Campo de Data de Nascimento */}
+                                        <Grid item xs={12} md={6}>
+                                            <TextField fullWidth type="date" label="Data de Nascimento" value={formData.data_nascimento} onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} sx={inputStyle} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start"><Calendar size={18} color="#94A3B8"/></InputAdornment> }} />
+                                        </Grid>
                                         <Grid item xs={12} md={6}>
                                             <TextField fullWidth label="Telefone / WhatsApp" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} />
                                         </Grid>
                                         <Grid item xs={12} md={6}>
                                             <TextField fullWidth label="E-mail" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} />
                                         </Grid>
-                                        <Grid item xs={12} md={6}>
+                                        <Grid item xs={12} md={12}>
                                             <TextField fullWidth label="Nova Senha" type="password" placeholder="Preencha para alterar" value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} />
                                         </Grid>
                                     </Grid>

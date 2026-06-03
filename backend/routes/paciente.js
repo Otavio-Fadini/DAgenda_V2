@@ -11,6 +11,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
         const id = req.userId;
         const query = `
             SELECT nome, cpf, telefone, email, foto_perfil, 
+                   DATE_FORMAT(data_nascimento, '%Y-%m-%d') as data_nascimento,
                    cep, rua, numero, bairro, cidade, estado 
             FROM usuarios_cpf 
             WHERE id = ?
@@ -25,6 +26,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
             cpf: data.cpf || '',
             telefone: data.telefone || '',
             email: data.email || '',
+            data_nascimento: data.data_nascimento || '', // <-- Adicionado
             foto_perfil: data.foto_perfil || '',
             cep: data.cep || '',
             rua: data.rua || '',
@@ -45,17 +47,17 @@ router.get('/perfil', verifyToken, async (req, res) => {
 router.put('/perfil', verifyToken, async (req, res) => {
     try {
         const id = req.userId;
-        const { nome, telefone, email, foto_perfil, cep, rua, numero, bairro, cidade, estado, senha } = req.body;
+        // Adicionada a extração do data_nascimento
+        const { nome, telefone, email, foto_perfil, cep, rua, numero, bairro, cidade, estado, senha, data_nascimento } = req.body;
 
-        // Atualiza os dados normais (O CPF não é alterado por segurança)
         let query = `
             UPDATE usuarios_cpf 
-            SET nome = ?, telefone = ?, email = ?, foto_perfil = ?, 
+            SET nome = ?, telefone = ?, email = ?, foto_perfil = ?, data_nascimento = ?, 
                 cep = ?, rua = ?, numero = ?, bairro = ?, cidade = ?, estado = ?
         `;
-        let params = [nome, telefone, email, foto_perfil, cep, rua, numero, bairro, cidade, estado];
+        // Passar null caso a data venha vazia para não quebrar o MySQL
+        let params = [nome, telefone, email, foto_perfil, data_nascimento || null, cep, rua, numero, bairro, cidade, estado];
 
-        // Se o paciente digitou uma nova senha, nós a criptografamos e adicionamos na query dinamicamente
         if (senha && senha.trim() !== '') {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(senha, salt);

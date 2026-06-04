@@ -18,7 +18,7 @@ const ConfiguracoesPaciente = () => {
     // Adicionado data_nascimento
     const [formData, setFormData] = useState({
         nome: '', cpf: '', telefone: '', email: '', senha: '', foto_perfil: '', data_nascimento: '',
-        cep: '', rua: '', numero: '', bairro: '', cidade: '', estado: ''
+        cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', estado: ''
     });
 
     // 1. CARREGAR DADOS DO PACIENTE
@@ -39,6 +39,7 @@ const ConfiguracoesPaciente = () => {
                     cep: data.cep || '',
                     rua: data.rua || '',
                     numero: data.numero || '',
+                    complemento: data.complemento || '',
                     bairro: data.bairro || '',
                     cidade: data.cidade || '',
                     estado: data.estado || ''

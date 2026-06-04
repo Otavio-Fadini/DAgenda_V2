@@ -261,7 +261,7 @@ const MeusAgendamentos = () => {
                         const podeCancelar = verificarPodeCancelar(agendamento.data_agendamento);
 
                         return (
-                            <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={agendamento.id}>
+                            <Grid item xs={12} sm={6} md={6} lg={6} xl={4} key={agendamento.id}>
                                 <Paper elevation={0} sx={{ p: 3, borderRadius: '20px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', height: '100%', transition: 'all 0.2s', '&:hover': { borderColor: '#32B5FE', boxShadow: '0 10px 30px -10px rgba(50, 181, 254, 0.15)', transform: 'translateY(-4px)' }, opacity: agendamento.status === 'Cancelado' ? 0.75 : 1 }}>
                                     
                                     {/* TOPO: FOTO E NOME */}
@@ -291,7 +291,7 @@ const MeusAgendamentos = () => {
                                     <Divider sx={{ borderStyle: 'dashed', borderColor: '#E2E8F0', mb: 3 }} />
 
                                     {/* BASE: BOTÕES */}
-                                    <Stack spacing={1.5}>
+                                    <Stack spacing={1.5} sx={{ minHeight: '120px', justifyContent: 'flex-end' }}>
                                         {agendamento.status === 'Pendente pagamento' && (
                                             <>
                                                 <Button fullWidth variant="contained" startIcon={<CreditCard size={18} />} onClick={() => handlePagarAgora(agendamento.id)} sx={{ color: '#FFFFFF', bgcolor: '#0F172A', borderRadius: '12px', textTransform: 'none', fontWeight: 800, py: 1.2, boxShadow: 'none', '&:hover': { bgcolor: '#32B5FE' } }}>
@@ -315,18 +315,7 @@ const MeusAgendamentos = () => {
                                         )}
 
                                         {agendamento.status === 'Agendado' && !podeCancelar && (
-                                            <Typography 
-                                                variant="caption" 
-                                                color="error" 
-                                                textAlign="center" 
-                                                sx={{ 
-                                                    display: 'block', 
-                                                    width: '100%', 
-                                                    whiteSpace: 'normal', // Isso força o texto a quebrar em várias linhas se necessário
-                                                    lineHeight: 1.3,      // Deixa as linhas com um espaçamento elegante
-                                                    mt: 0.5               // Dá um pequeno respiro em relação ao botão de cima
-                                                }}
-                                            >
+                                            <Typography variant="caption" color="error" textAlign="center" sx={{ display: 'block' }}>
                                                 * Cancelamento apenas com 7 dias de antecedência.
                                             </Typography>
                                         )}

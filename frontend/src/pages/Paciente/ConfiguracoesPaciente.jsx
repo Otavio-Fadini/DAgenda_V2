@@ -199,23 +199,31 @@ const ConfiguracoesPaciente = () => {
                                         <Grid item xs={12} md={6}>
                                             <TextField fullWidth label="CPF" disabled value={formData.cpf} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} helperText="O CPF não pode ser alterado." />
                                         </Grid>
-                                        {/* AQUI: O Campo de Data de Nascimento Corrigido */}
+                                        {/* AQUI: O Campo de Data de Nascimento com CSS transparente */}
                                         <Grid item xs={12} md={6}>
                                             <TextField 
                                                 fullWidth 
+                                                type="date" 
                                                 label="Data de Nascimento" 
                                                 value={formData.data_nascimento} 
                                                 onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
-                                                sx={inputStyle} 
-                                                /* 2. Quando o usuário clica, vira campo de data para abrir o calendário */
-                                                onFocus={(e) => (e.target.type = 'date')}
-                                                
-                                                /* 3. Quando o usuário tira o foco, se estiver vazio, volta a ser texto */
-                                                onBlur={(e) => {
-                                                    if (!e.target.value) {
-                                                        e.target.type = 'text';
+                                                InputLabelProps={{ 
+                                                    // Garante que a label só flutue se houver uma data preenchida
+                                                    shrink: formData.data_nascimento ? true : undefined 
+                                                }} 
+                                                sx={{
+                                                    ...inputStyle, // Mantém as suas bordas arredondadas e cores
+                                                    
+                                                    // 1. Deixa o "dd/mm/aaaa" nativo invisível quando o campo está vazio
+                                                    '& input::-webkit-datetime-edit': {
+                                                        color: formData.data_nascimento ? 'inherit' : 'transparent'
+                                                    },
+                                                    
+                                                    // 2. Revela o "dd/mm/aaaa" nativo assim que o usuário clica (focus)
+                                                    '& input:focus::-webkit-datetime-edit': {
+                                                        color: 'inherit'
                                                     }
-                                                }}
+                                                }} 
                                             />
                                         </Grid>
                                         <Grid item xs={12} md={6}>

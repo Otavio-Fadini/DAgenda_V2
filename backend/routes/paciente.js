@@ -12,7 +12,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
         const query = `
             SELECT nome, cpf, telefone, email, foto_perfil, 
                    DATE_FORMAT(data_nascimento, '%Y-%m-%d') as data_nascimento,
-                   cep, rua, numero, bairro, cidade, estado 
+                   cep, rua, numero, complemento, bairro, cidade, estado 
             FROM usuarios_cpf 
             WHERE id = ?
         `;
@@ -31,6 +31,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
             cep: data.cep || '',
             rua: data.rua || '',
             numero: data.numero || '',
+            complemento: data.complemento || '',
             bairro: data.bairro || '',
             cidade: data.cidade || '',
             estado: data.estado || ''
@@ -48,15 +49,15 @@ router.put('/perfil', verifyToken, async (req, res) => {
     try {
         const id = req.userId;
         // Adicionada a extração do data_nascimento
-        const { nome, telefone, email, foto_perfil, cep, rua, numero, bairro, cidade, estado, senha, data_nascimento } = req.body;
+        const { nome, telefone, email, foto_perfil, cep, rua, numero, complemento, bairro, cidade, estado, senha, data_nascimento } = req.body;
 
         let query = `
             UPDATE usuarios_cpf 
             SET nome = ?, telefone = ?, email = ?, foto_perfil = ?, data_nascimento = ?, 
-                cep = ?, rua = ?, numero = ?, bairro = ?, cidade = ?, estado = ?
+                cep = ?, rua = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, estado = ?
         `;
         // Passar null caso a data venha vazia para não quebrar o MySQL
-        let params = [nome, telefone, email, foto_perfil, data_nascimento || null, cep, rua, numero, bairro, cidade, estado];
+        let params = [nome, telefone, email, foto_perfil, data_nascimento || null, cep, rua, numero, complemento, bairro, cidade, estado];
 
         if (senha && senha.trim() !== '') {
             const salt = await bcrypt.genSalt(10);

@@ -93,16 +93,24 @@ const DashboardPaciente = () => {
         </Paper>
     );
 
-    // Nova lógica para encontrar a próxima consulta ativa:
-    // 1. Filtra apenas status que não sejam 'Cancelado' nem 'Concluido'
-    // 2. Ordena pela data e hora mais próximas
+    // Nova lógica para encontrar a próxima consulta válida:
     const proximaConsulta = consultas
-        .filter(c => c.status !== 'Cancelado' && c.status !== 'Concluido')
+        .filter(c => {
+            // 1. Apenas consultas confirmadas (ignora pendente pagamento e cancelados)
+            const isAgendado = c.status === 'Agendado' || c.status === 'agendado'; // Ajuste conforme seu banco
+            
+            // 2. Transforma data e hora em um objeto Date para comparar
+            const dataConsulta = new Date(`${c.data_agendamento}T${c.horario}`);
+            const hoje = new Date();
+            
+            // 3. Verifica se a data é maior ou igual a agora
+            return isAgendado && dataConsulta >= hoje;
+        })
         .sort((a, b) => {
             const dataA = new Date(`${a.data_agendamento}T${a.horario}`);
             const dataB = new Date(`${b.data_agendamento}T${b.horario}`);
             return dataA - dataB;
-        })[0]; // Pega o primeiro elemento, que agora é o mais próximo
+        })[0];
 
     return (
         <Fade in={true} timeout={600}>

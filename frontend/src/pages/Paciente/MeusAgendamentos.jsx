@@ -275,20 +275,43 @@ const MeusAgendamentos = () => {
                                         </Box>
                                     </Box>
 
-                                    {/* MEIO: DATA, HORA E STATUS */}
-                                    <Stack spacing={1.5} sx={{ mb: 3, flexGrow: 1 }}>
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                            <Chip icon={<Calendar size={16} />} label={formatarData(agendamento.data_agendamento)} sx={{ bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 800, borderRadius: '10px' }} />
-                                            <Chip icon={<Clock size={16} />} label={agendamento.horario.substring(0,5)} sx={{ bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 800, borderRadius: '10px' }} />
-                                        </Box>
+                                    {/* TOPO: FOTO E NOME */}
+                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3 }}>
+                                        {/* flexShrink: 0 impede que a foto seja espremida */}
+                                        <Avatar src={agendamento.foto_perfil} sx={{ width: 56, height: 56, bgcolor: '#F8FAFC', color: '#32B5FE', border: '2px solid #F1F5F9', flexShrink: 0 }}>
+                                            <Stethoscope size={28} />
+                                        </Avatar>
                                         
-                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: statusCfg.bg, color: statusCfg.color, px: 2, py: 1, borderRadius: '10px', alignSelf: 'flex-start' }}>
-                                            {statusCfg.icon}
-                                            <Typography variant="body2" fontWeight={800}>{agendamento.status}</Typography>
+                                        {/* minWidth: 0 é o truque de ouro do flexbox para permitir o corte do texto */}
+                                        <Box sx={{ minWidth: 0, flexGrow: 1, overflow: 'hidden' }}>
+                                            <Typography 
+                                                variant="h6" 
+                                                fontWeight={800} 
+                                                color="#0F172A" 
+                                                sx={{ 
+                                                    lineHeight: 1.2, 
+                                                    whiteSpace: 'nowrap',       // Impede a quebra de linha
+                                                    overflow: 'hidden',         // Esconde o que passar do limite
+                                                    textOverflow: 'ellipsis'    // Adiciona os três pontinhos (...)
+                                                }}
+                                            >
+                                                Dr(a). {agendamento.nome_medico}
+                                            </Typography>
+                                            
+                                            <Typography 
+                                                variant="body2" 
+                                                color="#32B5FE" 
+                                                fontWeight={700}
+                                                sx={{ 
+                                                    whiteSpace: 'nowrap', 
+                                                    overflow: 'hidden', 
+                                                    textOverflow: 'ellipsis' 
+                                                }}
+                                            >
+                                                {agendamento.especialidade}
+                                            </Typography>
                                         </Box>
-                                    </Stack>
-
-                                    <Divider sx={{ borderStyle: 'dashed', borderColor: '#E2E8F0', mb: 3 }} />
+                                    </Box>
 
                                     {/* BASE: BOTÕES */}
                                     <Stack spacing={1.5}>

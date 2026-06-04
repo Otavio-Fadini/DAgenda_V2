@@ -168,8 +168,19 @@ const CadastroPaciente = () => {
                                         <Grid item xs={12} sm={6}>
                                             <TextField fullWidth label="CPF" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><CreditCard size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.cpf} onChange={(e) => setFormData({...formData, cpf: e.target.value})} required />
                                         </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="Data de Nascimento" placeholder="DD/MM/AAAA" variant="outlined" type="text" value={formData.data_nascimento} sx={modernInputStyle} onChange={handleDateChange} required />
+                                        <Grid item xs={12} md={6}>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="caption" fontWeight={800} color="#64748B" sx={{ mb: 0.5, ml: 1 }}>
+                                                    Data de Nascimento
+                                                </Typography>
+                                                <TextField 
+                                                    fullWidth 
+                                                    type="date" 
+                                                    value={formData.data_nascimento} 
+                                                    onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
+                                                    sx={inputStyle} 
+                                                />
+                                            </Box>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
                                             <TextField fullWidth label="Telefone / WhatsApp" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} required />

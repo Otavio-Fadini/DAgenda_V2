@@ -199,30 +199,50 @@ const ConfiguracoesPaciente = () => {
                                         <Grid item xs={12} md={6}>
                                             <TextField fullWidth label="CPF" disabled value={formData.cpf} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} helperText="O CPF não pode ser alterado." />
                                         </Grid>
-                                        {/* AQUI: O Campo de Data de Nascimento com CSS transparente */}
-                                        <Grid item xs={20} md={6}>
+                                        {/* AQUI: O Campo de Data de Nascimento Corrigido e Organizado */}
+                                        <Grid item xs={12} md={6}>
                                             <TextField 
                                                 fullWidth 
                                                 type="date" 
                                                 label="Data de Nascimento" 
                                                 value={formData.data_nascimento} 
                                                 onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
-                                                InputLabelProps={{ 
-                                                    // Garante que a label só flutue se houver uma data preenchida
-                                                    shrink: formData.data_nascimento ? true : undefined 
-                                                }} 
+                                                
+                                                // 1. Usamos endAdornment para colocar o ícone no final do campo de forma organizada
+                                                InputProps={{
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            {/* Usamos o ícone Calendar que você já importou da lucide-react */}
+                                                            <Calendar size={18} color="#94A3B8" /> 
+                                                        </InputAdornment>
+                                                    ),
+                                                }}
+                                                
                                                 sx={{
-                                                    ...inputStyle, // Mantém as suas bordas arredondadas e cores
+                                                    ...inputStyle, // Mantém sua estilização de borda e fundo
                                                     
-                                                    // 1. Deixa o "dd/mm/aaaa" nativo invisível quando o campo está vazio
-                                                    '& input::-webkit-datetime-edit': {
-                                                        color: formData.data_nascimento ? 'inherit' : 'transparent'
+                                                    // 2. Estilos para garantir que o ícone nativo do navegador seja ESCONDIDO
+                                                    '& .MuiOutlinedInput-input': {
+                                                        paddingRight: '48px', // Espaço para o ícone (ícone + padding)
+                                                        '&::-webkit-calendar-picker-indicator': { display: 'none' }, // Esconde o ícone nativo
+                                                        '&::-webkit-datetime-edit': { color: formData.data_nascimento ? 'inherit' : 'transparent' }, // Esconde placeholder nativo
+                                                        '&:focus::-webkit-datetime-edit': { color: 'inherit' },
                                                     },
                                                     
-                                                    // 2. Revela o "dd/mm/aaaa" nativo assim que o usuário clica (focus)
-                                                    '& input:focus::-webkit-datetime-edit': {
-                                                        color: 'inherit'
-                                                    }
+                                                    // 3. Estilos para garantir que a label tenha espaço e não se sobreponha ao ícone
+                                                    '& .MuiInputLabel-root': {
+                                                        width: 'calc(100% - 48px)', // Dá espaço para o ícone
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        left: '12px',
+                                                    },
+                                                    '& .MuiInputLabel-shrink': {
+                                                        width: 'auto',
+                                                        overflow: 'visible',
+                                                        textOverflow: 'unset',
+                                                        left: '14px',
+                                                    },
                                                 }} 
                                             />
                                         </Grid>

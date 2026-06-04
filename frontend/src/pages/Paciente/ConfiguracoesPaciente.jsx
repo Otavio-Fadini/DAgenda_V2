@@ -195,18 +195,36 @@ const ConfiguracoesPaciente = () => {
                                         Informações Básicas
                                     </Typography>
                                     
-                                    {/* A mágica está aqui: forçar flexDirection 'row' para os itens ficarem lado a lado */}
-                                    <Grid container spacing={3} sx={{ flexDirection: 'row !important' }}>
+                                    {/* Container principal. Spacing=3 cria o espaço entre os campos automaticamente */}
+                                    <Grid container spacing={3}>
                                         
-                                        {/* LINHA 1 */}
+                                        {/* === LINHA 1 === */}
+                                        {/* Nome ocupa a linha toda (12 colunas) */}
                                         <Grid item xs={12}>
-                                            <TextField fullWidth label="Nome Completo" value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#94A3B8"/></InputAdornment> }} />
+                                            <TextField 
+                                                fullWidth 
+                                                label="Nome Completo" 
+                                                value={formData.nome} 
+                                                onChange={(e) => setFormData({...formData, nome: e.target.value})} 
+                                                sx={inputStyle} 
+                                                InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#94A3B8"/></InputAdornment> }} 
+                                            />
                                         </Grid>
 
-                                        {/* LINHA 2 */}
+                                        {/* === LINHA 2 === */}
+                                        {/* CPF ocupa metade (6 colunas) em telas médias/grandes */}
                                         <Grid item xs={12} md={6}>
-                                            <TextField fullWidth label="CPF" disabled value={formData.cpf} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} helperText="O CPF não pode ser alterado." />
+                                            <TextField 
+                                                fullWidth 
+                                                label="CPF" 
+                                                disabled 
+                                                value={formData.cpf} 
+                                                sx={inputStyle} 
+                                                InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} 
+                                                helperText="O CPF não pode ser alterado." 
+                                            />
                                         </Grid>
+                                        {/* Data ocupa a outra metade (6 colunas) em telas médias/grandes */}
                                         <Grid item xs={12} md={6}>
                                             <TextField 
                                                 fullWidth 
@@ -223,17 +241,40 @@ const ConfiguracoesPaciente = () => {
                                             />
                                         </Grid>
 
-                                        {/* LINHA 3 */}
+                                        {/* === LINHA 3 === */}
                                         <Grid item xs={12} md={6}>
-                                            <TextField fullWidth label="Telefone / WhatsApp" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} />
+                                            <TextField 
+                                                fullWidth 
+                                                label="Telefone / WhatsApp" 
+                                                value={formData.telefone} 
+                                                onChange={(e) => setFormData({...formData, telefone: e.target.value})} 
+                                                sx={inputStyle} 
+                                                InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} 
+                                            />
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <TextField fullWidth label="E-mail" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} />
+                                            <TextField 
+                                                fullWidth 
+                                                label="E-mail" 
+                                                value={formData.email} 
+                                                onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                                                sx={inputStyle} 
+                                                InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} 
+                                            />
                                         </Grid>
 
-                                        {/* LINHA 4 */}
+                                        {/* === LINHA 4 === */}
                                         <Grid item xs={12}>
-                                            <TextField fullWidth label="Nova Senha" type="password" placeholder="Preencha para alterar" value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} />
+                                            <TextField 
+                                                fullWidth 
+                                                label="Nova Senha" 
+                                                type="password" 
+                                                placeholder="Preencha para alterar" 
+                                                value={formData.senha} 
+                                                onChange={(e) => setFormData({...formData, senha: e.target.value})} 
+                                                sx={inputStyle} 
+                                                InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} 
+                                            />
                                         </Grid>
 
                                     </Grid>

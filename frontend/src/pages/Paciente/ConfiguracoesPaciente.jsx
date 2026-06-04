@@ -200,7 +200,7 @@ const ConfiguracoesPaciente = () => {
                                             <TextField fullWidth label="CPF" disabled value={formData.cpf} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} helperText="O CPF não pode ser alterado." />
                                         </Grid>
                                         {/* AQUI: O Campo de Data de Nascimento com CSS transparente */}
-                                        <Grid item xs={12} md={6}>
+                                        <Grid item xs={20} md={6}>
                                             <TextField 
                                                 fullWidth 
                                                 type="date" 

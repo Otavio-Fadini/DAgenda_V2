@@ -315,7 +315,18 @@ const MeusAgendamentos = () => {
                                         )}
 
                                         {agendamento.status === 'Agendado' && !podeCancelar && (
-                                            <Typography variant="caption" color="error" textAlign="center" sx={{ display: 'block' }}>
+                                            <Typography 
+                                                variant="caption" 
+                                                color="error" 
+                                                textAlign="center" 
+                                                sx={{ 
+                                                    display: 'block', 
+                                                    width: '100%', 
+                                                    whiteSpace: 'normal', // Isso força o texto a quebrar em várias linhas se necessário
+                                                    lineHeight: 1.3,      // Deixa as linhas com um espaçamento elegante
+                                                    mt: 0.5               // Dá um pequeno respiro em relação ao botão de cima
+                                                }}
+                                            >
                                                 * Cancelamento apenas com 7 dias de antecedência.
                                             </Typography>
                                         )}

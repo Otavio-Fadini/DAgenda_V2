@@ -195,10 +195,17 @@ const ConfiguracoesPaciente = () => {
                                         Informações Básicas
                                     </Typography>
                                     
-                                    <Grid container spacing={3}>
+                                    {/* A OPÇÃO NUCLEAR: Adeus Flexbox, olá CSS Grid! */}
+                                    <Box sx={{
+                                        display: 'grid',
+                                        gap: 3, // Equivalente ao spacing={3}
+                                        // No celular (xs): 1 coluna. Nas telas maiores (sm): 2 colunas.
+                                        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }
+                                    }}>
                                         
                                         {/* === LINHA 1 === */}
-                                        <Grid item xs={12}>
+                                        {/* gridColumn: '1 / -1' força esse campo a esticar e ocupar a linha inteira */}
+                                        <Box sx={{ gridColumn: '1 / -1' }}>
                                             <TextField 
                                                 fullWidth 
                                                 label="Nome Completo" 
@@ -207,61 +214,56 @@ const ConfiguracoesPaciente = () => {
                                                 sx={inputStyle} 
                                                 InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#94A3B8"/></InputAdornment> }} 
                                             />
-                                        </Grid>
+                                        </Box>
 
                                         {/* === LINHA 2 === */}
-                                        {/* Trocamos 'md' por 'sm' para forçar 2 colunas mesmo em telas menores */}
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField 
-                                                fullWidth 
-                                                label="CPF" 
-                                                disabled 
-                                                value={formData.cpf} 
-                                                sx={inputStyle} 
-                                                InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} 
-                                                helperText="O CPF não pode ser alterado." 
-                                            />
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField 
-                                                fullWidth 
-                                                type="date" 
-                                                label="Data de Nascimento" 
-                                                value={formData.data_nascimento} 
-                                                onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
-                                                InputLabelProps={{ shrink: true }} 
-                                                sx={{
-                                                    ...inputStyle, 
-                                                    '& input::-webkit-datetime-edit': { color: formData.data_nascimento ? 'inherit' : 'transparent' },
-                                                    '& input:focus::-webkit-datetime-edit': { color: 'inherit' }
-                                                }} 
-                                            />
-                                        </Grid>
+                                        {/* Como definimos 2 colunas no Grid, esses dois dividem o espaço perfeitamente */}
+                                        <TextField 
+                                            fullWidth 
+                                            label="CPF" 
+                                            disabled 
+                                            value={formData.cpf} 
+                                            sx={inputStyle} 
+                                            InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} 
+                                            helperText="O CPF não pode ser alterado." 
+                                        />
+                                        
+                                        <TextField 
+                                            fullWidth 
+                                            type="date" 
+                                            label="Data de Nascimento" 
+                                            value={formData.data_nascimento} 
+                                            onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
+                                            InputLabelProps={{ shrink: true }} 
+                                            sx={{
+                                                ...inputStyle, 
+                                                '& input::-webkit-datetime-edit': { color: formData.data_nascimento ? 'inherit' : 'transparent' },
+                                                '& input:focus::-webkit-datetime-edit': { color: 'inherit' }
+                                            }} 
+                                        />
 
                                         {/* === LINHA 3 === */}
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField 
-                                                fullWidth 
-                                                label="Telefone / WhatsApp" 
-                                                value={formData.telefone} 
-                                                onChange={(e) => setFormData({...formData, telefone: e.target.value})} 
-                                                sx={inputStyle} 
-                                                InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} 
-                                            />
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField 
-                                                fullWidth 
-                                                label="E-mail" 
-                                                value={formData.email} 
-                                                onChange={(e) => setFormData({...formData, email: e.target.value})} 
-                                                sx={inputStyle} 
-                                                InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} 
-                                            />
-                                        </Grid>
+                                        <TextField 
+                                            fullWidth 
+                                            label="Telefone / WhatsApp" 
+                                            value={formData.telefone} 
+                                            onChange={(e) => setFormData({...formData, telefone: e.target.value})} 
+                                            sx={inputStyle} 
+                                            InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} 
+                                        />
+                                        
+                                        <TextField 
+                                            fullWidth 
+                                            label="E-mail" 
+                                            value={formData.email} 
+                                            onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                                            sx={inputStyle} 
+                                            InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} 
+                                        />
 
                                         {/* === LINHA 4 === */}
-                                        <Grid item xs={12}>
+                                        {/* Forçamos a esticar a linha inteira de novo */}
+                                        <Box sx={{ gridColumn: '1 / -1' }}>
                                             <TextField 
                                                 fullWidth 
                                                 label="Nova Senha" 
@@ -272,9 +274,9 @@ const ConfiguracoesPaciente = () => {
                                                 sx={inputStyle} 
                                                 InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} 
                                             />
-                                        </Grid>
+                                        </Box>
 
-                                    </Grid>
+                                    </Box>
                                 </Grid>
                             </Grid>
                         )}

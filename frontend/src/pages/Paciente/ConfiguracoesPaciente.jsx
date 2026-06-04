@@ -203,23 +203,30 @@ const ConfiguracoesPaciente = () => {
                                         <Grid item xs={12} md={6}>
                                             <TextField 
                                                 fullWidth 
+                                                type="date" 
                                                 label="Data de Nascimento" 
-                                                // 👇 O truque mágico começa aqui: alterna entre text e date
-                                                type={formData.data_nascimento ? "date" : "text"}
-                                                onFocus={(e) => (e.target.type = "date")}
-                                                onBlur={(e) => {
-                                                    if (!formData.data_nascimento) e.target.type = "text";
-                                                }}
                                                 value={formData.data_nascimento} 
                                                 onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
-                                                sx={inputStyle}
+                                                InputLabelProps={{ 
+                                                    shrink: true, // Força a etiqueta a ficar sempre no topo
+                                                    style: { fontWeight: 700 } 
+                                                }} 
                                                 InputProps={{ 
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
+                                                    // Colocamos o seu ícone personalizado no lado direito!
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
                                                             <Calendar size={18} color="#94A3B8"/>
                                                         </InputAdornment>
                                                     ) 
-                                                }} 
+                                                }}
+                                                sx={{
+                                                    ...inputStyle,
+                                                    // Truque de CSS: Esconde o ícone de calendário padrão do navegador
+                                                    '& input[type="date"]::-webkit-calendar-picker-indicator': {
+                                                        display: 'none',
+                                                        WebkitAppearance: 'none'
+                                                    }
+                                                }}
                                             />
                                         </Grid>
                                         <Grid item xs={12} md={6}>

@@ -207,10 +207,6 @@ const ConfiguracoesPaciente = () => {
                                                 value={formData.data_nascimento} 
                                                 onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
                                                 sx={inputStyle} 
-                                                
-                                                /* 1. Inicia como texto se estiver vazio, e como data se já tiver valor vindo da API */
-                                                type={formData.data_nascimento ? 'date' : 'text'}
-                                                
                                                 /* 2. Quando o usuário clica, vira campo de data para abrir o calendário */
                                                 onFocus={(e) => (e.target.type = 'date')}
                                                 

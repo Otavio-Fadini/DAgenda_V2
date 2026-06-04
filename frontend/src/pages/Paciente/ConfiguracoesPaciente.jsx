@@ -207,42 +207,9 @@ const ConfiguracoesPaciente = () => {
                                                 label="Data de Nascimento" 
                                                 value={formData.data_nascimento} 
                                                 onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
-                                                
-                                                // 1. Usamos endAdornment para colocar o ícone no final do campo de forma organizada
-                                                InputProps={{
-                                                    endAdornment: (
-                                                        <InputAdornment position="end">
-                                                            {/* Usamos o ícone Calendar que você já importou da lucide-react */}
-                                                            <Calendar size={18} color="#94A3B8" /> 
-                                                        </InputAdornment>
-                                                    ),
-                                                }}
-                                                
-                                                sx={{
-                                                    ...inputStyle, // Mantém sua estilização de borda e fundo
-                                                    
-                                                    // 2. Estilos para garantir que o ícone nativo do navegador seja ESCONDIDO
-                                                    '& .MuiOutlinedInput-input': {
-                                                        paddingRight: '48px', // Espaço para o ícone (ícone + padding)
-                                                        '&::-webkit-calendar-picker-indicator': { display: 'none' }, // Esconde o ícone nativo
-                                                        '&::-webkit-datetime-edit': { color: formData.data_nascimento ? 'inherit' : 'transparent' }, // Esconde placeholder nativo
-                                                        '&:focus::-webkit-datetime-edit': { color: 'inherit' },
-                                                    },
-                                                    
-                                                    // 3. Estilos para garantir que a label tenha espaço e não se sobreponha ao ícone
-                                                    '& .MuiInputLabel-root': {
-                                                        width: 'calc(100% - 48px)', // Dá espaço para o ícone
-                                                        whiteSpace: 'nowrap',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        left: '12px',
-                                                    },
-                                                    '& .MuiInputLabel-shrink': {
-                                                        width: 'auto',
-                                                        overflow: 'visible',
-                                                        textOverflow: 'unset',
-                                                        left: '14px',
-                                                    },
+                                                sx={inputStyle} 
+                                                InputLabelProps={{ 
+                                                    shrink: true // Isso é tudo que você precisa: prende a label lá em cima.
                                                 }} 
                                             />
                                         </Grid>

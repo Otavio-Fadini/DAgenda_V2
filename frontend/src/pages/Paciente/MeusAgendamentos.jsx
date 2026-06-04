@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Box, Typography, Paper, Grid, Button, Chip, Dialog, DialogTitle, 
-    DialogContent, DialogActions, TextField, CircularProgress, Stack, Avatar, Divider 
+    DialogContent, DialogActions, TextField, CircularProgress, Stack, Avatar, 
+    Divider, InputAdornment, Tooltip, IconButton, Tabs, Tab 
 } from '@mui/material';
 import { 
     Calendar, Clock, CreditCard, XCircle, Paperclip, CheckCircle, 
-    AlertCircle, FileText, Stethoscope, FileUp 
+    AlertCircle, FileText, Stethoscope, FileUp, Search, FilterX 
 } from 'lucide-react';
 import api from '../../services/api';
 
 const MeusAgendamentos = () => {
     const [agendamentos, setAgendamentos] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Estados de Filtro
+    const [filtroData, setFiltroData] = useState('');
+    const [filtroStatus, setFiltroStatus] = useState('Todos'); 
+    const [buscaTexto, setBuscaTexto] = useState('');
 
     const [modalCancelarOpen, setModalCancelarOpen] = useState(false);
     const [agendamentoSelecionado, setAgendamentoSelecionado] = useState(null);
@@ -31,7 +37,7 @@ const MeusAgendamentos = () => {
         try {
             const response = await api.get('/paciente/meus-agendamentos');
             
-            // Filtro de segurança para remover duplicatas visuais vindas de testes no banco de dados
+            // Filtro de segurança para remover duplicatas
             const agendamentosUnicos = response.data.filter((v, i, a) => a.findIndex(t => (t.id === v.id)) === i);
             setAgendamentos(agendamentosUnicos);
         } catch (error) {
@@ -40,6 +46,32 @@ const MeusAgendamentos = () => {
             setLoading(false);
         }
     };
+
+    // ==========================================
+    // LÓGICA DE FILTRAGEM
+    // ==========================================
+    const limparFiltros = () => {
+        setFiltroData('');
+        setFiltroStatus('Todos');
+        setBuscaTexto('');
+    };
+
+    const agendamentosFiltrados = agendamentos.filter((agendamento) => {
+        // 1. Filtro por Texto (Nome do médico ou especialidade)
+        const termoBusca = buscaTexto.toLowerCase();
+        const matchNome = (agendamento.nome_medico || '').toLowerCase().includes(termoBusca) || 
+                          (agendamento.especialidade || '').toLowerCase().includes(termoBusca);
+        
+        // 2. Filtro por Data
+        const matchData = filtroData ? (agendamento.data_agendamento || '').startsWith(filtroData) : true;
+        
+        // 3. Filtro por Status
+        const matchStatus = filtroStatus === 'Todos' || agendamento.status === filtroStatus;
+
+        return matchNome && matchData && matchStatus;
+    });
+
+    // ==========================================
 
     const verificarPodeCancelar = (dataAgendamento) => {
         const dataConsulta = new Date(dataAgendamento);
@@ -52,9 +84,7 @@ const MeusAgendamentos = () => {
         setLoadingAcao(true);
         try {
             const response = await api.post(`/paciente/agendamento/${id}/pagar`);
-            
             if (response.data.link) {
-                // Abre a página de checkout seguro do Mercado Pago na mesma aba
                 window.location.href = response.data.link;
             } else {
                 alert("Não foi possível gerar o link de pagamento.");
@@ -139,6 +169,17 @@ const MeusAgendamentos = () => {
         return `${dia}/${mes}/${ano}`;
     };
 
+    // Estilo dos inputs da barra de filtros
+    const modernInputStyle = {
+        '& .MuiOutlinedInput-root': {
+            borderRadius: '12px', bgcolor: '#FFFFFF', transition: 'all 0.2s ease-in-out',
+            '& fieldset': { borderColor: '#E2E8F0' },
+            '&:hover fieldset': { borderColor: '#CBD5E1' },
+            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
+            '&.Mui-focused': { boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
+        }
+    };
+
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', width: '100%', boxSizing: 'border-box' }}>
             <Box sx={{ mb: 4 }}>
@@ -150,25 +191,78 @@ const MeusAgendamentos = () => {
                 </Typography>
             </Box>
 
+            {/* 1. BARRA DE PESQUISA E DATA */}
+            <Paper elevation={0} sx={{ 
+                p: 2.5, mb: 2, borderRadius: '20px', border: '1px solid #F1F5F9', 
+                display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', 
+                bgcolor: '#FFFFFF', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)'
+            }}>
+                <TextField
+                    placeholder="Buscar médico ou especialidade..."
+                    size="small"
+                    value={buscaTexto}
+                    onChange={(e) => setBuscaTexto(e.target.value)}
+                    sx={{ flexGrow: 1, minWidth: '250px', ...modernInputStyle }}
+                    InputProps={{ startAdornment: (<InputAdornment position="start"><Search size={18} color="#94A3B8"/></InputAdornment>) }}
+                />
+
+                <TextField
+                    type="date"
+                    size="small"
+                    value={filtroData}
+                    onChange={(e) => setFiltroData(e.target.value)}
+                    sx={{ width: 180, ...modernInputStyle }}
+                    InputProps={{ sx: { fontWeight: 700, color: '#0F172A' } }}
+                />
+
+                <Tooltip title="Limpar Filtros" arrow>
+                    <IconButton onClick={limparFiltros} sx={{ color: '#EF4444', bgcolor: '#FEF2F2', borderRadius: '12px', '&:hover': { bgcolor: '#FECACA' }, width: 40, height: 40 }}>
+                        <FilterX size={20} />
+                    </IconButton>
+                </Tooltip>
+            </Paper>
+
+            {/* 2. ABAS DE STATUS */}
+            <Box sx={{ borderBottom: 1, borderColor: '#E2E8F0', mb: 4 }}>
+                <Tabs 
+                    value={filtroStatus} 
+                    onChange={(e, newValue) => setFiltroStatus(newValue)} 
+                    variant="scrollable" 
+                    scrollButtons="auto"
+                    sx={{ 
+                        '& .MuiTab-root': { textTransform: 'none', fontWeight: 800, fontSize: '0.95rem', minWidth: 'auto', px: 3 }, 
+                        '& .Mui-selected': { color: '#32B5FE' }, 
+                        '& .MuiTabs-indicator': { backgroundColor: '#32B5FE', height: 3, borderRadius: '3px 3px 0 0' } 
+                    }}
+                >
+                    <Tab label="Todos" value="Todos" />
+                    <Tab label="Agendados" value="Agendado" />
+                    <Tab label="Aguardando Pagamento" value="Pendente pagamento" />
+                    <Tab label="Concluídos" value="Concluido" />
+                    <Tab label="Cancelados" value="Cancelado" />
+                </Tabs>
+            </Box>
+
+            {/* 3. LISTA DE AGENDAMENTOS */}
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
                     <CircularProgress sx={{ color: '#32B5FE' }} />
                 </Box>
-            ) : agendamentos.length === 0 ? (
+            ) : agendamentosFiltrados.length === 0 ? (
                 <Paper elevation={0} sx={{ p: 6, textAlign: 'center', borderRadius: '24px', border: '2px dashed #E2E8F0', bgcolor: 'transparent' }}>
                     <Calendar size={48} color="#CBD5E1" style={{ marginBottom: 16 }} />
-                    <Typography variant="h6" fontWeight={800} color="#64748B">Nenhum agendamento encontrado</Typography>
+                    <Typography variant="h6" fontWeight={800} color="#64748B">Nenhum agendamento encontrado.</Typography>
+                    <Typography variant="body2" color="#94A3B8" fontWeight={500}>Tente alterar os filtros de busca para encontrar o que procura.</Typography>
                 </Paper>
             ) : (
                 <Grid container spacing={3}>
-                    {agendamentos.map((agendamento) => {
+                    {agendamentosFiltrados.map((agendamento) => {
                         const statusCfg = getStatusConfig(agendamento.status);
                         const podeCancelar = verificarPodeCancelar(agendamento.data_agendamento);
 
                         return (
                             <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={agendamento.id}>
-                                {/* LAYOUT EM CARTÃO VERTICAL */}
-                                <Paper elevation={0} sx={{ p: 3, borderRadius: '20px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', height: '100%', transition: 'all 0.2s', '&:hover': { borderColor: '#32B5FE', boxShadow: '0 10px 30px -10px rgba(50, 181, 254, 0.15)', transform: 'translateY(-4px)' } }}>
+                                <Paper elevation={0} sx={{ p: 3, borderRadius: '20px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', height: '100%', transition: 'all 0.2s', '&:hover': { borderColor: '#32B5FE', boxShadow: '0 10px 30px -10px rgba(50, 181, 254, 0.15)', transform: 'translateY(-4px)' }, opacity: agendamento.status === 'Cancelado' ? 0.75 : 1 }}>
                                     
                                     {/* TOPO: FOTO E NOME */}
                                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3 }}>
@@ -176,7 +270,7 @@ const MeusAgendamentos = () => {
                                             <Stethoscope size={28} />
                                         </Avatar>
                                         <Box>
-                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>{agendamento.nome_medico}</Typography>
+                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>Dr(a). {agendamento.nome_medico}</Typography>
                                             <Typography variant="body2" color="#32B5FE" fontWeight={700}>{agendamento.especialidade}</Typography>
                                         </Box>
                                     </Box>
@@ -188,7 +282,6 @@ const MeusAgendamentos = () => {
                                             <Chip icon={<Clock size={16} />} label={agendamento.horario.substring(0,5)} sx={{ bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 800, borderRadius: '10px' }} />
                                         </Box>
                                         
-                                        {/* Status agora tem espaço livre e fundo garantido */}
                                         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: statusCfg.bg, color: statusCfg.color, px: 2, py: 1, borderRadius: '10px', alignSelf: 'flex-start' }}>
                                             {statusCfg.icon}
                                             <Typography variant="body2" fontWeight={800}>{agendamento.status}</Typography>
@@ -226,6 +319,12 @@ const MeusAgendamentos = () => {
                                                 * Cancelamento apenas com 7 dias de antecedência.
                                             </Typography>
                                         )}
+                                        
+                                        {(agendamento.status === 'Concluido' || agendamento.status === 'Cancelado') && (
+                                            <Typography variant="body2" color="#94A3B8" fontWeight={700} textAlign="center" sx={{ py: 1 }}>
+                                                Nenhuma ação disponível.
+                                            </Typography>
+                                        )}
                                     </Stack>
                                 </Paper>
                             </Grid>
@@ -234,7 +333,7 @@ const MeusAgendamentos = () => {
                 </Grid>
             )}
 
-            {/* MODAIS AQUI EMBAIXO (Inalterados, mantidos para o funcionamento) */}
+            {/* MODAIS (Mantidos 100% inalterados) */}
             <Dialog open={modalCancelarOpen} onClose={() => setModalCancelarOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '20px', p: 1 } }}>
                 <DialogTitle sx={{ pb: 1 }}>
                     <Typography variant="h6" fontWeight={900} color="#0F172A">Cancelar Consulta</Typography>

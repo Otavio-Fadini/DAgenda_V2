@@ -203,20 +203,16 @@ const ConfiguracoesPaciente = () => {
                                         <Grid item xs={12} md={6}>
                                             <TextField 
                                                 fullWidth 
-                                                type="date" 
                                                 label="Data de Nascimento" 
+                                                // 👇 A MÁGICA ESTÁ AQUI 👇
+                                                type={formData.data_nascimento ? "date" : "text"}
+                                                onFocus={(e) => (e.target.type = "date")}
+                                                onBlur={(e) => {
+                                                    if (!formData.data_nascimento) e.target.type = "text";
+                                                }}
                                                 value={formData.data_nascimento} 
                                                 onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
-                                                InputLabelProps={{ shrink: true }} 
-                                                sx={{
-                                                    ...inputStyle,
-                                                    // 👇 O TRUQUE DEFINITIVO 👇
-                                                    // Deixa o "dd/mm/aaaa" nativo invisível se o campo estiver vazio.
-                                                    // Quando o paciente escolhe uma data, a cor volta ao normal ('inherit').
-                                                    '& input': {
-                                                        color: formData.data_nascimento ? 'inherit' : 'transparent'
-                                                    }
-                                                }} 
+                                                sx={inputStyle} 
                                             />
                                         </Grid>
                                         <Grid item xs={12} md={6}>

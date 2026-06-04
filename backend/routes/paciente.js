@@ -322,4 +322,30 @@ router.post('/agendamento/:id/pagar', verifyToken, async (req, res) => {
     }
 });
 
+// ==========================================
+// ROTA: BUSCAR TOTAL DE DÉBITOS PENDENTES (CORRIGIDA)
+// ==========================================
+router.get('/dashboard/total-pendente', verifyToken, async (req, res) => {
+    try {
+        const pacienteId = req.userId;
+        
+        // CORREÇÃO: Buscamos o 'valor' diretamente da tabela 'agendamentos' (alias 'a')
+        const query = `
+            SELECT SUM(valor) as total_pendente
+            FROM agendamentos 
+            WHERE id_paciente = ? AND status = 'Pendente pagamento'
+        `;
+        
+        const [rows] = await pool.query(query, [pacienteId]);
+        
+        // O MySQL retorna o resultado como uma lista de linhas, o SUM pode vir nulo se não houver registros
+        const total = rows[0].total_pendente || 0;
+        
+        res.json({ totalPendente: parseFloat(total) });
+    } catch (error) {
+        console.error("Erro ao buscar total pendente:", error);
+        res.status(500).json({ error: "Erro interno ao buscar débitos." });
+    }
+});
+
 module.exports = router;

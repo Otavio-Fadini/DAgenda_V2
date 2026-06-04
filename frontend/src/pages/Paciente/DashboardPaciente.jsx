@@ -12,7 +12,7 @@ import axios from 'axios';
 const DashboardPaciente = () => {
     const [consultas, setConsultas] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const [totalDebito, setTotalDebito] = useState(0);
     const fetchConsultas = async () => {
         setLoading(true);
         try {
@@ -28,7 +28,19 @@ const DashboardPaciente = () => {
         }
     };
 
-    useEffect(() => { fetchConsultas(); }, []);
+    const fetchDebitos = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('https://dagenda.com.br/api/paciente/dashboard/total-pendente', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setTotalDebito(response.data.totalPendente);
+        } catch (err) {
+            console.error("Erro ao buscar débitos", err);
+        }
+    };
+
+    useEffect(() => { fetchConsultas(); fetchDebitos(); }, []);
 
     const handleCancelar = async (id) => {
         if (window.confirm("Deseja realmente cancelar esta consulta?")) {
@@ -120,7 +132,7 @@ const DashboardPaciente = () => {
                 <Box sx={{ display: 'flex', gap: 3, mb: 4, width: '100%', flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
                     <StatCard icon={Calendar} title="Consultas Ativas" value={consultas.length} color="primary" />
                     <StatCard icon={ClipboardList} title="Histórico Total" value={consultas.length} color="success" />
-                    <StatCard icon={CreditCard} title="Débitos Pendentes" value="R$ 0,00" color="error" />
+                    <StatCard icon={CreditCard} title="Débitos Pendentes" value={totalDebito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} color="error" />
                 </Box>
 
                 {/* CONTEÚDO PRINCIPAL */}

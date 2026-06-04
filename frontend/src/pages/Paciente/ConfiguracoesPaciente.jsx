@@ -190,94 +190,54 @@ const ConfiguracoesPaciente = () => {
                                     </Typography>
                                 </Grid>
                                 
-                                <Grid item xs={12} md={9}>
+                                <Grid item xs={12} md={9} sx={{ width: '100%' }}>
                                     <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>
                                         Informações Básicas
                                     </Typography>
                                     
-                                    {/* O container com wrap="wrap" força os itens a descerem para a próxima linha quando faltar espaço */}
-                                    <Grid container spacing={3} wrap="wrap">
-                                        
-                                        {/* LINHA 1: Nome Completo (Ocupa 100% da tela = 12 colunas) */}
-                                        <Grid item xs={12} md={12}>
-                                            <TextField 
-                                                fullWidth 
-                                                label="Nome Completo" 
-                                                value={formData.nome} 
-                                                onChange={(e) => setFormData({...formData, nome: e.target.value})} 
-                                                sx={inputStyle} 
-                                                InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#94A3B8"/></InputAdornment> }} 
-                                            />
+                                    {/* Adicionamos !important para blindar contra o seu CSS global */}
+                                    <Grid 
+                                        container 
+                                        spacing={3} 
+                                        sx={{ 
+                                            display: 'flex !important', 
+                                            flexWrap: 'wrap !important', 
+                                            width: '100% !important' 
+                                        }}
+                                    >
+                                        {/* LINHA 1 */}
+                                        <Grid item xs={12} md={12} sx={{ flexBasis: { xs: '100%', md: '100%' }, maxWidth: '100%' }}>
+                                            <TextField fullWidth label="Nome Completo" value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#94A3B8"/></InputAdornment> }} />
                                         </Grid>
 
-                                        {/* LINHA 2: CPF e Data (Ocupam 50% da tela cada = 6 colunas) */}
-                                        <Grid item xs={12} md={6}>
-                                            <TextField 
-                                                fullWidth 
-                                                label="CPF" 
-                                                disabled 
-                                                value={formData.cpf} 
-                                                sx={inputStyle} 
-                                                InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} 
-                                                helperText="O CPF não pode ser alterado." 
-                                            />
+                                        {/* LINHA 2 */}
+                                        <Grid item xs={12} md={6} sx={{ flexBasis: { xs: '100%', md: '50%' }, maxWidth: { xs: '100%', md: '50%' } }}>
+                                            <TextField fullWidth label="CPF" disabled value={formData.cpf} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} helperText="O CPF não pode ser alterado." />
                                         </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <TextField 
-                                                fullWidth 
-                                                type="date" 
-                                                label="Data de Nascimento" 
-                                                value={formData.data_nascimento} 
-                                                onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
-                                                InputLabelProps={{ shrink: true }} 
+                                        
+                                        <Grid item xs={12} md={6} sx={{ flexBasis: { xs: '100%', md: '50%' }, maxWidth: { xs: '100%', md: '50%' } }}>
+                                            <TextField fullWidth type="date" label="Data de Nascimento" value={formData.data_nascimento} onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} InputLabelProps={{ shrink: true }} 
                                                 sx={{
                                                     ...inputStyle, 
-                                                    '& input::-webkit-datetime-edit': {
-                                                        color: formData.data_nascimento ? 'inherit' : 'transparent'
-                                                    },
-                                                    '& input:focus::-webkit-datetime-edit': {
-                                                        color: 'inherit'
-                                                    }
+                                                    '& input::-webkit-datetime-edit': { color: formData.data_nascimento ? 'inherit' : 'transparent' },
+                                                    '& input:focus::-webkit-datetime-edit': { color: 'inherit' }
                                                 }} 
                                             />
                                         </Grid>
 
-                                        {/* LINHA 3: Telefone e Email (Ocupam 50% da tela cada = 6 colunas) */}
-                                        <Grid item xs={12} md={6}>
-                                            <TextField 
-                                                fullWidth 
-                                                label="Telefone / WhatsApp" 
-                                                value={formData.telefone} 
-                                                onChange={(e) => setFormData({...formData, telefone: e.target.value})} 
-                                                sx={inputStyle} 
-                                                InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} 
-                                            />
+                                        {/* LINHA 3 */}
+                                        <Grid item xs={12} md={6} sx={{ flexBasis: { xs: '100%', md: '50%' }, maxWidth: { xs: '100%', md: '50%' } }}>
+                                            <TextField fullWidth label="Telefone / WhatsApp" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} />
                                         </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <TextField 
-                                                fullWidth 
-                                                label="E-mail" 
-                                                value={formData.email} 
-                                                onChange={(e) => setFormData({...formData, email: e.target.value})} 
-                                                sx={inputStyle} 
-                                                InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} 
-                                            />
+                                        
+                                        <Grid item xs={12} md={6} sx={{ flexBasis: { xs: '100%', md: '50%' }, maxWidth: { xs: '100%', md: '50%' } }}>
+                                            <TextField fullWidth label="E-mail" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} />
                                         </Grid>
 
-                                        {/* LINHA 4: Nova Senha (Ocupa 100% da tela = 12 colunas) */}
-                                        <Grid item xs={12} md={12}>
-                                            <TextField 
-                                                fullWidth 
-                                                label="Nova Senha" 
-                                                type="password" 
-                                                placeholder="Preencha para alterar" 
-                                                value={formData.senha} 
-                                                onChange={(e) => setFormData({...formData, senha: e.target.value})} 
-                                                sx={inputStyle} 
-                                                InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} 
-                                            />
+                                        {/* LINHA 4 */}
+                                        <Grid item xs={12} md={12} sx={{ flexBasis: { xs: '100%', md: '100%' }, maxWidth: '100%' }}>
+                                            <TextField fullWidth label="Nova Senha" type="password" placeholder="Preencha para alterar" value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} />
                                         </Grid>
-
                                     </Grid>
                                 </Grid>
                             </Grid>

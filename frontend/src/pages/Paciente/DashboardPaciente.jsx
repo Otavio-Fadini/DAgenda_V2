@@ -17,7 +17,7 @@ const DashboardPaciente = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://dagenda.com.br/api/agendamentos/meus-agendamentos', {
+            const response = await axios.get('https://dagenda.com.br/api/paciente/meus-agendamentos', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setConsultas(response.data);

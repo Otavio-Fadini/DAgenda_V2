@@ -199,20 +199,27 @@ const ConfiguracoesPaciente = () => {
                                         <Grid item xs={12} md={6}>
                                             <TextField fullWidth label="CPF" disabled value={formData.cpf} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} helperText="O CPF não pode ser alterado." />
                                         </Grid>
-                                        {/* AQUI: O Campo de Data de Nascimento Corrigido e Organizado */}
                                         <Grid item xs={12} md={6}>
-                                            {/* 1. Criamos uma label fixa e separada acima do campo */}
-                                            <Typography variant="caption" sx={{ ml: 1, mb: 0.5, display: 'block', fontWeight: 600, color: '#64748B' }}>
-                                                Data de Nascimento
-                                            </Typography>
-                                            
-                                            {/* 2. O TextField agora cuida SÓ da data, sem a propriedade 'label' */}
                                             <TextField 
                                                 fullWidth 
                                                 type="date" 
+                                                label="Data de Nascimento" 
                                                 value={formData.data_nascimento} 
                                                 onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
-                                                sx={inputStyle} 
+                                                InputLabelProps={{ 
+                                                    shrink: true // Prende o "Data de Nascimento" lá em cima na borda
+                                                }} 
+                                                sx={{
+                                                    ...inputStyle, // Mantém o seu estilo original
+                                                    // Mágica para esconder o "dd/mm/aaaa" quando o campo estiver vazio
+                                                    '& input::-webkit-datetime-edit': {
+                                                        color: formData.data_nascimento ? 'inherit' : 'transparent'
+                                                    },
+                                                    // Mostra o "dd/mm/aaaa" de volta apenas quando o usuário clicar no campo
+                                                    '& input:focus::-webkit-datetime-edit': {
+                                                        color: 'inherit'
+                                                    }
+                                                }} 
                                             />
                                         </Grid>
                                         <Grid item xs={12} md={6}>

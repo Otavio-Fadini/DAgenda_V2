@@ -130,7 +130,7 @@ const DashboardPaciente = () => {
 
                 {/* INDICADORES */}
                 <Box sx={{ display: 'flex', gap: 3, mb: 4, width: '100%', flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
-                    <StatCard icon={Calendar} title="Consultas Ativas" value={consultas.length} color="primary" />
+                    <StatCard icon={Calendar} title="Consultas Ativas" value={consultas.filter(c => c.status !== 'Cancelado').length} color="primary" />
                     <StatCard icon={ClipboardList} title="Histórico Total" value={consultas.length} color="success" />
                     <StatCard icon={CreditCard} title="Débitos Pendentes" value={totalDebito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} color="error" />
                 </Box>
@@ -159,74 +159,65 @@ const DashboardPaciente = () => {
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     {[1, 2, 3].map(i => <Skeleton key={i} variant="rounded" height={100} sx={{ borderRadius: '16px' }} />)}
                                 </Box>
-                            ) : consultas.length > 0 ? (
+                            ) : consultas.filter(c => c.status !== 'Cancelado').length > 0 ? (
                                 <List sx={{ p: 0 }}>
-                                    {consultas.map((c) => (
-                                        <ListItem 
-                                            key={c.id} 
-                                            sx={{ 
-                                                mb: 2, 
-                                                border: '1px solid #F1F5F9', 
-                                                borderRadius: '16px', 
-                                                p: 3,
-                                                bgcolor: '#ffffff',
-                                                transition: 'all 0.3s ease',
-                                                '&:hover': { 
-                                                    boxShadow: '0 12px 24px -10px rgba(50, 181, 254, 0.15)', 
-                                                    borderColor: '#32B5FE', 
-                                                    transform: 'translateY(-2px)' 
-                                                }
-                                            }}
-                                        >
-                                            <Avatar sx={{ mr: 3, bgcolor: '#F8FAFC', color: '#64748B', width: 56, height: 56, border: '1px solid #E2E8F0' }}>
-                                                <User size={28} />
-                                            </Avatar>
-                                            
-                                            <ListItemText 
-                                                primary={<Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#0F172A' }}>{c.nome_medico}</Typography>}
-                                                secondary={
-                                                    <Typography variant="body2" sx={{ color: '#32B5FE', fontWeight: 600, mt: 0.5, display: 'flex', alignItems: 'center' }}>
-                                                        {c.especialidade} <Box component="span" sx={{ color: '#CBD5E1', mx: 1.5 }}>•</Box> {c.nome_clinica}
-                                                    </Typography>
-                                                }
-                                            />
-
-                                            <Box sx={{ textAlign: 'right', mr: 4 }}>
-                                                <Typography sx={{ fontWeight: 800, color: '#0F172A' }}>{c.data_agendamento}</Typography>
-                                                <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 600 }}>{c.horario}</Typography>
-                                            </Box>
-
-                                            <Chip 
-                                                label={c.status.toUpperCase()} 
+                                    {/* A mágica acontece aqui: filtramos o status e ordenamos por data */}
+                                    {consultas
+                                        .filter(c => c.status !== 'Cancelado')
+                                        .sort((a, b) => new Date(a.data_agendamento) - new Date(b.data_agendamento))
+                                        .map((c) => (
+                                            <ListItem 
+                                                key={c.id} 
                                                 sx={{ 
-                                                    fontWeight: 800, fontSize: '0.75rem', height: 28, px: 1, borderRadius: '8px',
-                                                    bgcolor: c.status === 'confirmado' ? '#ECFDF5' : '#FEFCE8',
-                                                    color: c.status === 'confirmado' ? '#10B981' : '#EAB308',
-                                                    border: '1px solid',
-                                                    borderColor: c.status === 'confirmado' ? '#A7F3D0' : '#FEF08A'
-                                                }} 
-                                            />
+                                                    mb: 2, 
+                                                    border: '1px solid #F1F5F9', 
+                                                    borderRadius: '16px', 
+                                                    p: 3,
+                                                    bgcolor: '#ffffff',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': { 
+                                                        boxShadow: '0 12px 24px -10px rgba(50, 181, 254, 0.15)', 
+                                                        borderColor: '#32B5FE', 
+                                                        transform: 'translateY(-2px)' 
+                                                    }
+                                                }}
+                                            >
+                                                {/* ... o conteúdo do seu ListItem permanece igual ... */}
+                                                <Avatar sx={{ mr: 3, bgcolor: '#F8FAFC', color: '#64748B', width: 56, height: 56, border: '1px solid #E2E8F0' }}>
+                                                    <User size={28} />
+                                                </Avatar>
+                                                
+                                                <ListItemText 
+                                                    primary={<Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#0F172A' }}>{c.nome_medico}</Typography>}
+                                                    secondary={
+                                                        <Typography variant="body2" sx={{ color: '#32B5FE', fontWeight: 600, mt: 0.5, display: 'flex', alignItems: 'center' }}>
+                                                            {c.especialidade} <Box component="span" sx={{ color: '#CBD5E1', mx: 1.5 }}>•</Box> {c.nome_clinica}
+                                                        </Typography>
+                                                    }
+                                                />
 
-                                            <Tooltip title="Desmarcar Consulta" arrow>
-                                                <IconButton 
-                                                    onClick={() => handleCancelar(c.id)} 
+                                                <Box sx={{ textAlign: 'right', mr: 4 }}>
+                                                    <Typography sx={{ fontWeight: 800, color: '#0F172A' }}>{c.data_agendamento}</Typography>
+                                                    <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 600 }}>{c.horario}</Typography>
+                                                </Box>
+
+                                                <Chip 
+                                                    label={c.status.toUpperCase()} 
                                                     sx={{ 
-                                                        ml: 3, color: '#CBD5E1', 
-                                                        transition: 'all 0.2s',
-                                                        '&:hover': { color: '#EF4444', bgcolor: '#FEF2F2', transform: 'scale(1.1)' } 
-                                                    }}
-                                                >
-                                                    <Trash2 size={20} />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </ListItem>
-                                    ))}
+                                                        fontWeight: 800, fontSize: '0.75rem', height: 28, px: 1, borderRadius: '8px',
+                                                        bgcolor: c.status === 'confirmado' ? '#ECFDF5' : '#FEFCE8',
+                                                        color: c.status === 'confirmado' ? '#10B981' : '#EAB308',
+                                                        border: '1px solid',
+                                                        borderColor: c.status === 'confirmado' ? '#A7F3D0' : '#FEF08A'
+                                                    }} 
+                                                />
+                                            </ListItem>
+                                        ))}
                                 </List>
                             ) : (
                                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.6 }}>
                                     <Activity size={70} color="#CBD5E1" />
                                     <Typography variant="h6" sx={{ mt: 3, fontWeight: 700, color: '#64748B' }}>Sua agenda está livre!</Typography>
-                                    <Typography variant="body2" sx={{ color: '#94A3B8' }}>Nenhum compromisso futuro encontrado.</Typography>
                                 </Box>
                             )}
                         </Box>

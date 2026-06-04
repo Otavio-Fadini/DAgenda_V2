@@ -261,7 +261,8 @@ const MeusAgendamentos = () => {
                         const podeCancelar = verificarPodeCancelar(agendamento.data_agendamento);
 
                         return (
-                            <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={agendamento.id}>
+                            <Grid item key={agendamento.id}>
+                                {/* Defina a largura fixa aqui, por exemplo, 320px */}
                                 <Paper elevation={0} sx={{ 
                                     p: 3, 
                                     borderRadius: '20px', 
@@ -269,63 +270,84 @@ const MeusAgendamentos = () => {
                                     display: 'flex', 
                                     flexDirection: 'column', 
                                     height: '100%', 
-                                    // AQUI: Garantimos que o card ocupa 100% do Grid item e nada mais
-                                    width: '100%', 
-                                    boxSizing: 'border-box',
+                                    width: '320px', // <--- LARGURA FIXA AQUI
+                                    boxSizing: 'border-box', 
+                                    overflow: 'hidden', 
                                     transition: 'all 0.2s', 
-                                    '&:hover': { borderColor: '#32B5FE', boxShadow: '0 10px 30px -10px rgba(50, 181, 254, 0.15)', transform: 'translateY(-4px)' }, 
+                                    '&:hover': { 
+                                        borderColor: '#32B5FE', 
+                                        boxShadow: '0 10px 30px -10px rgba(50, 181, 254, 0.15)', 
+                                        transform: 'translateY(-4px)' 
+                                    }, 
                                     opacity: agendamento.status === 'Cancelado' ? 0.75 : 1 
                                 }}>
                                     
                                     {/* TOPO: FOTO E NOME */}
-                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3 }}>
+                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, width: '100%' }}>
                                         <Avatar src={agendamento.foto_perfil} sx={{ width: 56, height: 56, bgcolor: '#F8FAFC', color: '#32B5FE', border: '2px solid #F1F5F9', flexShrink: 0 }}>
                                             <Stethoscope size={28} />
                                         </Avatar>
-                                        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                            {/* 👇 Forçamos o CSS a quebrar textos em vez de alargar o ecrã 👇 */}
+                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2, whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                                                 Dr(a). {agendamento.nome_medico}
                                             </Typography>
-                                            <Typography variant="body2" color="#32B5FE" fontWeight={700} sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            <Typography variant="body2" color="#32B5FE" fontWeight={700} sx={{ whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                                                 {agendamento.especialidade}
                                             </Typography>
                                         </Box>
                                     </Box>
 
                                     {/* MEIO: DATA, HORA E STATUS */}
-                                    <Stack spacing={1.5} sx={{ mb: 3, flexGrow: 1 }}>
+                                    <Stack spacing={1.5} sx={{ mb: 3, flexGrow: 1, width: '100%' }}>
+                                        {/* 👇 flexWrap: 'wrap' permite que os chips desçam se a tela for pequena 👇 */}
                                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                                             <Chip icon={<Calendar size={16} />} label={formatarData(agendamento.data_agendamento)} sx={{ bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 800, borderRadius: '10px' }} />
                                             <Chip icon={<Clock size={16} />} label={agendamento.horario.substring(0,5)} sx={{ bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 800, borderRadius: '10px' }} />
                                         </Box>
                                         
-                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: statusCfg.bg, color: statusCfg.color, px: 2, py: 1, borderRadius: '10px', alignSelf: 'flex-start' }}>
+                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: statusCfg.bg, color: statusCfg.color, px: 2, py: 1, borderRadius: '10px', alignSelf: 'flex-start', maxWidth: '100%', boxSizing: 'border-box' }}>
                                             {statusCfg.icon}
-                                            <Typography variant="body2" fontWeight={800}>{agendamento.status}</Typography>
+                                            {/* 👇 Previne que o status estoure a tela 👇 */}
+                                            <Typography variant="body2" fontWeight={800} sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{agendamento.status}</Typography>
                                         </Box>
                                     </Stack>
 
-                                    <Divider sx={{ borderStyle: 'dashed', borderColor: '#E2E8F0', mb: 3 }} />
+                                    <Divider sx={{ borderStyle: 'dashed', borderColor: '#E2E8F0', mb: 3, width: '100%' }} />
 
                                     {/* BASE: BOTÕES */}
-                                    <Stack spacing={1.5}>
+                                    <Stack spacing={1.5} sx={{ width: '100%' }}>
                                         {agendamento.status === 'Pendente pagamento' && (
                                             <>
-                                                <Button fullWidth variant="contained" onClick={() => handlePagarAgora(agendamento.id)} sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 800 }}>Pagar Consulta</Button>
-                                                <Button fullWidth variant="outlined" color="error" onClick={() => abrirModalCancelar(agendamento)} sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700 }}>Cancelar</Button>
+                                                <Button fullWidth variant="contained" startIcon={<CreditCard size={18} />} onClick={() => handlePagarAgora(agendamento.id)} sx={{ color: '#FFFFFF', bgcolor: '#0F172A', borderRadius: '12px', textTransform: 'none', fontWeight: 800, py: 1.2, boxShadow: 'none', '&:hover': { bgcolor: '#32B5FE' } }}>
+                                                    Pagar Consulta
+                                                </Button>
+                                                <Button fullWidth variant="outlined" color="error" startIcon={<XCircle size={18} />} onClick={() => abrirModalCancelar(agendamento)} sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, py: 1.2 }}>
+                                                    Cancelar
+                                                </Button>
                                             </>
                                         )}
 
                                         {agendamento.status === 'Agendado' && (
                                             <>
-                                                <Button fullWidth variant="contained" onClick={() => abrirModalExame(agendamento)} sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 800 }}>Anexar Exame</Button>
-                                                <Button fullWidth variant="outlined" disabled={!podeCancelar} color="error" onClick={() => abrirModalCancelar(agendamento)} sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700 }}>Cancelar</Button>
+                                                <Button fullWidth variant="contained" startIcon={<Paperclip size={18} />} onClick={() => abrirModalExame(agendamento)} sx={{ color: '#FFFFFF', bgcolor: '#0F172A', borderRadius: '12px', textTransform: 'none', fontWeight: 800, py: 1.2, boxShadow: 'none', '&:hover': { bgcolor: '#32B5FE' } }}>
+                                                    Anexar Exame
+                                                </Button>
+                                                <Button fullWidth variant="outlined" disabled={!podeCancelar} color="error" startIcon={<XCircle size={18} />} onClick={() => abrirModalCancelar(agendamento)} sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, py: 1.2 }}>
+                                                    Cancelar
+                                                </Button>
                                             </>
                                         )}
 
                                         {agendamento.status === 'Agendado' && !podeCancelar && (
-                                            <Typography variant="caption" color="error" align="center" sx={{ display: 'block', lineHeight: 1.2 }}>
-                                                * Cancelamento apenas com 7 dias de antecedência.
+                                            <Typography variant="caption" color="error" align="center" sx={{ display: 'block', lineHeight: 1.4, mt: 0.5, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                                                * Cancelamento apenas <br /> com 7 dias de antecedência.
+                                            </Typography>
+                                        )}
+                                        
+                                        {(agendamento.status === 'Concluido' || agendamento.status === 'Cancelado') && (
+                                            <Typography variant="body2" color="#94A3B8" fontWeight={700} align="center" sx={{ py: 1, whiteSpace: 'normal' }}>
+                                                Nenhuma ação disponível.
                                             </Typography>
                                         )}
                                     </Stack>

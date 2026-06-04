@@ -195,11 +195,9 @@ const ConfiguracoesPaciente = () => {
                                         Informações Básicas
                                     </Typography>
                                     
-                                    {/* Container principal. Spacing=3 cria o espaço entre os campos automaticamente */}
                                     <Grid container spacing={3}>
                                         
                                         {/* === LINHA 1 === */}
-                                        {/* Nome ocupa a linha toda (12 colunas) */}
                                         <Grid item xs={12}>
                                             <TextField 
                                                 fullWidth 
@@ -212,8 +210,8 @@ const ConfiguracoesPaciente = () => {
                                         </Grid>
 
                                         {/* === LINHA 2 === */}
-                                        {/* CPF ocupa metade (6 colunas) em telas médias/grandes */}
-                                        <Grid item xs={12} md={6}>
+                                        {/* Trocamos 'md' por 'sm' para forçar 2 colunas mesmo em telas menores */}
+                                        <Grid item xs={12} sm={6}>
                                             <TextField 
                                                 fullWidth 
                                                 label="CPF" 
@@ -224,8 +222,7 @@ const ConfiguracoesPaciente = () => {
                                                 helperText="O CPF não pode ser alterado." 
                                             />
                                         </Grid>
-                                        {/* Data ocupa a outra metade (6 colunas) em telas médias/grandes */}
-                                        <Grid item xs={12} md={6}>
+                                        <Grid item xs={12} sm={6}>
                                             <TextField 
                                                 fullWidth 
                                                 type="date" 
@@ -242,7 +239,7 @@ const ConfiguracoesPaciente = () => {
                                         </Grid>
 
                                         {/* === LINHA 3 === */}
-                                        <Grid item xs={12} md={6}>
+                                        <Grid item xs={12} sm={6}>
                                             <TextField 
                                                 fullWidth 
                                                 label="Telefone / WhatsApp" 
@@ -252,7 +249,7 @@ const ConfiguracoesPaciente = () => {
                                                 InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} 
                                             />
                                         </Grid>
-                                        <Grid item xs={12} md={6}>
+                                        <Grid item xs={12} sm={6}>
                                             <TextField 
                                                 fullWidth 
                                                 label="E-mail" 

@@ -341,7 +341,7 @@ const MeusAgendamentos = () => {
 
                                         {agendamento.status === 'Agendado' && !podeCancelar && (
                                             <Typography variant="caption" color="error" align="center" sx={{ display: 'block', lineHeight: 1.4, mt: 0.5, whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                                                * Cancelamento apenas <br /> com 7 dias de antecedência.
+                                                * Cancelamento apenas com 7 dias de antecedência.
                                             </Typography>
                                         )}
                                         

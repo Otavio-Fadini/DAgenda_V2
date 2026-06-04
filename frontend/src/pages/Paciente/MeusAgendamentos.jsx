@@ -261,8 +261,8 @@ const MeusAgendamentos = () => {
                         const podeCancelar = verificarPodeCancelar(agendamento.data_agendamento);
 
                         return (
-                            <Grid item xs={12} sm={6} md={6} lg={4} xl={3} zeroMinWidth key={agendamento.id}>
-                                {/* 👇 O SEGREDO ESTÁ AQUI: width, maxWidth e boxSizing "blindam" a largura do card 👇 */}
+                            <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={agendamento.id}>
+                                {/* 👇 OPÇÃO NUCLEAR: width: 100%, maxWidth: 100%, boxSizing, e overflow oculto 👇 */}
                                 <Paper elevation={0} sx={{ p: 3, borderRadius: '20px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', height: '100%', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden', transition: 'all 0.2s', '&:hover': { borderColor: '#32B5FE', boxShadow: '0 10px 30px -10px rgba(50, 181, 254, 0.15)', transform: 'translateY(-4px)' }, opacity: agendamento.status === 'Cancelado' ? 0.75 : 1 }}>
                                     
                                     {/* TOPO: FOTO E NOME */}
@@ -270,12 +270,12 @@ const MeusAgendamentos = () => {
                                         <Avatar src={agendamento.foto_perfil} sx={{ width: 56, height: 56, bgcolor: '#F8FAFC', color: '#32B5FE', border: '2px solid #F1F5F9', flexShrink: 0 }}>
                                             <Stethoscope size={28} />
                                         </Avatar>
-                                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                                            {/* 👇 A propriedade noWrap corta o texto longo com "..." nativamente 👇 */}
-                                            <Typography noWrap variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
+                                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                            {/* 👇 Forçamos o CSS a quebrar textos em vez de alargar o ecrã 👇 */}
+                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2, whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                                                 Dr(a). {agendamento.nome_medico}
                                             </Typography>
-                                            <Typography variant="body2" color="#32B5FE" fontWeight={700} sx={{ wordBreak: 'break-word' }}>
+                                            <Typography variant="body2" color="#32B5FE" fontWeight={700} sx={{ whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                                                 {agendamento.especialidade}
                                             </Typography>
                                         </Box>
@@ -283,19 +283,20 @@ const MeusAgendamentos = () => {
 
                                     {/* MEIO: DATA, HORA E STATUS */}
                                     <Stack spacing={1.5} sx={{ mb: 3, flexGrow: 1, width: '100%' }}>
+                                        {/* 👇 flexWrap: 'wrap' permite que os chips desçam se a tela for pequena 👇 */}
                                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                                             <Chip icon={<Calendar size={16} />} label={formatarData(agendamento.data_agendamento)} sx={{ bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 800, borderRadius: '10px' }} />
                                             <Chip icon={<Clock size={16} />} label={agendamento.horario.substring(0,5)} sx={{ bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 800, borderRadius: '10px' }} />
                                         </Box>
                                         
-                                        {/* Trava de largura também no chip de status para não alargar o card */}
-                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: statusCfg.bg, color: statusCfg.color, px: 2, py: 1, borderRadius: '10px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden' }}>
+                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: statusCfg.bg, color: statusCfg.color, px: 2, py: 1, borderRadius: '10px', alignSelf: 'flex-start', maxWidth: '100%', boxSizing: 'border-box' }}>
                                             {statusCfg.icon}
-                                            <Typography variant="body2" fontWeight={800} sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{agendamento.status}</Typography>
+                                            {/* 👇 Previne que o status estoure a tela 👇 */}
+                                            <Typography variant="body2" fontWeight={800} sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{agendamento.status}</Typography>
                                         </Box>
                                     </Stack>
 
-                                    <Divider sx={{ borderStyle: 'dashed', borderColor: '#E2E8F0', mb: 3 }} />
+                                    <Divider sx={{ borderStyle: 'dashed', borderColor: '#E2E8F0', mb: 3, width: '100%' }} />
 
                                     {/* BASE: BOTÕES */}
                                     <Stack spacing={1.5} sx={{ width: '100%' }}>
@@ -322,13 +323,13 @@ const MeusAgendamentos = () => {
                                         )}
 
                                         {agendamento.status === 'Agendado' && !podeCancelar && (
-                                            <Typography variant="caption" color="error" textAlign="center" sx={{ display: 'block', lineHeight: 1.4, mt: 0.5 }}>
+                                            <Typography variant="caption" color="error" align="center" sx={{ display: 'block', lineHeight: 1.4, mt: 0.5, whiteSpace: 'normal', wordBreak: 'break-word' }}>
                                                 * Cancelamento apenas <br /> com 7 dias de antecedência.
                                             </Typography>
                                         )}
                                         
                                         {(agendamento.status === 'Concluido' || agendamento.status === 'Cancelado') && (
-                                            <Typography variant="body2" color="#94A3B8" fontWeight={700} textAlign="center" sx={{ py: 1 }}>
+                                            <Typography variant="body2" color="#94A3B8" fontWeight={700} align="center" sx={{ py: 1, whiteSpace: 'normal' }}>
                                                 Nenhuma ação disponível.
                                             </Typography>
                                         )}

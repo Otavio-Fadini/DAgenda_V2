@@ -261,7 +261,7 @@ const MeusAgendamentos = () => {
                         const podeCancelar = verificarPodeCancelar(agendamento.data_agendamento);
 
                         return (
-                            <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={agendamento.id}>
+                            <Grid item xs={12} sm={6} md={6} lg={4} xl={3} zeroMinWidth key={agendamento.id}>
                                 {/* 👇 O SEGREDO ESTÁ AQUI: width, maxWidth e boxSizing "blindam" a largura do card 👇 */}
                                 <Paper elevation={0} sx={{ p: 3, borderRadius: '20px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', height: '100%', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden', transition: 'all 0.2s', '&:hover': { borderColor: '#32B5FE', boxShadow: '0 10px 30px -10px rgba(50, 181, 254, 0.15)', transform: 'translateY(-4px)' }, opacity: agendamento.status === 'Cancelado' ? 0.75 : 1 }}>
                                     
@@ -271,8 +271,8 @@ const MeusAgendamentos = () => {
                                             <Stethoscope size={28} />
                                         </Avatar>
                                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                                            {/* 👇 wordBreak: 'break-word' faz o texto ir para a linha de baixo naturalmente se for muito grande 👇 */}
-                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2, wordBreak: 'break-word' }}>
+                                            {/* 👇 A propriedade noWrap corta o texto longo com "..." nativamente 👇 */}
+                                            <Typography noWrap variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
                                                 Dr(a). {agendamento.nome_medico}
                                             </Typography>
                                             <Typography variant="body2" color="#32B5FE" fontWeight={700} sx={{ wordBreak: 'break-word' }}>

@@ -201,7 +201,36 @@ const ConfiguracoesPaciente = () => {
                                         </Grid>
                                         {/* AQUI: O Novo Campo de Data de Nascimento */}
                                         <Grid item xs={12} md={6}>
-                                            <TextField fullWidth type="date" label="Data de Nascimento" value={formData.data_nascimento} onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} sx={inputStyle} InputLabelProps={{ shrink: true }} />
+                                            <TextField 
+                                                fullWidth 
+                                                type="date" 
+                                                label="Data de Nascimento" 
+                                                value={formData.data_nascimento} 
+                                                onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
+                                                InputLabelProps={{ 
+                                                    shrink: true,
+                                                    style: { fontWeight: 700 }
+                                                }} 
+                                                InputProps={{ 
+                                                    startAdornment: (
+                                                        <InputAdornment position="start">
+                                                            <Calendar size={18} color="#94A3B8"/>
+                                                        </InputAdornment>
+                                                    ) 
+                                                }}
+                                                sx={{
+                                                    ...inputStyle,
+                                                    // 👇 Este truque esconde o ícone padrão do navegador 👇
+                                                    '& input[type="date"]::-webkit-calendar-picker-indicator': {
+                                                        display: 'none',
+                                                        WebkitAppearance: 'none'
+                                                    },
+                                                    // 👇 Afasta o dd/mm/aaaa do seu ícone para não haver colisão 👇
+                                                    '& .MuiOutlinedInput-input': {
+                                                        paddingLeft: '8px'
+                                                    }
+                                                }} 
+                                            />
                                         </Grid>
                                         <Grid item xs={12} md={6}>
                                             <TextField fullWidth label="Telefone / WhatsApp" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} />

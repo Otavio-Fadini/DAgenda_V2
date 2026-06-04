@@ -200,34 +200,8 @@ const ConfiguracoesPaciente = () => {
                                             <TextField fullWidth label="CPF" disabled value={formData.cpf} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} helperText="O CPF não pode ser alterado." />
                                         </Grid>
                                         {/* AQUI: O Novo Campo de Data de Nascimento */}
-                                        <Grid item xs={12} md={6}>
-                                            <TextField 
-                                                fullWidth 
-                                                type="date" 
-                                                label="Data de Nascimento" 
-                                                value={formData.data_nascimento} 
-                                                onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
-                                                InputLabelProps={{ 
-                                                    shrink: true, // Força a etiqueta a ficar sempre no topo
-                                                    style: { fontWeight: 700 } 
-                                                }} 
-                                                InputProps={{ 
-                                                    // Colocamos o seu ícone personalizado no lado direito!
-                                                    endAdornment: (
-                                                        <InputAdornment position="end">
-                                                            <Calendar size={18} color="#94A3B8"/>
-                                                        </InputAdornment>
-                                                    ) 
-                                                }}
-                                                sx={{
-                                                    ...inputStyle,
-                                                    // Truque de CSS: Esconde o ícone de calendário padrão do navegador
-                                                    '& input[type="date"]::-webkit-calendar-picker-indicator': {
-                                                        display: 'none',
-                                                        WebkitAppearance: 'none'
-                                                    }
-                                                }}
-                                            />
+                                        <Grid item xs={12} sm={6}>
+                                            <TextField fullWidth label="Data de Nascimento" placeholder="DD/MM/AAAA" variant="outlined" type="text" value={formData.data_nascimento} sx={modernInputStyle} onChange={handleDateChange} required />
                                         </Grid>
                                         <Grid item xs={12} md={6}>
                                             <TextField fullWidth label="Telefone / WhatsApp" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} />

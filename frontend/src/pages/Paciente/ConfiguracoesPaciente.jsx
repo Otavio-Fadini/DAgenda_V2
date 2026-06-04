@@ -201,16 +201,18 @@ const ConfiguracoesPaciente = () => {
                                         </Grid>
                                         {/* AQUI: O Campo de Data de Nascimento Corrigido e Organizado */}
                                         <Grid item xs={12} md={6}>
+                                            {/* 1. Criamos uma label fixa e separada acima do campo */}
+                                            <Typography variant="caption" sx={{ ml: 1, mb: 0.5, display: 'block', fontWeight: 600, color: '#64748B' }}>
+                                                Data de Nascimento
+                                            </Typography>
+                                            
+                                            {/* 2. O TextField agora cuida SÓ da data, sem a propriedade 'label' */}
                                             <TextField 
                                                 fullWidth 
                                                 type="date" 
-                                                label="Data de Nascimento" 
                                                 value={formData.data_nascimento} 
                                                 onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
                                                 sx={inputStyle} 
-                                                InputLabelProps={{ 
-                                                    shrink: true // Isso é tudo que você precisa: prende a label lá em cima.
-                                                }} 
                                             />
                                         </Grid>
                                         <Grid item xs={12} md={6}>

@@ -68,15 +68,15 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
 });
 
 // ==========================================
-// ROTA: BUSCAR DADOS DO PERFIL (ATUALIZADA PARA CEP)
+// ROTA: BUSCAR DADOS DO PERFIL 
 // ==========================================
 router.get('/perfil', verifyToken, async (req, res) => {
     try {
         const usuarioId = req.userId;
 
         const query = `
-            SELECT nome_fantasia, cnpj, telefone, email, foto_perfil, 
-                   cep, rua, numero, bairro, cidade, estado 
+            SELECT nome_fantasia, cnpj, telefone, email, foto_perfil, razao_social, 
+                   comodidades, cep, rua, numero, bairro, cidade, estado 
             FROM usuarios_cnpj 
             WHERE id = ?
         `;
@@ -89,6 +89,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
         const data = rows[0];
         res.json({
             nome_fantasia: data.nome_fantasia,
+            razao_social: data.razao_social,
             cnpj: data.cnpj,
             telefone: data.telefone,
             email: data.email,
@@ -98,7 +99,8 @@ router.get('/perfil', verifyToken, async (req, res) => {
             numero: data.numero || '',
             bairro: data.bairro || '',
             cidade: data.cidade || '',
-            estado: data.estado || ''
+            estado: data.estado || '',
+            comodidades: data.comodidades || ''
         });
     } catch (error) {
         console.error("Erro ao buscar perfil:", error);
@@ -113,7 +115,7 @@ router.put('/perfil', verifyToken, async (req, res) => {
     try {
         const usuarioId = req.userId;
         
-        const { nome_fantasia, cnpj, telefone, email, logo, cep, rua, numero, bairro, cidade, estado } = req.body;
+        const { nome_fantasia, cnpj, telefone, email, logo, razao_social, cep, rua, numero, bairro, cidade, estado, comodidades } = req.body;
 
         const query = `
             UPDATE usuarios_cnpj 
@@ -122,12 +124,14 @@ router.put('/perfil', verifyToken, async (req, res) => {
                 telefone = ?, 
                 email = ?, 
                 foto_perfil = ?,
+                razao_social = ?,
                 cep = ?,
                 rua = ?,
                 numero = ?,
                 bairro = ?,
                 cidade = ?,
-                estado = ?
+                estado = ?,
+                comodidades = ?
             WHERE id = ?
         `;
         
@@ -137,12 +141,14 @@ router.put('/perfil', verifyToken, async (req, res) => {
             telefone, 
             email, 
             logo, 
+            razao_social,
             cep, 
             rua, 
             numero, 
             bairro, 
             cidade, 
             estado, 
+            comodidades,
             usuarioId
         ]);
 
@@ -154,7 +160,7 @@ router.put('/perfil', verifyToken, async (req, res) => {
 });
 
 // ==========================================
-// ROTA: BUSCAR PROFISSIONAIS POXIMOS PARA CONVITE
+// ROTA: BUSCAR PROFISSIONAIS PROXIMOS PARA CONVITE
 // ==========================================
 router.get('/buscar-profissionais', verifyToken, async (req, res) => {
     const clinicaId = req.userId; // Vem do token JWT

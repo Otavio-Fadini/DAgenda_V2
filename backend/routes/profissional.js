@@ -13,7 +13,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
         const [rows] = await pool.query(
             `SELECT 
                 nome, email, conselho, especialidade, valor_consulta, cpf, data_nascimento,
-                duracao_sessao, atende_convenio, foto_perfil,
+                duracao_sessao, atende_convenio, foto_perfil, telefone,
                 cep, rua, numero, complemento, bairro, cidade, estado
              FROM profissionais WHERE id = ?`,
             [id]
@@ -46,14 +46,14 @@ router.put('/perfil', verifyToken, async (req, res) => {
         const { 
             nome, email, conselho, especialidade, valor_consulta, duracao_sessao, 
             atende_convenio, senha, foto_perfil, horarios,
-            cep, rua, numero, complemento, bairro, cidade, estado, cpf, data_nascimento
+            cep, rua, numero, complemento, bairro, cidade, estado, cpf, data_nascimento, telefone
         } = req.body;
 
         // 2. Atualiza os dados básicos, foto, e agora o endereço completo
         let query = `
             UPDATE profissionais 
             SET nome=?, email=?, conselho=?, especialidade=?, valor_consulta=?, duracao_sessao=?, atende_convenio=?, foto_perfil=?,
-                cep=?, rua=?, numero=?, complemento=?, bairro=?, cidade=?, estado=?, cpf=?, data_nascimento=?
+                cep=?, rua=?, numero=?, complemento=?, bairro=?, cidade=?, estado=?, cpf=?, data_nascimento=?, telefone=?
         `;
         
         let queryParams = [
@@ -73,7 +73,8 @@ router.put('/perfil', verifyToken, async (req, res) => {
             cidade || null, 
             estado || null,
             cpf || null,
-            data_nascimento || null
+            data_nascimento || null,
+            telefone || null
         ];
 
         // 3. Se uma nova senha foi enviada, adiciona a criptografia dinamicamente
@@ -144,7 +145,6 @@ router.get('/agenda', verifyToken, async (req, res) => {
         }
 
         if (status && status !== 'Todos') {
-            // Removido o toLowerCase() para casar perfeitamente com 'Pendente pagamento', 'Agendado', etc.
             query += ` AND a.status = ? `;
             queryParams.push(status);
         }
@@ -161,13 +161,13 @@ router.get('/agenda', verifyToken, async (req, res) => {
         res.json(rows.map(row => ({
             id: row.id,
             id_paciente: row.id_paciente,
-            hora: row.horario,             // Mantido para compatibilidade com outras telas antigas
-            horario: row.horario,          // Adicionado para o novo AgendaMedica.jsx
+            hora: row.horario,          
+            horario: row.horario,          
             data: row.data_formatada,
             paciente: row.paciente_nome || "Paciente não identificado",
-            paciente_nome: row.paciente_nome || "Paciente não identificado", // Adicionado para o novo AgendaMedica.jsx
+            paciente_nome: row.paciente_nome || "Paciente não identificado", 
             clinica: row.clinica_nome || "Unidade Principal",
-            status: row.status,            // Mantém a formatação original do banco para os Chips de cores funcionarem
+            status: row.status,            
             tipo: row.tipo_agendamento || 'Consulta',
             motivo_cancelamento: row.motivo_cancelamento,
             exame_nome: row.exame_nome,

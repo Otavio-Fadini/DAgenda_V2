@@ -15,7 +15,7 @@ const ConfiguracoesPerfil = () => {
 
     const [formData, setFormData] = useState({
         nome: '', email: '', conselho: '', especialidade: '', cpf: '', data_nascimento: '',
-        valor_consulta: '', duracao_sessao: '', atende_convenio: false,
+        valor_consulta: '', duracao_sessao: '', atende_convenio: false, telefone: '',
         aceita_convites: true, senha: '', foto_perfil: '', 
         cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', estado: ''
     });
@@ -47,6 +47,7 @@ const ConfiguracoesPerfil = () => {
                     duracao_sessao: data.duracao_sessao || '30',
                     atende_convenio: data.atende_convenio === 1 || data.atende_convenio === true,
                     aceita_convites: data.aceita_convites !== 0,
+                    telefone: data.telefone || '',
                     senha: '',
                     foto_perfil: data.foto_perfil || '',
                     cep: data.cep || '',
@@ -259,10 +260,11 @@ const ConfiguracoesPerfil = () => {
                                         value={formData.nome} 
                                         onChange={(e) => setFormData({...formData, nome: e.target.value})} 
                                         sx={inputStyle} 
+                                        InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#94A3B8"/></InputAdornment> }}
                                     />
                                 </Box>
 
-                                {/* LINHA 2 (Novos Campos: CPF e Data de Nascimento) */}
+                                {/* LINHA 2 (Documentos Básicos) */}
                                 <TextField 
                                     fullWidth 
                                     label="CPF" 
@@ -286,24 +288,23 @@ const ConfiguracoesPerfil = () => {
                                     }} 
                                 />
 
-                                {/* LINHA 3 (Acessos) */}
+                                {/* LINHA 3 (Contatos - Telefone e Email juntos!) */}
+                                <TextField 
+                                    fullWidth 
+                                    label="Telefone / WhatsApp" 
+                                    value={formData.telefone} 
+                                    onChange={(e) => setFormData({...formData, telefone: e.target.value})} 
+                                    sx={inputStyle} 
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} 
+                                />
+
                                 <TextField 
                                     fullWidth 
                                     label="E-mail de Acesso" 
                                     value={formData.email} 
                                     onChange={(e) => setFormData({...formData, email: e.target.value})} 
                                     sx={inputStyle} 
-                                />
-
-                                <TextField 
-                                    fullWidth 
-                                    label="Nova Senha de Segurança" 
-                                    type="password" 
-                                    placeholder="Preencha apenas para alterar" 
-                                    value={formData.senha} 
-                                    onChange={(e) => setFormData({...formData, senha: e.target.value})} 
-                                    sx={inputStyle} 
-                                    InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} 
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }}
                                 />
 
                                 {/* LINHA 4 (Dados Profissionais) */}
@@ -324,6 +325,20 @@ const ConfiguracoesPerfil = () => {
                                     sx={inputStyle} 
                                     InputProps={{ startAdornment: <InputAdornment position="start"><Briefcase size={18} color="#94A3B8"/></InputAdornment> }} 
                                 />
+
+                                {/* LINHA 5 (Segurança - Ocupa a linha toda no final) */}
+                                <Box sx={{ gridColumn: '1 / -1' }}>
+                                    <TextField 
+                                        fullWidth 
+                                        label="Nova Senha de Segurança" 
+                                        type="password" 
+                                        placeholder="Preencha apenas se desejar alterar a atual" 
+                                        value={formData.senha} 
+                                        onChange={(e) => setFormData({...formData, senha: e.target.value})} 
+                                        sx={inputStyle} 
+                                        InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} 
+                                    />
+                                </Box>
 
                             </Box>
                         </Grid>

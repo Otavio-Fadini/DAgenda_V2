@@ -4,7 +4,7 @@ import {
     Box, Typography, Paper, Grid, TextField, InputAdornment, Switch, 
     Button, CircularProgress, Alert, Snackbar, Divider, Avatar, IconButton, Tabs, Tab, Stack 
 } from '@mui/material';
-import { DollarSign, Clock, Shield, User, Briefcase, FileText, Camera, Lock, Calendar, Save, Building2, MapPin, EyeOff, Phone } from 'lucide-react';
+import { DollarSign, Clock, Shield, User, Briefcase, FileText, Camera, Lock, Calendar, Save, Building2, MapPin, EyeOff, Phone, Mail } from 'lucide-react';
 
 const ConfiguracoesPerfil = () => {
     const [tabValue, setTabValue] = useState(0);

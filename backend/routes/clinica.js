@@ -76,7 +76,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
 
         const query = `
             SELECT nome_fantasia, cnpj, telefone, email, foto_perfil, razao_social, 
-                   comodidades, cep, rua, numero, bairro, cidade, estado 
+                   comodidades, cep, rua, numero, complemento, bairro, cidade, estado, repasse 
             FROM usuarios_cnpj 
             WHERE id = ?
         `;
@@ -97,10 +97,12 @@ router.get('/perfil', verifyToken, async (req, res) => {
             cep: data.cep || '',
             rua: data.rua || '',
             numero: data.numero || '',
+            complemento: data.complemento || '',
             bairro: data.bairro || '',
             cidade: data.cidade || '',
             estado: data.estado || '',
-            comodidades: data.comodidades || ''
+            comodidades: data.comodidades || '',
+            repasse: data.repasse || ''
         });
     } catch (error) {
         console.error("Erro ao buscar perfil:", error);
@@ -115,7 +117,7 @@ router.put('/perfil', verifyToken, async (req, res) => {
     try {
         const usuarioId = req.userId;
         
-        const { nome_fantasia, cnpj, telefone, email, logo, razao_social, cep, rua, numero, bairro, cidade, estado, comodidades } = req.body;
+        const { nome_fantasia, cnpj, telefone, email, logo, razao_social, cep, rua, numero, complemento, bairro, cidade, estado, comodidades, repasse } = req.body;
 
         const query = `
             UPDATE usuarios_cnpj 
@@ -128,10 +130,12 @@ router.put('/perfil', verifyToken, async (req, res) => {
                 cep = ?,
                 rua = ?,
                 numero = ?,
+                complemento = ?, 
                 bairro = ?,
                 cidade = ?,
                 estado = ?,
-                comodidades = ?
+                comodidades = ?,
+                repasse = ?
             WHERE id = ?
         `;
         
@@ -145,10 +149,12 @@ router.put('/perfil', verifyToken, async (req, res) => {
             cep, 
             rua, 
             numero, 
+            complemento,
             bairro, 
             cidade, 
             estado, 
             comodidades,
+            repasse,
             usuarioId
         ]);
 

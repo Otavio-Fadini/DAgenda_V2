@@ -117,7 +117,16 @@ router.put('/perfil', verifyToken, async (req, res) => {
     try {
         const usuarioId = req.userId;
         
-        const { nome_fantasia, cnpj, telefone, email, logo, razao_social, cep, rua, numero, complemento, bairro, cidade, estado, comodidades, repasse } = req.body;
+        // Pega os dados do body (se algo não vier, fica undefined)
+        const { 
+            nome_fantasia, cnpj, telefone, email, logo, razao_social, 
+            cep, rua, numero, complemento, bairro, cidade, estado, 
+            comodidades, repasse 
+        } = req.body;
+
+        // PREVENÇÃO DE ERRO 1: Converte o array de comodidades para String (JSON)
+        // Se vier vazio ou não vier, salva como string vazia '[]'
+        const comodidadesString = comodidades ? JSON.stringify(comodidades) : '[]';
 
         const query = `
             UPDATE usuarios_cnpj 
@@ -139,28 +148,31 @@ router.put('/perfil', verifyToken, async (req, res) => {
             WHERE id = ?
         `;
         
+        // PREVENÇÃO DE ERRO 2: Usamos "|| null" para garantir que nenhum undefined 
+        // quebre o banco de dados. Se o React não mandar o campo, ele grava como NULL.
         await pool.query(query, [
-            nome_fantasia, 
-            cnpj, 
-            telefone, 
-            email, 
-            logo, 
-            razao_social,
-            cep, 
-            rua, 
-            numero, 
-            complemento,
-            bairro, 
-            cidade, 
-            estado, 
-            comodidades,
-            repasse,
+            nome_fantasia || null, 
+            cnpj || null, 
+            telefone || null, 
+            email || null, 
+            logo || null, 
+            razao_social || null,
+            cep || null, 
+            rua || null, 
+            numero || null, 
+            complemento || null, 
+            bairro || null, 
+            cidade || null, 
+            estado || null, 
+            comodidadesString, // Usamos a string convertida aqui!
+            repasse || null, 
             usuarioId
         ]);
 
         res.status(200).json({ message: "Dados atualizados com sucesso!" });
     } catch (error) {
-        console.error("Erro ao atualizar perfil:", error);
+        // Se der erro, ele vai imprimir o motivo EXATO no terminal do Node.js
+        console.error("Erro EXATO ao atualizar perfil:", error);
         res.status(500).json({ message: "Erro ao atualizar no banco." });
     }
 });

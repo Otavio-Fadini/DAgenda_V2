@@ -449,7 +449,7 @@ router.get('/meus-convites', verifyToken, async (req, res) => {
 // ==========================================
 router.put('/responder-convite', verifyToken, async (req, res) => {
     const profissionalId = req.userId;
-    const { convite_id, resposta } = req.body; // 'resposta' deve ser 'aceito' ou 'recusado'
+    const { convite_id, resposta } = req.body;
 
     if (!['aceito', 'recusado'].includes(resposta)) {
         return res.status(400).json({ error: "Resposta inválida." });

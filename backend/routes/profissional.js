@@ -12,7 +12,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
 
         const [rows] = await pool.query(
             `SELECT 
-                nome, email, conselho, especialidade, valor_consulta, 
+                nome, email, conselho, especialidade, valor_consulta, cpf, data_nascimento,
                 duracao_sessao, atende_convenio, foto_perfil,
                 cep, rua, numero, complemento, bairro, cidade, estado
              FROM profissionais WHERE id = ?`,
@@ -46,14 +46,14 @@ router.put('/perfil', verifyToken, async (req, res) => {
         const { 
             nome, email, conselho, especialidade, valor_consulta, duracao_sessao, 
             atende_convenio, senha, foto_perfil, horarios,
-            cep, rua, numero, complemento, bairro, cidade, estado
+            cep, rua, numero, complemento, bairro, cidade, estado, cpf, data_nascimento
         } = req.body;
 
         // 2. Atualiza os dados básicos, foto, e agora o endereço completo
         let query = `
             UPDATE profissionais 
             SET nome=?, email=?, conselho=?, especialidade=?, valor_consulta=?, duracao_sessao=?, atende_convenio=?, foto_perfil=?,
-                cep=?, rua=?, numero=?, complemento=?, bairro=?, cidade=?, estado=?
+                cep=?, rua=?, numero=?, complemento=?, bairro=?, cidade=?, estado=?, cpf=?, data_nascimento=?
         `;
         
         let queryParams = [
@@ -71,7 +71,9 @@ router.put('/perfil', verifyToken, async (req, res) => {
             complemento || null, 
             bairro || null, 
             cidade || null, 
-            estado || null
+            estado || null,
+            cpf || null,
+            data_nascimento || null
         ];
 
         // 3. Se uma nova senha foi enviada, adiciona a criptografia dinamicamente

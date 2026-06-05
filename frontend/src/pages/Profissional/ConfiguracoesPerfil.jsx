@@ -14,7 +14,7 @@ const ConfiguracoesPerfil = () => {
     const [photoPreview, setPhotoPreview] = useState(null);
 
     const [formData, setFormData] = useState({
-        nome: '', email: '', conselho: '', especialidade: '', 
+        nome: '', email: '', conselho: '', especialidade: '', cpf: '', data_nascimento: '',
         valor_consulta: '', duracao_sessao: '', atende_convenio: false,
         aceita_convites: true, senha: '', foto_perfil: '', 
         cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', estado: ''
@@ -41,6 +41,8 @@ const ConfiguracoesPerfil = () => {
                     email: data.email || '',
                     conselho: data.conselho || '',
                     especialidade: data.especialidade || '',
+                    cpf: data.cpf || '',
+                    data_nascimento: data.data_nascimento ? data.data_nascimento.substring(0, 10) : '',
                     valor_consulta: data.valor_consulta || '',
                     duracao_sessao: data.duracao_sessao || '30',
                     atende_convenio: data.atende_convenio === 1 || data.atende_convenio === true,
@@ -217,9 +219,11 @@ const ConfiguracoesPerfil = () => {
             {/* PAINEL INTERNO AUTO-CONTAINER (EVITA SCROLL GLOBAL) */}
             <Paper elevation={0} sx={{ flexGrow: 1, borderRadius: '24px', border: '1px solid #E2E8F0', p: 4, overflowY: 'auto', bgcolor: 'white', boxSizing: 'border-box' }}>
                 
-                {/* ABA 0: IDENTIDADE VISUAL */}
+                {/* ABA 0: IDENTIDADE VISUAL E DADOS */}
                 {tabValue === 0 && (
                     <Grid container spacing={4}>
+                        
+                        {/* === LADO ESQUERDO: FOTO DO PROFISSIONAL === */}
                         <Grid item xs={12} md={3} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRight: { md: '1px solid #F1F5F9' }, pb: { xs: 4, md: 0 } }}>
                             <Box sx={{ position: 'relative', mb: 2 }}>
                                 <Avatar src={photoPreview} sx={{ width: 140, height: 140, fontSize: '3rem', bgcolor: '#0F172A', border: '4px solid #F8FAFC', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)' }}>
@@ -230,17 +234,100 @@ const ConfiguracoesPerfil = () => {
                                     <input type="file" hidden accept="image/*" onChange={handlePhotoChange} />
                                 </IconButton>
                             </Box>
-                            <Typography variant="caption" color="text.secondary" textAlign="center" fontWeight={600}>Formatos: JPG, PNG.<br/>Processamento Base64 automático.</Typography>
+                            <Typography variant="caption" color="text.secondary" textAlign="center" fontWeight={600}>
+                                Formatos: JPG, PNG.<br/>Processamento Base64 automático.
+                            </Typography>
                         </Grid>
+                        
+                        {/* === LADO DIREITO: FORMULÁRIO BLINDADO COM CSS GRID === */}
                         <Grid item xs={12} md={9}>
-                            <Grid container spacing={2.5}>
-                                <Grid item xs={12}><TextField fullWidth label="Nome Completo" value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} sx={inputStyle} /></Grid>
-                                <Grid item xs={12} md={6}><TextField fullWidth label="E-mail de Acesso" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} sx={inputStyle} /></Grid>
-                                <Grid item xs={12} md={6}><TextField fullWidth label="Nova Senha de Segurança" type="password" placeholder="Preencha apenas para alterar" value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
-                                <Grid item xs={12} md={6}><TextField fullWidth label="Inscrição no Conselho (Ex: CRM-SP)" value={formData.conselho} onChange={(e) => setFormData({...formData, conselho: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
-                                <Grid item xs={12} md={6}><TextField fullWidth label="Especialidade Principal" value={formData.especialidade} onChange={(e) => setFormData({...formData, especialidade: e.target.value})} sx={inputStyle} InputProps={{ startAdornment: <InputAdornment position="start"><Briefcase size={18} color="#94A3B8"/></InputAdornment> }} /></Grid>
-                            </Grid>
+                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>
+                                Dados Principais
+                            </Typography>
+
+                            <Box sx={{
+                                display: 'grid',
+                                gap: 3,
+                                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }
+                            }}>
+                                
+                                {/* LINHA 1 (Nome ocupa tudo) */}
+                                <Box sx={{ gridColumn: '1 / -1' }}>
+                                    <TextField 
+                                        fullWidth 
+                                        label="Nome Completo" 
+                                        value={formData.nome} 
+                                        onChange={(e) => setFormData({...formData, nome: e.target.value})} 
+                                        sx={inputStyle} 
+                                    />
+                                </Box>
+
+                                {/* LINHA 2 (Novos Campos: CPF e Data de Nascimento) */}
+                                <TextField 
+                                    fullWidth 
+                                    label="CPF" 
+                                    value={formData.cpf} 
+                                    onChange={(e) => setFormData({...formData, cpf: e.target.value})} 
+                                    sx={inputStyle} 
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} 
+                                />
+
+                                <TextField 
+                                    fullWidth 
+                                    type="date" 
+                                    label="Data de Nascimento" 
+                                    value={formData.data_nascimento} 
+                                    onChange={(e) => setFormData({...formData, data_nascimento: e.target.value})} 
+                                    InputLabelProps={{ shrink: true }} 
+                                    sx={{
+                                        ...inputStyle, 
+                                        '& input::-webkit-datetime-edit': { color: formData.data_nascimento ? 'inherit' : 'transparent' },
+                                        '& input:focus::-webkit-datetime-edit': { color: 'inherit' }
+                                    }} 
+                                />
+
+                                {/* LINHA 3 (Acessos) */}
+                                <TextField 
+                                    fullWidth 
+                                    label="E-mail de Acesso" 
+                                    value={formData.email} 
+                                    onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                                    sx={inputStyle} 
+                                />
+
+                                <TextField 
+                                    fullWidth 
+                                    label="Nova Senha de Segurança" 
+                                    type="password" 
+                                    placeholder="Preencha apenas para alterar" 
+                                    value={formData.senha} 
+                                    onChange={(e) => setFormData({...formData, senha: e.target.value})} 
+                                    sx={inputStyle} 
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} 
+                                />
+
+                                {/* LINHA 4 (Dados Profissionais) */}
+                                <TextField 
+                                    fullWidth 
+                                    label="Inscrição no Conselho (Ex: CRM-SP)" 
+                                    value={formData.conselho} 
+                                    onChange={(e) => setFormData({...formData, conselho: e.target.value})} 
+                                    sx={inputStyle} 
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><FileText size={18} color="#94A3B8"/></InputAdornment> }} 
+                                />
+
+                                <TextField 
+                                    fullWidth 
+                                    label="Especialidade Principal" 
+                                    value={formData.especialidade} 
+                                    onChange={(e) => setFormData({...formData, especialidade: e.target.value})} 
+                                    sx={inputStyle} 
+                                    InputProps={{ startAdornment: <InputAdornment position="start"><Briefcase size={18} color="#94A3B8"/></InputAdornment> }} 
+                                />
+
+                            </Box>
                         </Grid>
+
                     </Grid>
                 )}
 

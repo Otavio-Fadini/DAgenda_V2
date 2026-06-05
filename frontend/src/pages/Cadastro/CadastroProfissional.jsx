@@ -144,12 +144,13 @@ const CadastroProfissional = () => {
                         <Tab icon={<Map size={18}/>} iconPosition="start" label="Endereço" />
                     </Tabs>
 
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} style={{ width: '100%' }}>
                         {/* ABA 0: DADOS PROFISSIONAIS E PESSOAIS */}
                         {tabValue === 0 && (
-                            <Fade in={tabValue === 0}>
-                                <Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3, position: 'relative' }}>
+                            <Fade in={true}>
+                                {/* 👇 BOX COM ALINHAMENTO CENTRALIZADO 👇 */}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 2 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1, position: 'relative' }}>
                                         <Box sx={{ position: 'relative' }}>
                                             <Avatar src={preview} sx={{ width: 80, height: 80, border: '3px solid #ffffff', boxShadow: '0 6px 12px rgba(0,0,0,0.08)', bgcolor: '#F1F5F9', color: '#94A3B8' }}>
                                                 {!preview && <User size={32} />}
@@ -163,34 +164,35 @@ const CadastroProfissional = () => {
                                         </Box>
                                     </Box>
 
-                                    <Grid container spacing={1.5}>
+                                    {/* 👇 GRID CENTRALIZADO (Sem adornments para visual limpo) 👇 */}
+                                    <Grid container spacing={2} sx={{ justifyContent: 'center', alignItems: 'center' }}>
                                         <Grid item xs={12}>
-                                            <TextField fullWidth label="Nome Completo" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><User size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} required />
+                                            <TextField fullWidth label="Nome Completo" variant="outlined" sx={modernInputStyle} value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} required />
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="CPF" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><CreditCard size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.cpf} onChange={(e) => setFormData({...formData, cpf: e.target.value})} required />
+                                            <TextField fullWidth label="CPF" variant="outlined" sx={modernInputStyle} value={formData.cpf} onChange={(e) => setFormData({...formData, cpf: e.target.value})} required />
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="Data de Nascimento" placeholder="DD/MM/AAAA" variant="outlined" type="text" value={formData.data_nascimento} sx={modernInputStyle} onChange={handleDateChange} required />
+                                            <TextField fullWidth label="Data Nasc." placeholder="DD/MM/AAAA" variant="outlined" sx={modernInputStyle} value={formData.data_nascimento} onChange={handleDateChange} required />
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="CRM / Registro" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><CreditCard size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.crm} onChange={(e) => setFormData({...formData, crm: e.target.value})} required />
+                                            <TextField fullWidth label="CRM / Registro" variant="outlined" sx={modernInputStyle} value={formData.crm} onChange={(e) => setFormData({...formData, crm: e.target.value})} required />
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="Especialidade" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><Stethoscope size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.especialidade} onChange={(e) => setFormData({...formData, especialidade: e.target.value})} required />
+                                            <TextField fullWidth label="Especialidade" variant="outlined" sx={modernInputStyle} value={formData.especialidade} onChange={(e) => setFormData({...formData, especialidade: e.target.value})} required />
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="Telefone / WhatsApp" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><Phone size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} required />
+                                            <TextField fullWidth label="Telefone / WhatsApp" variant="outlined" sx={modernInputStyle} value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} required />
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="Senha" type="password" variant="outlined" InputProps={{ startAdornment: <InputAdornment position="start"><Lock size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} required />
+                                            <TextField fullWidth label="Senha" type="password" variant="outlined" sx={modernInputStyle} value={formData.senha} onChange={(e) => setFormData({...formData, senha: e.target.value})} required />
                                         </Grid>
                                         <Grid item xs={12}>
-                                            <TextField fullWidth label="E-mail Profissional" variant="outlined" type="email" InputProps={{ startAdornment: <InputAdornment position="start"><Mail size={18} color="#94A3B8"/></InputAdornment> }} sx={modernInputStyle} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
+                                            <TextField fullWidth label="E-mail Profissional" variant="outlined" type="email" sx={modernInputStyle} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
                                         </Grid>
                                     </Grid>
 
-                                    <Button fullWidth variant="contained" type="button" onClick={() => setTabValue(1)} endIcon={<ChevronRight size={18} />} sx={{ mt: 3, py: 1.5, borderRadius: '10px', fontWeight: 800, fontSize: '1rem', bgcolor: '#0f172a', color: '#FFFFFF', textTransform: 'none', '&:hover': { bgcolor: '#32B5FE' } }}>
+                                    <Button fullWidth variant="contained" type="button" onClick={() => setTabValue(1)} sx={{ mt: 2, py: 1.5, borderRadius: '12px', fontWeight: 800, fontSize: '1rem', bgcolor: '#0f172a', color: '#FFFFFF', textTransform: 'none', '&:hover': { bgcolor: '#32B5FE' }, maxWidth: '300px' }}>
                                         Avançar para Endereço
                                     </Button>
                                 </Box>
@@ -199,34 +201,38 @@ const CadastroProfissional = () => {
 
                         {/* ABA 1: ENDEREÇO */}
                         {tabValue === 1 && (
-                            <Fade in={tabValue === 1}>
-                                <Box>
-                                    <Grid container spacing={1.5}>
-                                        <Grid item xs={12} sm={5}>
-                                            <TextField fullWidth label="CEP" value={formData.cep} onChange={handleCepChange} inputProps={{ maxLength: 9 }} sx={modernInputStyle} required InputProps={{ startAdornment: <InputAdornment position="start"><MapPin size={18} color="#94A3B8"/></InputAdornment>, endAdornment: buscandoCep && <InputAdornment position="end"><CircularProgress size={16} color="inherit" /></InputAdornment> }} />
+                            <Fade in={true}>
+                                {/* 👇 BOX COM ALINHAMENTO CENTRALIZADO 👇 */}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 2 }}>
+                                    <Grid container spacing={2} sx={{ justifyContent: 'center', alignItems: 'center' }}>
+                                        <Grid item xs={12} sm={4}>
+                                            <TextField fullWidth label="CEP" value={formData.cep} onChange={handleCepChange} inputProps={{ maxLength: 9 }} sx={modernInputStyle} required />
                                         </Grid>
-                                        <Grid item xs={12} sm={7}>
+                                        <Grid item xs={12} sm={8}>
                                             <TextField fullWidth label="Rua / Logradouro" value={formData.rua} sx={modernInputStyle} onChange={(e) => setFormData({...formData, rua: e.target.value})} required />
                                         </Grid>
-                                        <Grid item xs={12} sm={4}>
+                                        <Grid item xs={6} sm={3}>
                                             <TextField fullWidth label="Número" value={formData.numero} sx={modernInputStyle} onChange={(e) => setFormData({...formData, numero: e.target.value})} required />
                                         </Grid>
-                                        <Grid item xs={12} sm={8}>
-                                            <TextField fullWidth label="Bairro" value={formData.bairro} sx={modernInputStyle} onChange={(e) => setFormData({...formData, bairro: e.target.value})} required />
-                                        </Grid>
-                                        <Grid item xs={12} sm={8}>
-                                            <TextField fullWidth label="Cidade" value={formData.cidade} sx={modernInputStyle} onChange={(e) => setFormData({...formData, cidade: e.target.value})} required />
+                                        <Grid item xs={6} sm={5}>
+                                            <TextField fullWidth label="Complemento" value={formData.complemento} sx={modernInputStyle} onChange={(e) => setFormData({...formData, complemento: e.target.value})} />
                                         </Grid>
                                         <Grid item xs={12} sm={4}>
                                             <TextField fullWidth label="UF" inputProps={{ maxLength: 2 }} value={formData.estado} sx={modernInputStyle} onChange={(e) => setFormData({...formData, estado: e.target.value})} required />
                                         </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <TextField fullWidth label="Bairro" value={formData.bairro} sx={modernInputStyle} onChange={(e) => setFormData({...formData, bairro: e.target.value})} required />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <TextField fullWidth label="Cidade" value={formData.cidade} sx={modernInputStyle} onChange={(e) => setFormData({...formData, cidade: e.target.value})} required />
+                                        </Grid>
                                     </Grid>
 
-                                    <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
+                                    <Box sx={{ display: 'flex', gap: 2, mt: 2, width: '100%', maxWidth: '400px' }}>
                                         <Button variant="outlined" type="button" onClick={() => setTabValue(0)} sx={{ py: 1.5, px: 2, borderRadius: '10px', fontWeight: 800, color: '#64748b', borderColor: '#E2E8F0', minWidth: 60, '&:hover': { bgcolor: '#F1F5F9', borderColor: '#CBD5E1' } }}>
                                             <ChevronLeft size={20} />
                                         </Button>
-                                        <Button fullWidth variant="contained" type="submit" disabled={salvando} sx={{ py: 1.5, borderRadius: '10px', fontWeight: 800, fontSize: '1rem', bgcolor: '#0f172a', color: '#FFFFFF', textTransform: 'none', boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)', transition: 'all 0.3s ease', '&:hover': { bgcolor: '#32B5FE', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.6)', transform: 'translateY(-2px)' } }}>
+                                        <Button fullWidth variant="contained" type="submit" disabled={salvando} sx={{ py: 1.5, borderRadius: '10px', fontWeight: 800, fontSize: '1rem', bgcolor: '#32B5FE', color: '#FFFFFF', textTransform: 'none', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)', transition: 'all 0.3s ease', '&:hover': { bgcolor: '#29A3E5', transform: 'translateY(-2px)' } }}>
                                             {salvando ? <CircularProgress size={24} color="inherit" /> : 'Finalizar Cadastro'}
                                         </Button>
                                     </Box>

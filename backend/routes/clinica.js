@@ -52,7 +52,9 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
                 p.nome as medico,
                 COUNT(a.id) as total_consultas,
                 SUM(a.valor) as faturamento_total,
-                SUM(a.valor) * (c.repasse / 100) as lucro_clinica
+                -- Se repasse é 30 (ex), a clínica fica com 100 - 30 = 70%
+                -- Logo: (100 - c.repasse) / 100
+                SUM(a.valor) * ((100 - c.repasse) / 100) as lucro_clinica
             FROM agendamentos a
             JOIN profissionais prof ON a.id_profissional = prof.id
             JOIN usuarios_cpf p ON prof.id = p.id 
@@ -64,7 +66,7 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
         const [rows] = await pool.query(query, [req.userId]);
         res.json(rows);
     } catch (error) {
-        console.error("Erro no financeiro:", error);
+        console.error("Erro ao calcular repasse:", error);
         res.status(500).json({ error: "Erro ao carregar financeiro" });
     }
 });

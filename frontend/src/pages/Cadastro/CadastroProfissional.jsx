@@ -3,7 +3,7 @@ import {
     Box, TextField, Button, Typography, Paper, Grid, InputAdornment, 
     Avatar, IconButton, Fade, CircularProgress, Tabs, Tab 
 } from '@mui/material';
-import { User, Mail, Lock, CreditCard, Camera, MapPin, Phone, Map, ChevronRight, ChevronLeft, Stethoscope } from 'lucide-react';
+import { User, Mail, Lock, CreditCard, Camera, MapPin, Phone, Map, ChevronRight, ChevronLeft, Stethoscope, Info } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/logo.png';
@@ -195,6 +195,30 @@ const CadastroProfissional = () => {
                                     <Button fullWidth variant="contained" type="button" onClick={() => setTabValue(1)} sx={{ mt: 2, py: 1.5, borderRadius: '12px', fontWeight: 800, fontSize: '1rem', bgcolor: '#0f172a', color: '#FFFFFF', textTransform: 'none', '&:hover': { bgcolor: '#32B5FE' }, maxWidth: '300px' }}>
                                         Avançar para Endereço
                                     </Button>
+
+                                    {/* AVISO DE PRÓXIMOS PASSOS E CONFIGURAÇÕES */}
+                                    <Box sx={{ 
+                                        mt: 3, mb: 3, p: 3, 
+                                        bgcolor: '#F0F9FF', 
+                                        borderRadius: '16px', 
+                                        border: '1px dashed #BAE6FD', 
+                                        display: 'flex', gap: 2.5, 
+                                        alignItems: 'flex-start' 
+                                    }}>
+                                        <Box sx={{ bgcolor: '#E0F2FE', p: 1, borderRadius: '12px', display: 'flex' }}>
+                                            <Info size={24} color="#0EA5E9" />
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="subtitle2" fontWeight={900} color="#0369A1" sx={{ mb: 0.5 }}>
+                                                Concluindo o seu perfil
+                                            </Typography>
+                                            <Typography variant="body2" color="#0284C7" fontWeight={500} sx={{ lineHeight: 1.6 }}>
+                                                Após acessar o sistema, você poderá ir na aba <strong>Configurações</strong> para definir o <strong>preço da sua consulta</strong>, o <strong>tempo de duração</strong> e os <strong>convênios aceitos</strong>.
+                                                <br /><br />
+                                                <strong>Nota:</strong> Para facilitar a sua integração, a opção de <em>"Aceitar Convites de Clínicas"</em> vem <strong>ativada por padrão</strong>. Caso deseje trabalhar apenas de forma autônoma, você pode desativá-la a qualquer momento nas suas configurações.
+                                            </Typography>
+                                        </Box>
+                                    </Box>
                                 </Box>
                             </Fade>
                         )}

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Box, Typography, Grid, Paper, Avatar, Button, Fade, Chip, Divider, Stack, CircularProgress,
-    Dialog, DialogTitle, DialogContent, TextField, IconButton, InputAdornment, List, ListItem
+    Dialog, DialogTitle, DialogContent, TextField, IconButton, InputAdornment, List, ListItem, Pagination
 } from '@mui/material';
-import { Stethoscope, ShieldCheck, CalendarClock, AlertCircle, UserPlus, Search, X, Send, Calendar } from 'lucide-react';
+import { Stethoscope, ShieldCheck, CalendarClock, AlertCircle, UserPlus, Search, X, Send, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../../services/api';
 
 const MedicosUnidade = () => {
@@ -17,12 +17,58 @@ const MedicosUnidade = () => {
     const [termoBusca, setTermoBusca] = useState('');
     const [conviteLoading, setConviteLoading] = useState(null);
 
-    // NOVOS ESTADOS: Modal de Agenda
+    // ESTADOS DO MODAL DE AGENDA
     const [modalAgendaOpen, setModalAgendaOpen] = useState(false);
     const [medicoSelecionado, setMedicoSelecionado] = useState(null);
-    const [dataFiltro, setDataFiltro] = useState(new Date().toISOString().split('T')[0]); // Hoje
+    const [dataFiltro, setDataFiltro] = useState(new Date().toISOString().split('T')[0]);
     const [agendaLista, setAgendaLista] = useState([]);
     const [loadingAgenda, setLoadingAgenda] = useState(false);
+    
+    // --- NOVO: ESTADOS DE PAGINAÇÃO ---
+    const [paginaAtual, setPaginaAtual] = useState(1);
+    const itensPorPagina = 4;
+
+    // --- NOVA LÓGICA: NAVEGAÇÃO DE DIAS ---
+    const alterarDia = (quantidadeDias) => {
+        // O "T12:00:00" previne bugs de fuso horário ao somar dias no JavaScript
+        const dataAtual = new Date(dataFiltro + 'T12:00:00'); 
+        dataAtual.setDate(dataAtual.getDate() + quantidadeDias);
+        const novaData = dataAtual.toISOString().split('T')[0];
+        
+        setDataFiltro(novaData);
+        setPaginaAtual(1); // Volta para a página 1 ao mudar de dia
+        
+        if (medicoSelecionado) {
+            buscarAgenda(medicoSelecionado.id, novaData);
+        }
+    };
+
+    // Ajuste no handleDataChange para resetar a página
+    const handleDataChange = (e) => {
+        const novaData = e.target.value;
+        setDataFiltro(novaData);
+        setPaginaAtual(1); // Volta para a página 1
+        if (medicoSelecionado) {
+            buscarAgenda(medicoSelecionado.id, novaData);
+        }
+    };
+
+    // Ajuste no handleOpenAgenda para resetar a página ao abrir
+    const handleOpenAgenda = (medico) => {
+        setMedicoSelecionado(medico);
+        setModalAgendaOpen(true);
+        const hoje = new Date().toISOString().split('T')[0];
+        setDataFiltro(hoje);
+        setPaginaAtual(1); // Garante que abre na página 1
+        buscarAgenda(medico.id, hoje);
+    };
+
+    // --- NOVO: CÁLCULOS DA PAGINAÇÃO ---
+    const indexOfLastItem = paginaAtual * itensPorPagina;
+    const indexOfFirstItem = indexOfLastItem - itensPorPagina;
+    // Pega apenas a fatia da array que corresponde à página atual
+    const agendaPaginada = agendaLista.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPaginas = Math.ceil(agendaLista.length / itensPorPagina);
 
     useEffect(() => {
         carregarMedicos();
@@ -229,21 +275,36 @@ const MedicosUnidade = () => {
                     </DialogTitle>
 
                     <DialogContent sx={{ pt: 1, pb: 2 }}>
-                        {/* CAMPO DE DATA MAIS LARGO E DESCANSADO */}
-                        <Box sx={{ mb: 4, bgcolor: '#F8FAFC', p: 3, borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                        
+                        {/* --- NAVEGAÇÃO DE DIAS --- */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4, bgcolor: '#F8FAFC', p: 2, borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                            <IconButton 
+                                onClick={() => alterarDia(-1)} 
+                                sx={{ bgcolor: 'white', border: '1px solid #E2E8F0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', '&:hover': { bgcolor: '#F1F5F9' } }}
+                            >
+                                <ChevronLeft size={20} color="#0F172A" />
+                            </IconButton>
+
                             <TextField
                                 fullWidth
                                 type="date"
-                                label="Filtre pela data da consulta"
-                                InputLabelProps={{ shrink: true, sx: { fontWeight: 600, color: '#64748B' } }}
                                 value={dataFiltro}
                                 onChange={handleDataChange}
                                 sx={{ 
-                                    '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#FFFFFF', transition: 'all 0.2s', '&:hover fieldset': { borderColor: '#32B5FE' }, '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' } }
+                                    '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#FFFFFF', transition: 'all 0.2s', '&:hover fieldset': { borderColor: '#32B5FE' }, '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' } },
+                                    '& input': { textAlign: 'center', fontWeight: 700, color: '#0F172A' }
                                 }}
                             />
+
+                            <IconButton 
+                                onClick={() => alterarDia(1)} 
+                                sx={{ bgcolor: 'white', border: '1px solid #E2E8F0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', '&:hover': { bgcolor: '#F1F5F9' } }}
+                            >
+                                <ChevronRight size={20} color="#0F172A" />
+                            </IconButton>
                         </Box>
 
+                        {/* --- LISTAGEM DE CONSULTAS --- */}
                         {loadingAgenda ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '20vh' }}>
                                 <CircularProgress size={40} sx={{ color: '#32B5FE' }} />
@@ -255,44 +316,64 @@ const MedicosUnidade = () => {
                                 <Typography variant="body1" color="#94A3B8">Nenhum paciente agendado para esta data.</Typography>
                             </Box>
                         ) : (
-                            <List sx={{ p: 0 }}>
-                                {agendaLista.map((consulta) => (
-                                    <ListItem 
-                                        key={consulta.id}
-                                        sx={{ 
-                                            border: '1px solid #F1F5F9', borderRadius: '16px', mb: 2, p: 3, // <-- MAIS PADDING
-                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                            bgcolor: 'white', '&:hover': { borderColor: '#32B5FE', boxShadow: '0 8px 20px rgba(50, 181, 254, 0.1)', transform: 'translateY(-2px)' },
-                                            transition: 'all 0.2s ease'
-                                        }}
-                                    >
-                                        <Box>
-                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
-                                                {consulta.nome_paciente}
-                                            </Typography>
-                                            <Typography variant="body1" color="#64748B" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 500 }}>
-                                                <CalendarClock size={16} /> Horário: <strong style={{ color: '#0F172A' }}>{consulta.horario.substring(0, 5)}</strong>
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-                                            <Chip 
-                                                label={consulta.status.toUpperCase()} 
-                                                sx={{ 
-                                                    fontWeight: 800, fontSize: '0.75rem', height: 28, px: 1,
-                                                    bgcolor: getStatusStyle(consulta.status).bgcolor,
-                                                    color: getStatusStyle(consulta.status).color,
-                                                    border: '1px solid', 
-                                                    borderColor: getStatusStyle(consulta.status).borderColor
-                                                }} 
-                                            />
+                            <Box>
+                                {/* Renderizamos a "agendaPaginada" e não a "agendaLista" completa */}
+                                <List sx={{ p: 0 }}>
+                                    {agendaPaginada.map((consulta) => (
+                                        <ListItem 
+                                            key={consulta.id}
+                                            sx={{ 
+                                                border: '1px solid #F1F5F9', borderRadius: '16px', mb: 2, p: 3, 
+                                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                bgcolor: 'white', '&:hover': { borderColor: '#32B5FE', boxShadow: '0 8px 20px rgba(50, 181, 254, 0.1)', transform: 'translateY(-2px)' },
+                                                transition: 'all 0.2s ease'
+                                            }}
+                                        >
+                                            <Box>
+                                                <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
+                                                    {consulta.nome_paciente}
+                                                </Typography>
+                                                <Typography variant="body1" color="#64748B" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 500 }}>
+                                                    <CalendarClock size={16} /> Horário: <strong style={{ color: '#0F172A' }}>{consulta.horario.substring(0, 5)}</strong>
+                                                </Typography>
+                                            </Box>
                                             
-                                            <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, bgcolor: '#F8FAFC', px: 1, py: 0.5, borderRadius: '6px' }}>
-                                                {consulta.tipo_agendamento || 'Consulta'}
-                                            </Typography>
-                                        </Box>
-                                    </ListItem>
-                                ))}
-                            </List>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+                                                <Chip 
+                                                    label={consulta.status.toUpperCase()} 
+                                                    sx={{ 
+                                                        fontWeight: 800, fontSize: '0.75rem', height: 28, px: 1,
+                                                        bgcolor: getStatusStyle(consulta.status).bgcolor,
+                                                        color: getStatusStyle(consulta.status).color,
+                                                        border: '1px solid', 
+                                                        borderColor: getStatusStyle(consulta.status).borderColor
+                                                    }} 
+                                                />
+                                                <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, bgcolor: '#F8FAFC', px: 1, py: 0.5, borderRadius: '6px' }}>
+                                                    {consulta.tipo_agendamento || 'Consulta'}
+                                                </Typography>
+                                            </Box>
+                                        </ListItem>
+                                    ))}
+                                </List>
+
+                                {/* --- PAGINAÇÃO (Só aparece se tiver mais de 1 página) --- */}
+                                {totalPaginas > 1 && (
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3, pt: 2, borderTop: '1px dashed #E2E8F0' }}>
+                                        <Pagination 
+                                            count={totalPaginas} 
+                                            page={paginaAtual} 
+                                            onChange={(e, value) => setPaginaAtual(value)} 
+                                            color="primary" 
+                                            shape="rounded"
+                                            sx={{ 
+                                                '& .MuiPaginationItem-root': { fontWeight: 800, color: '#64748B' },
+                                                '& .Mui-selected': { bgcolor: '#32B5FE !important', color: 'white' }
+                                            }}
+                                        />
+                                    </Box>
+                                )}
+                            </Box>
                         )}
                     </DialogContent>
                 </Dialog>

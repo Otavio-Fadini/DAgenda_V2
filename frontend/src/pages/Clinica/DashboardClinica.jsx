@@ -10,6 +10,32 @@ const DashboardClinica = () => {
     const [agendamentosHoje, setAgendamentosHoje] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Estados do Modal de Agenda
+    const [modalOpen, setModalOpen] = useState(false);
+    const [agendaCompleta, setAgendaCompleta] = useState([]);
+    const [dataFiltro, setDataFiltro] = useState(new Date().toISOString().split('T')[0]);
+    const [loadingAgenda, setLoadingAgenda] = useState(false);
+    const [paginaAtual, setPaginaAtual] = useState(1);
+    const itensPorPagina = 6;
+
+    const buscarAgendaCompleta = async (data) => {
+        setLoadingAgenda(true);
+        try {
+            const response = await api.get('/clinica/agenda-completa', { params: { data } });
+            setAgendaCompleta(response.data);
+        } catch (e) { console.error("Erro agenda completa:", e); }
+        finally { setLoadingAgenda(false); }
+    };
+
+    const alterarDia = (dias) => {
+        const d = new Date(dataFiltro + 'T12:00:00');
+        d.setDate(d.getDate() + dias);
+        const novaData = d.toISOString().split('T')[0];
+        setDataFiltro(novaData);
+        setPaginaAtual(1);
+        buscarAgendaCompleta(novaData);
+    };
+
     useEffect(() => {
         const carregarDados = async () => {
             setLoading(true);
@@ -149,7 +175,13 @@ const DashboardClinica = () => {
                     <Typography variant="h6" fontWeight={900} sx={{ color: '#0F172A' }}>
                         Fluxo de Atendimento (Próximas 2h)
                     </Typography>
-                    <Button endIcon={<ChevronRight size={16} />} sx={{ fontWeight: 800, color: '#32B5FE', textTransform: 'none' }}>Ver agenda completa</Button>
+                    <Button 
+                        onClick={() => { setModalOpen(true); buscarAgendaCompleta(dataFiltro); }}
+                        endIcon={<ChevronRight size={16} />} 
+                        sx={{ fontWeight: 800, color: '#32B5FE', textTransform: 'none' }}
+                    >
+                        Ver agenda completa
+                    </Button>
                 </Box>
                 
                 <Paper elevation={0} sx={{ 
@@ -208,6 +240,38 @@ const DashboardClinica = () => {
                         </Box>
                     )}
                 </Paper>
+                <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 2 } }}>
+                    <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h6" fontWeight={900}>Agenda Completa da Clínica</Typography>
+                        <IconButton onClick={() => setModalOpen(false)}><X /></IconButton>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, p: 2, bgcolor: '#F8FAFC', borderRadius: '16px' }}>
+                            <IconButton onClick={() => alterarDia(-1)}><ChevronLeft /></IconButton>
+                            <TextField fullWidth type="date" value={dataFiltro} onChange={(e) => { setDataFiltro(e.target.value); buscarAgendaCompleta(e.target.value); }} />
+                            <IconButton onClick={() => alterarDia(1)}><ChevronRight /></IconButton>
+                        </Box>
+
+                        {loadingAgenda ? <CircularProgress /> : (
+                            <List>
+                                {agendaCompleta.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina).map(item => (
+                                    <ListItem key={item.id} sx={{ borderBottom: '1px solid #eee', py: 2 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                            <Box>
+                                                <Typography fontWeight={800}>{item.nome_paciente}</Typography>
+                                                <Typography variant="caption" color="text.secondary">Médico: {item.nome_medico} • {item.horario}</Typography>
+                                            </Box>
+                                            <Chip label={item.status} size="small" />
+                                        </Box>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        )}
+                        {agendaCompleta.length > itensPorPagina && (
+                            <Pagination count={Math.ceil(agendaCompleta.length / itensPorPagina)} page={paginaAtual} onChange={(_, v) => setPaginaAtual(v)} sx={{ mt: 3, display: 'flex', justifyContent: 'center' }} />
+                        )}
+                    </DialogContent>
+                </Dialog>
             </Box>
         </Fade>
     );

@@ -236,6 +236,35 @@ router.post('/enviar-convite', verifyToken, async (req, res) => {
 });
 
 // ==========================================
+// ROTA: VER AGENDA COMPLETA DA CLÍNICA
+// ==========================================
+router.get('/agenda-completa', verifyToken, async (req, res) => {
+    const clinicaId = req.userId; // Ou req.clinicaId, dependendo de como está o seu token
+    const dataFiltro = req.query.data;
+
+    try {
+        const query = `
+            SELECT a.id, a.horario, a.status, a.tipo_agendamento,
+                   paciente.nome AS nome_paciente,
+                   medico.nome AS nome_medico
+            FROM agendamentos a
+            JOIN usuarios_cpf paciente ON a.id_paciente = paciente.id
+            JOIN profissionais medico ON a.id_profissional = medico.id
+            WHERE a.id_clinica = ? 
+            AND a.data_agendamento = ?
+            ORDER BY a.horario ASC
+        `;
+        
+        const [consultas] = await pool.query(query, [clinicaId, dataFiltro]);
+        res.json(consultas);
+
+    } catch (error) {
+        console.error("Erro ao buscar agenda completa da clínica:", error);
+        res.status(500).json({ error: "Erro interno no servidor." });
+    }
+});
+
+// ==========================================
 // ROTA: VER AGENDA ESPECÍFICA DO MÉDICO
 // ==========================================
 router.get('/medicos/:id/agenda', verifyToken, async (req, res) => {
@@ -264,5 +293,7 @@ router.get('/medicos/:id/agenda', verifyToken, async (req, res) => {
         res.status(500).json({ error: "Erro interno no servidor." });
     }
 });
+
+
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Chip, Button, LinearProgress, Divider, Fade, CircularProgress, Dialog } from '@mui/material';
+import { Box, Typography, Grid, Paper, Chip, Button, LinearProgress, Divider, Fade, CircularProgress, Dialog, DialogTitle } from '@mui/material';
 import { Users, Calendar, Activity, Clock, ChevronRight, TrendingUp, AlertCircle } from 'lucide-react';
 import api from '../../services/api';
 

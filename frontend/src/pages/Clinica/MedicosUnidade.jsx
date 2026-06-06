@@ -126,14 +126,23 @@ const MedicosUnidade = () => {
         }
     };
 
-    // --- LÓGICA VISUAL DOS STATUS ---
+    // --- LÓGICA VISUAL DOS STATUS CORRIGIDA
     const getStatusStyle = (status) => {
         const s = (status || '').toLowerCase();
-        if (s === 'agendado' || s === 'confirmado') return { bg: '#c3f7df', color: '#10B981', border: '#A7F3D0' };
-        if (s === 'pendente pagamento' || s === 'pendente') return { bg: '#faf6cb', color: '#EAB308', border: '#FEF08A' };
-        if (s === 'concluido' || s === 'finalizado') return { bg: '#b7ddf7', color: '#32B5FE', border: '#BAE6FD' };
-        if (s === 'cancelado') return { bg: '#000000', color: '#EF4444', border: '#FECACA' };
-        return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
+        if (s === 'agendado' || s === 'confirmado') {
+            return { bgcolor: '#ECFDF5', color: '#10B981', borderColor: '#A7F3D0' };
+        }
+        if (s === 'pendente pagamento' || s === 'pendente') {
+            return { bgcolor: '#FEFCE8', color: '#EAB308', borderColor: '#FEF08A' };
+        }
+        if (s === 'concluido' || s === 'finalizado') {
+            return { bgcolor: '#F0F9FF', color: '#0EA5E9', borderColor: '#BAE6FD' };
+        }
+        if (s === 'cancelado') {
+            return { bgcolor: 'rgba(239, 68, 68, 0.08)', color: '#EF4444', borderColor: '#FECACA' };
+        }
+        // Padrão
+        return { bgcolor: '#F8FAFC', color: '#64748B', borderColor: '#E2E8F0' }; 
     };
 
     // --- CÁLCULOS DE PAGINAÇÃO ---

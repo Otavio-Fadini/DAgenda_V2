@@ -49,25 +49,26 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
     try {
         const query = `
             SELECT 
-                p.nome as medico,
+                prof.nome as medico,
+                prof.foto_perfil, -- Puxa a foto se existir na tabela profissionais
                 COUNT(a.id) as total_consultas,
                 SUM(a.valor) as faturamento_total,
-                -- Se repasse é 30 (ex), a clínica fica com 100 - 30 = 70%
-                -- Logo: (100 - c.repasse) / 100
+                -- Repasse do Médico (ex: 30%)
+                SUM(a.valor) * (c.repasse / 100) as repasse_medico,
+                -- Lucro da Clínica (ex: 70%)
                 SUM(a.valor) * ((100 - c.repasse) / 100) as lucro_clinica
             FROM agendamentos a
             JOIN profissionais prof ON a.id_profissional = prof.id
-            JOIN usuarios_cpf p ON prof.id = p.id 
             JOIN usuarios_cnpj c ON a.id_clinica = c.id
             WHERE a.id_clinica = ? AND a.status IN ('agendado', 'concluido')
-            GROUP BY prof.id, p.nome, c.repasse
+            GROUP BY prof.id, prof.nome, prof.foto_perfil, c.repasse
         `;
         
         const [rows] = await pool.query(query, [req.userId]);
         res.json(rows);
     } catch (error) {
-        console.error("Erro ao calcular repasse:", error);
-        res.status(500).json({ error: "Erro ao carregar financeiro" });
+        console.error("Erro ao carregar financeiro:", error);
+        res.status(500).json({ error: "Erro interno no servidor." });
     }
 });
 

@@ -17,7 +17,7 @@ const FinanceiroClinica = () => {
     useEffect(() => {
         const fetchFinanceiro = async () => {
             try {
-                // Rota que você criou para buscar o financeiro consolidado por médico
+                // Rota que busca o financeiro consolidado por médico
                 const response = await api.get('/clinica/financeiro-geral');
                 setDados(response.data);
             } catch (error) {
@@ -196,10 +196,26 @@ const FinanceiroClinica = () => {
                                         }}>
                                             <TableCell>
                                                 <Stack direction="row" spacing={2} alignItems="center">
-                                                    <Avatar sx={{ width: 36, height: 36, fontSize: '0.9rem', bgcolor: '#0F172A', fontWeight: 900 }}>
+                                                    <Avatar 
+                                                        src={row.foto_perfil} 
+                                                        sx={{ 
+                                                            width: 44, height: 44, 
+                                                            bgcolor: '#F8FAFC', color: '#32B5FE', 
+                                                            fontWeight: 900, fontSize: '1rem',
+                                                            border: '2px solid #E2E8F0',
+                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                                        }}
+                                                    >
                                                         {row.medico ? row.medico[0].toUpperCase() : 'M'}
                                                     </Avatar>
-                                                    <Typography variant="body2" fontWeight={800} color="#0F172A">{row.medico}</Typography>
+                                                    <Box>
+                                                        <Typography variant="body2" fontWeight={800} color="#0F172A">
+                                                            {row.medico}
+                                                        </Typography>
+                                                        <Typography variant="caption" fontWeight={700} sx={{ color: '#32B5FE', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                            Corpo Clínico
+                                                        </Typography>
+                                                    </Box>
                                                 </Stack>
                                             </TableCell>
                                             <TableCell align="center">

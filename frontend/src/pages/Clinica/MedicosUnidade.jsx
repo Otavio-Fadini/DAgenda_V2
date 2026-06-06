@@ -129,10 +129,10 @@ const MedicosUnidade = () => {
     // --- LÓGICA VISUAL DOS STATUS ---
     const getStatusStyle = (status) => {
         const s = (status || '').toLowerCase();
-        if (s === 'agendado' || s === 'confirmado') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
-        if (s === 'pendente pagamento' || s === 'pendente') return { bg: '#FEFCE8', color: '#EAB308', border: '#FEF08A' };
-        if (s === 'concluido' || s === 'finalizado') return { bg: '#F0F9FF', color: '#32B5FE', border: '#BAE6FD' };
-        if (s === 'cancelado') return { bg: '#FEF2F2', color: '#EF4444', border: '#FECACA' };
+        if (s === 'agendado' || s === 'confirmado') return { bg: '#c3f7df', color: '#10B981', border: '#A7F3D0' };
+        if (s === 'pendente pagamento' || s === 'pendente') return { bg: '#faf6cb', color: '#EAB308', border: '#FEF08A' };
+        if (s === 'concluido' || s === 'finalizado') return { bg: '#b7ddf7', color: '#32B5FE', border: '#BAE6FD' };
+        if (s === 'cancelado') return { bg: '#fabfbf', color: '#EF4444', border: '#FECACA' };
         return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
     };
 

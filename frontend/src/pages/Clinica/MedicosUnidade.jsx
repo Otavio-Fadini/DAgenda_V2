@@ -191,51 +191,58 @@ const MedicosUnidade = () => {
                     </DialogContent>
                 </Dialog>
 
-                {/* NOVO MODAL: VER AGENDA DO MÉDICO */}
+                {/* NOVO MODAL: VER AGENDA DO MÉDICO (AMPLIADO E MAIS LIMPO) */}
                 <Dialog 
                     open={modalAgendaOpen} 
                     onClose={handleCloseAgenda}
-                    maxWidth="sm"
+                    maxWidth="md"
                     fullWidth
-                    PaperProps={{ sx: { borderRadius: '24px', p: 2 } }}
+                    PaperProps={{ sx: { borderRadius: '24px', p: { xs: 2, md: 4 }, minHeight: '60vh' } }} // <-- MAIS PADDING E ALTURA MÍNIMA
                 >
-                    <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pb: 0 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Avatar src={medicoSelecionado?.foto_perfil} sx={{ width: 56, height: 56, bgcolor: '#F1F5F9', color: '#32B5FE' }}>
+                    <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pb: 3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                            <Avatar src={medicoSelecionado?.foto_perfil} sx={{ width: 64, height: 64, bgcolor: '#F1F5F9', color: '#32B5FE', fontSize: '1.5rem', fontWeight: 800 }}>
                                 {medicoSelecionado?.nome?.[0]}
                             </Avatar>
                             <Box>
-                                <Typography variant="h6" fontWeight={900} color="#0F172A" lineHeight={1.2}>
+                                <Typography variant="h5" fontWeight={900} color="#0F172A" lineHeight={1.2}>
                                     Agenda: {medicoSelecionado?.nome}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                <Typography variant="body1" color="#32B5FE" fontWeight={700} sx={{ mt: 0.5 }}>
                                     {medicoSelecionado?.especialidade}
                                 </Typography>
                             </Box>
                         </Box>
-                        <IconButton onClick={handleCloseAgenda} sx={{ bgcolor: '#F1F5F9', '&:hover': { bgcolor: '#E2E8F0' } }}>
-                            <X size={20} color="#64748B" />
+                        <IconButton onClick={handleCloseAgenda} sx={{ bgcolor: '#F8FAFC', width: 40, height: 40, '&:hover': { bgcolor: '#F1F5F9' } }}>
+                            <X size={24} color="#64748B" />
                         </IconButton>
                     </DialogTitle>
 
-                    <DialogContent sx={{ pt: 3, pb: 1 }}>
-                        <TextField
-                            fullWidth
-                            type="date"
-                            label="Data da Consulta"
-                            InputLabelProps={{ shrink: true }}
-                            value={dataFiltro}
-                            onChange={handleDataChange}
-                            sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#F8FAFC' } }}
-                        />
+                    <DialogContent sx={{ pt: 1, pb: 2 }}>
+                        {/* CAMPO DE DATA MAIS LARGO E DESCANSADO */}
+                        <Box sx={{ mb: 4, bgcolor: '#F8FAFC', p: 3, borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                            <TextField
+                                fullWidth
+                                type="date"
+                                label="Filtre pela data da consulta"
+                                InputLabelProps={{ shrink: true, sx: { fontWeight: 600, color: '#64748B' } }}
+                                value={dataFiltro}
+                                onChange={handleDataChange}
+                                sx={{ 
+                                    '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#FFFFFF', transition: 'all 0.2s', '&:hover fieldset': { borderColor: '#32B5FE' }, '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' } }
+                                }}
+                            />
+                        </Box>
 
                         {loadingAgenda ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={32} sx={{ color: '#32B5FE' }} /></Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '20vh' }}>
+                                <CircularProgress size={40} sx={{ color: '#32B5FE' }} />
+                            </Box>
                         ) : agendaLista.length === 0 ? (
-                            <Box sx={{ textAlign: 'center', py: 5, px: 2, bgcolor: '#F8FAFC', borderRadius: '16px', border: '1px dashed #E2E8F0' }}>
-                                <Calendar size={40} color="#CBD5E1" style={{ margin: '0 auto 12px auto' }} />
-                                <Typography variant="subtitle1" fontWeight={800} color="#64748B">Dia livre!</Typography>
-                                <Typography variant="body2" color="text.secondary">Nenhum paciente agendado para esta data.</Typography>
+                            <Box sx={{ textAlign: 'center', py: 8, px: 2, bgcolor: '#F8FAFC', borderRadius: '16px', border: '2px dashed #E2E8F0' }}>
+                                <Calendar size={50} color="#CBD5E1" style={{ margin: '0 auto 16px auto' }} strokeWidth={1.5} />
+                                <Typography variant="h6" fontWeight={800} color="#64748B" sx={{ mb: 1 }}>Dia livre!</Typography>
+                                <Typography variant="body1" color="#94A3B8">Nenhum paciente agendado para esta data.</Typography>
                             </Box>
                         ) : (
                             <List sx={{ p: 0 }}>
@@ -243,24 +250,24 @@ const MedicosUnidade = () => {
                                     <ListItem 
                                         key={consulta.id}
                                         sx={{ 
-                                            border: '1px solid #E2E8F0', borderRadius: '16px', mb: 2, p: 2.5,
+                                            border: '1px solid #F1F5F9', borderRadius: '16px', mb: 2, p: 3, // <-- MAIS PADDING
                                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                            bgcolor: 'white', '&:hover': { borderColor: '#32B5FE', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
+                                            bgcolor: 'white', '&:hover': { borderColor: '#32B5FE', boxShadow: '0 8px 20px rgba(50, 181, 254, 0.1)', transform: 'translateY(-2px)' },
+                                            transition: 'all 0.2s ease'
                                         }}
                                     >
                                         <Box>
-                                            <Typography variant="subtitle1" fontWeight={900} color="#0F172A">
+                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
                                                 {consulta.nome_paciente}
                                             </Typography>
-                                            <Typography variant="body2" color="#64748B" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                                                <CalendarClock size={14} /> {consulta.horario.substring(0, 5)} - {consulta.tipo_consulta}
+                                            <Typography variant="body1" color="#64748B" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 500 }}>
+                                                <CalendarClock size={16} /> Horário: <strong style={{ color: '#0F172A' }}>{consulta.horario.substring(0, 5)}</strong>
                                             </Typography>
                                         </Box>
                                         <Chip 
                                             label={consulta.status.toUpperCase()} 
-                                            size="small"
                                             sx={{ 
-                                                fontWeight: 800, fontSize: '0.7rem', height: 24,
+                                                fontWeight: 800, fontSize: '0.85rem', height: 32, px: 1,
                                                 bgcolor: consulta.status === 'Confirmado' ? '#ECFDF5' : '#FEFCE8',
                                                 color: consulta.status === 'Confirmado' ? '#10B981' : '#EAB308',
                                                 border: '1px solid', borderColor: consulta.status === 'Confirmado' ? '#A7F3D0' : '#FEF08A'

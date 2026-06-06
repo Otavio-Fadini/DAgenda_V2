@@ -246,7 +246,7 @@ router.get('/medicos/:id/agenda', verifyToken, async (req, res) => {
     try {
         // Verifica as consultas do médico X, na clínica Y, no dia Z
         const query = `
-            SELECT a.id, a.horario, a.status, a.tipo_consulta, 
+            SELECT a.id, a.horario, a.status, a.tipo_agendamento, a.data_agendamento,
                    paciente.nome AS nome_paciente
             FROM agendamentos a
             JOIN usuarios_cpf paciente ON a.id_paciente = paciente.id

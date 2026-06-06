@@ -132,8 +132,8 @@ const MedicosUnidade = () => {
         if (s === 'agendado' || s === 'confirmado') return { bg: '#c3f7df', color: '#10B981', border: '#A7F3D0' };
         if (s === 'pendente pagamento' || s === 'pendente') return { bg: '#faf6cb', color: '#EAB308', border: '#FEF08A' };
         if (s === 'concluido' || s === 'finalizado') return { bg: '#b7ddf7', color: '#32B5FE', border: '#BAE6FD' };
-        if (s === 'cancelado') return { bg: '#fabfbf', color: '#EF4444', border: '#FECACA' };
-        return { bg: '#F1F5F9', color: '#ffffff', border: '#E2E8F0' }; 
+        if (s === 'cancelado') return { bg: '#fabfbf', color: '#EF4444', border: '#FECACA', background: '#000000' };
+        return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
     };
 
     // --- CÁLCULOS DE PAGINAÇÃO ---

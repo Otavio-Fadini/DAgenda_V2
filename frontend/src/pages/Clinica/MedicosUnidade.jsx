@@ -3,72 +3,31 @@ import {
     Box, Typography, Grid, Paper, Avatar, Button, Fade, Chip, Divider, Stack, CircularProgress,
     Dialog, DialogTitle, DialogContent, TextField, IconButton, InputAdornment, List, ListItem, Pagination
 } from '@mui/material';
-import { Stethoscope, ShieldCheck, CalendarClock, AlertCircle, UserPlus, Search, X, Send, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+    Stethoscope, ShieldCheck, CalendarClock, AlertCircle, UserPlus, Search, X, Send, Calendar,
+    ChevronLeft, ChevronRight 
+} from 'lucide-react';
 import api from '../../services/api';
 
 const MedicosUnidade = () => {
     const [medicos, setMedicos] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Estados para o Modal de Convites
+    // --- Estados para o Modal de Convites ---
     const [modalOpen, setModalOpen] = useState(false);
     const [profissionaisDisponiveis, setProfissionaisDisponiveis] = useState([]);
     const [buscandoProximos, setBuscandoProximos] = useState(false);
     const [termoBusca, setTermoBusca] = useState('');
     const [conviteLoading, setConviteLoading] = useState(null);
 
-    // ESTADOS DO MODAL DE AGENDA
+    // --- Estados para o Modal de Agenda ---
     const [modalAgendaOpen, setModalAgendaOpen] = useState(false);
     const [medicoSelecionado, setMedicoSelecionado] = useState(null);
-    const [dataFiltro, setDataFiltro] = useState(new Date().toISOString().split('T')[0]);
+    const [dataFiltro, setDataFiltro] = useState(new Date().toISOString().split('T')[0]); // Hoje
     const [agendaLista, setAgendaLista] = useState([]);
     const [loadingAgenda, setLoadingAgenda] = useState(false);
-    
-    // --- NOVO: ESTADOS DE PAGINAÇÃO ---
     const [paginaAtual, setPaginaAtual] = useState(1);
-    const itensPorPagina = 4;
-
-    // --- NOVA LÓGICA: NAVEGAÇÃO DE DIAS ---
-    const alterarDia = (quantidadeDias) => {
-        // O "T12:00:00" previne bugs de fuso horário ao somar dias no JavaScript
-        const dataAtual = new Date(dataFiltro + 'T12:00:00'); 
-        dataAtual.setDate(dataAtual.getDate() + quantidadeDias);
-        const novaData = dataAtual.toISOString().split('T')[0];
-        
-        setDataFiltro(novaData);
-        setPaginaAtual(1); // Volta para a página 1 ao mudar de dia
-        
-        if (medicoSelecionado) {
-            buscarAgenda(medicoSelecionado.id, novaData);
-        }
-    };
-
-    // Ajuste no handleDataChange para resetar a página
-    const handleDataChange = (e) => {
-        const novaData = e.target.value;
-        setDataFiltro(novaData);
-        setPaginaAtual(1); // Volta para a página 1
-        if (medicoSelecionado) {
-            buscarAgenda(medicoSelecionado.id, novaData);
-        }
-    };
-
-    // Ajuste no handleOpenAgenda para resetar a página ao abrir
-    const handleOpenAgenda = (medico) => {
-        setMedicoSelecionado(medico);
-        setModalAgendaOpen(true);
-        const hoje = new Date().toISOString().split('T')[0];
-        setDataFiltro(hoje);
-        setPaginaAtual(1); // Garante que abre na página 1
-        buscarAgenda(medico.id, hoje);
-    };
-
-    // --- NOVO: CÁLCULOS DA PAGINAÇÃO ---
-    const indexOfLastItem = paginaAtual * itensPorPagina;
-    const indexOfFirstItem = indexOfLastItem - itensPorPagina;
-    // Pega apenas a fatia da array que corresponde à página atual
-    const agendaPaginada = agendaLista.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPaginas = Math.ceil(agendaLista.length / itensPorPagina);
+    const itensPorPagina = 5;
 
     useEffect(() => {
         carregarMedicos();
@@ -114,23 +73,7 @@ const MedicosUnidade = () => {
         (p.especialidade && p.especialidade.toLowerCase().includes(termoBusca.toLowerCase()))
     );
 
-    // --- NOVA LÓGICA DA AGENDA DO MÉDICO ---
-    const handleOpenAgenda = (medico) => {
-        setMedicoSelecionado(medico);
-        setModalAgendaOpen(true);
-        // Reseta sempre para hoje ao abrir
-        const hoje = new Date().toISOString().split('T')[0];
-        setDataFiltro(hoje);
-        buscarAgenda(medico.id, hoje);
-    };
-
-    const handleCloseAgenda = () => {
-        setModalAgendaOpen(false);
-        setMedicoSelecionado(null);
-        setAgendaLista([]);
-    };
-
-    // Função que chama o Backend quando o dia muda no modal
+    // --- LÓGICA DA AGENDA DO MÉDICO ---
     const buscarAgenda = async (medicoId, dataSelecionada) => {
         setLoadingAgenda(true);
         try {
@@ -145,23 +88,68 @@ const MedicosUnidade = () => {
         }
     };
 
+    const handleOpenAgenda = (medico) => {
+        setMedicoSelecionado(medico);
+        setModalAgendaOpen(true);
+        const hoje = new Date().toISOString().split('T')[0];
+        setDataFiltro(hoje);
+        setPaginaAtual(1);
+        buscarAgenda(medico.id, hoje);
+    };
+
+    const handleCloseAgenda = () => {
+        setModalAgendaOpen(false);
+        setMedicoSelecionado(null);
+        setAgendaLista([]);
+        setPaginaAtual(1);
+    };
+
     const handleDataChange = (e) => {
         const novaData = e.target.value;
         setDataFiltro(novaData);
+        setPaginaAtual(1);
         if (medicoSelecionado) {
             buscarAgenda(medicoSelecionado.id, novaData);
         }
     };
 
-    // Definir as cores do Status
-    const getStatusStyle = (status) => {
-        const s = (status || '').toLowerCase();
-        if (s === 'agendado' || s === 'confirmado') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
-        if (s === 'pendente pagamento' || s === 'pendente') return { bg: '#FEFCE8', color: '#EAB308', border: '#FEF08A' };
-        if (s === 'concluido' || s === 'finalizado') return { bg: '#F0F9FF', color: '#32B5FE', border: '#BAE6FD' };
-        if (s === 'cancelado') return { bg: '#FEF2F2', color: '#EF4444', border: '#FECACA' };
-        return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
+    const alterarDia = (quantidadeDias) => {
+        const dataAtual = new Date(dataFiltro + 'T12:00:00'); 
+        dataAtual.setDate(dataAtual.getDate() + quantidadeDias);
+        const novaData = dataAtual.toISOString().split('T')[0];
+        
+        setDataFiltro(novaData);
+        setPaginaAtual(1);
+        
+        if (medicoSelecionado) {
+            buscarAgenda(medicoSelecionado.id, novaData);
+        }
     };
+
+    // --- LÓGICA VISUAL DOS STATUS ---
+    const getStatusStyle = (status) => {
+        const s = status ? status.toLowerCase() : '';
+        
+        if (s.includes('confirmado')) {
+            return { bgcolor: '#ECFDF5', color: '#10B981', borderColor: '#A7F3D0' }; 
+        } 
+        if (s.includes('pendente')) {
+            return { bgcolor: '#FEFCE8', color: '#EAB308', borderColor: '#FEF08A' }; 
+        } 
+        if (s.includes('cancelado')) {
+            return { bgcolor: '#FEF2F2', color: '#EF4444', borderColor: '#FECACA' }; 
+        } 
+        if (s.includes('concluido') || s.includes('concluído')) {
+            return { bgcolor: '#F0F9FF', color: '#0EA5E9', borderColor: '#BAE6FD' }; 
+        }
+        return { bgcolor: '#F8FAFC', color: '#64748B', borderColor: '#E2E8F0' }; 
+    };
+
+    // --- CÁLCULOS DE PAGINAÇÃO ---
+    const indexOfLastItem = paginaAtual * itensPorPagina;
+    const indexOfFirstItem = indexOfLastItem - itensPorPagina;
+    const agendaPaginada = agendaLista.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPaginas = Math.ceil(agendaLista.length / itensPorPagina);
 
     return (
         <Fade in={true} timeout={600}>
@@ -214,7 +202,7 @@ const MedicosUnidade = () => {
                                             <Button 
                                                 fullWidth variant="contained" 
                                                 startIcon={<CalendarClock size={18} />} 
-                                                onClick={() => handleOpenAgenda(medico)} // CHAMADA PARA ABRIR O NOVO MODAL
+                                                onClick={() => handleOpenAgenda(medico)}
                                                 sx={{ bgcolor: '#0F172A', fontWeight: 800, borderRadius: '12px', textTransform: 'none', color: '#FFFFFF', py: 1.2, boxShadow: '0 4px 10px rgba(15, 23, 42, 0.2)', '&:hover': { bgcolor: '#1E293B' } }}
                                             >
                                                 Ver Agenda
@@ -227,33 +215,79 @@ const MedicosUnidade = () => {
                     </Grid>
                 )}
 
-                {/* MODAL : ADICIONAR PROFISSIONAL */}
+                {/* MODAL ANTIGO: ADICIONAR PROFISSIONAL */}
                 <Dialog open={modalOpen} onClose={handleCloseModal} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
-                    {/* ... Seu código atual do modal de convite ... */}
                     <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
                         <Box>
                             <Typography variant="h6" fontWeight={900} color="#0F172A">Adicionar à equipe clínica</Typography>
+                            <Typography variant="body2" color="text.secondary" fontWeight={500}>Encontre profissionais na sua cidade.</Typography>
                         </Box>
-                        <IconButton onClick={handleCloseModal}><X size={20} color="#64748B" /></IconButton>
+                        <IconButton onClick={handleCloseModal} sx={{ bgcolor: '#F1F5F9', '&:hover': { bgcolor: '#E2E8F0' } }}>
+                            <X size={20} color="#64748B" />
+                        </IconButton>
                     </DialogTitle>
+
                     <DialogContent sx={{ pb: 3 }}>
-                        <TextField fullWidth placeholder="Procurar por nome..." value={termoBusca} onChange={(e) => setTermoBusca(e.target.value)} sx={{ mt: 1, mb: 3 }} />
-                        {profissionaisDisponiveis.map(prof => (
-                             <ListItem key={prof.id}>
-                                 <Typography>{prof.nome}</Typography>
-                                 <Button onClick={() => handleEnviarConvite(prof.id)}>Convidar</Button>
-                             </ListItem>
-                        ))}
+                        <TextField 
+                            fullWidth 
+                            placeholder="Procurar por nome ou especialidade..."
+                            variant="outlined"
+                            value={termoBusca}
+                            onChange={(e) => setTermoBusca(e.target.value)}
+                            sx={{ mt: 1, mb: 3, '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#F8FAFC' } }}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start"><Search size={20} color="#94A3B8" /></InputAdornment>
+                            }}
+                        />
+
+                        {buscandoProximos ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={32} sx={{ color: '#32B5FE' }} /></Box>
+                        ) : profissionaisDisponiveis.length === 0 ? (
+                            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 4 }}>
+                                Nenhum profissional disponível encontrado na sua região.
+                            </Typography>
+                        ) : (
+                            <List sx={{ pt: 0 }}>
+                                {profissionaisFiltrados.map((prof) => (
+                                    <ListItem 
+                                        key={prof.id}
+                                        sx={{ 
+                                            border: '1px solid #E2E8F0', borderRadius: '16px', mb: 1.5, p: 2,
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                            <Avatar src={prof.foto_perfil} sx={{ width: 50, height: 50, bgcolor: '#F1F5F9', color: '#32B5FE', fontWeight: 800 }}>
+                                                {prof.nome[0].toUpperCase()}
+                                            </Avatar>
+                                            <Box>
+                                                <Typography variant="subtitle2" fontWeight={800} color="#0F172A">{prof.nome}</Typography>
+                                                <Typography variant="caption" color="text.secondary" fontWeight={600}>{prof.especialidade || 'Clínico Geral'}</Typography>
+                                            </Box>
+                                        </Box>
+                                        <Button 
+                                            variant="contained" 
+                                            endIcon={conviteLoading === prof.id ? <CircularProgress size={14} color="inherit" /> : <Send size={16} />}
+                                            disabled={conviteLoading === prof.id}
+                                            onClick={() => handleEnviarConvite(prof.id)}
+                                            sx={{ bgcolor: '#0F172A', color: 'white', borderRadius: '10px', textTransform: 'none', fontWeight: 700, px: 2, '&:hover': { bgcolor: '#32B5FE' } }}
+                                        >
+                                            {conviteLoading === prof.id ? 'A Enviar...' : 'Convidar'}
+                                        </Button>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        )}
                     </DialogContent>
                 </Dialog>
 
-                {/* MODAL: VER AGENDA DO MÉDICO */}
+                {/* NOVO MODAL: VER AGENDA DO MÉDICO COM PAGINAÇÃO */}
                 <Dialog 
                     open={modalAgendaOpen} 
                     onClose={handleCloseAgenda}
                     maxWidth="md"
                     fullWidth
-                    PaperProps={{ sx: { borderRadius: '24px', p: { xs: 2, md: 4 }, minHeight: '60vh' } }} // <-- MAIS PADDING E ALTURA MÍNIMA
+                    PaperProps={{ sx: { borderRadius: '24px', p: { xs: 2, md: 4 }, minHeight: '60vh' } }} 
                 >
                     <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pb: 3 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -317,7 +351,7 @@ const MedicosUnidade = () => {
                             </Box>
                         ) : (
                             <Box>
-                                {/* Renderizamos a "agendaPaginada" e não a "agendaLista" completa */}
+                                {/* Renderizamos a "agendaPaginada" */}
                                 <List sx={{ p: 0 }}>
                                     {agendaPaginada.map((consulta) => (
                                         <ListItem 

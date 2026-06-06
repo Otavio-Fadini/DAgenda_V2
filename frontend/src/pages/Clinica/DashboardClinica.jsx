@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Chip, Button, LinearProgress, Divider, Fade, CircularProgress, Dialog, DialogTitle, IconButton } from '@mui/material';
-import { Users, Calendar, Activity, Clock, ChevronRight, TrendingUp, AlertCircle, X } from 'lucide-react';
+import { Box, Typography, Grid, Paper, Chip, Button, LinearProgress, Divider, Fade, CircularProgress, Dialog, DialogTitle, DialogContent, IconButton, List, ListItem, TextField, Pagination } from '@mui/material';
+import { Users, Calendar, Activity, Clock, ChevronRight, ChevronLeft, TrendingUp, AlertCircle, X } from 'lucide-react';
 import api from '../../services/api';
 
 const DashboardClinica = () => {

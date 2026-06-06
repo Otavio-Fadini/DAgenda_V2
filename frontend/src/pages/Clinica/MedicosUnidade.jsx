@@ -107,6 +107,16 @@ const MedicosUnidade = () => {
         }
     };
 
+    // Definir as cores do Status
+    const getStatusStyle = (status) => {
+        const s = (status || '').toLowerCase();
+        if (s === 'agendado' || s === 'confirmado') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
+        if (s === 'pendente pagamento' || s === 'pendente') return { bg: '#FEFCE8', color: '#EAB308', border: '#FEF08A' };
+        if (s === 'concluido' || s === 'finalizado') return { bg: '#F0F9FF', color: '#32B5FE', border: '#BAE6FD' };
+        if (s === 'cancelado') return { bg: '#FEF2F2', color: '#EF4444', border: '#FECACA' };
+        return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
+    };
+
     return (
         <Fade in={true} timeout={600}>
             <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', width: '100%', boxSizing: 'border-box' }}>
@@ -171,7 +181,7 @@ const MedicosUnidade = () => {
                     </Grid>
                 )}
 
-                {/* MODAL ANTIGO: ADICIONAR PROFISSIONAL (Mantido igual) */}
+                {/* MODAL : ADICIONAR PROFISSIONAL */}
                 <Dialog open={modalOpen} onClose={handleCloseModal} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
                     {/* ... Seu código atual do modal de convite ... */}
                     <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
@@ -191,7 +201,7 @@ const MedicosUnidade = () => {
                     </DialogContent>
                 </Dialog>
 
-                {/* NOVO MODAL: VER AGENDA DO MÉDICO (AMPLIADO E MAIS LIMPO) */}
+                {/* MODAL: VER AGENDA DO MÉDICO */}
                 <Dialog 
                     open={modalAgendaOpen} 
                     onClose={handleCloseAgenda}
@@ -264,15 +274,22 @@ const MedicosUnidade = () => {
                                                 <CalendarClock size={16} /> Horário: <strong style={{ color: '#0F172A' }}>{consulta.horario.substring(0, 5)}</strong>
                                             </Typography>
                                         </Box>
-                                        <Chip 
-                                            label={consulta.status.toUpperCase()} 
-                                            sx={{ 
-                                                fontWeight: 800, fontSize: '0.85rem', height: 32, px: 1,
-                                                bgcolor: consulta.status === 'Confirmado' ? '#ECFDF5' : '#FEFCE8',
-                                                color: consulta.status === 'Confirmado' ? '#10B981' : '#EAB308',
-                                                border: '1px solid', borderColor: consulta.status === 'Confirmado' ? '#A7F3D0' : '#FEF08A'
-                                            }} 
-                                        />
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+                                            <Chip 
+                                                label={consulta.status.toUpperCase()} 
+                                                sx={{ 
+                                                    fontWeight: 800, fontSize: '0.75rem', height: 28, px: 1,
+                                                    bgcolor: getStatusStyle(consulta.status).bgcolor,
+                                                    color: getStatusStyle(consulta.status).color,
+                                                    border: '1px solid', 
+                                                    borderColor: getStatusStyle(consulta.status).borderColor
+                                                }} 
+                                            />
+                                            
+                                            <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, bgcolor: '#F8FAFC', px: 1, py: 0.5, borderRadius: '6px' }}>
+                                                {consulta.tipo_agendamento || 'Consulta'}
+                                            </Typography>
+                                        </Box>
                                     </ListItem>
                                 ))}
                             </List>

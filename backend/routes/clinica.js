@@ -43,7 +43,7 @@ router.get('/medicos-unidade', verifyToken, async (req, res) => {
 });
 
 // ==========================================
-// ROTA: FINANCEIRO GERAL
+// ROTA: FINANCEIRO GERAL (CORRIGIDA)
 // ==========================================
 router.get('/financeiro-geral', verifyToken, async (req, res) => {
     try {
@@ -51,18 +51,21 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
             SELECT 
                 p.nome as medico,
                 COUNT(a.id) as total_consultas,
-                SUM(prof.valor_consulta) as faturamento_total,
-                SUM(prof.valor_consulta) * 0.7 as repasse_medico,
-                SUM(prof.valor_consulta) * 0.3 as lucro_clinica
+                SUM(a.valor) as faturamento_total,
+                -- Repasse: valor total * (porcentagem da clinica / 100)
+                SUM(a.valor) * (c.repasse / 100) as lucro_clinica
             FROM agendamentos a
             JOIN profissionais prof ON a.id_profissional = prof.id
-            JOIN usuarios_cpf p ON prof.id = p.id 
+            JOIN usuarios_cpf p ON prof.id = p.id
+            JOIN usuarios_cnpj c ON a.id_clinica = c.id
             WHERE a.id_clinica = ? AND a.status = 'Finalizado'
-            GROUP BY prof.id
+            GROUP BY prof.id, c.repasse
         `;
+        
         const [rows] = await pool.query(query, [req.userId]);
         res.json(rows);
     } catch (error) {
+        console.error("Erro no financeiro:", error);
         res.status(500).json({ error: "Erro ao carregar financeiro" });
     }
 });

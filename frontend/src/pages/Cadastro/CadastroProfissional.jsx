@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
     Box, TextField, Button, Typography, Paper, Grid, InputAdornment, 
-    Avatar, IconButton, Fade, CircularProgress, Tabs, Tab 
+    Avatar, IconButton, Fade, CircularProgress, Tabs, Tab, Divider
 } from '@mui/material';
 import { User, Mail, Lock, CreditCard, Camera, MapPin, Phone, Map, ChevronRight, ChevronLeft, Stethoscope, Info } from 'lucide-react';
 import axios from 'axios';

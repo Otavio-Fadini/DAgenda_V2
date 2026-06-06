@@ -139,7 +139,7 @@ const MedicosUnidade = () => {
             return { bgcolor: '#F0F9FF', color: '#0EA5E9', borderColor: '#BAE6FD' };
         }
         if (s === 'cancelado') {
-            return { bgcolor: 'rgba(239, 68, 68, 0.08)', color: '#EF4444', borderColor: '#FECACA' };
+            return { bgcolor: '#FEF2F2', color: '#EF4444', borderColor: '#FECACA' };
         }
         // Padrão
         return { bgcolor: '#F8FAFC', color: '#64748B', borderColor: '#E2E8F0' }; 

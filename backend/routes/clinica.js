@@ -52,14 +52,13 @@ router.get('/financeiro-geral', verifyToken, async (req, res) => {
                 p.nome as medico,
                 COUNT(a.id) as total_consultas,
                 SUM(a.valor) as faturamento_total,
-                -- Repasse: valor total * (porcentagem da clinica / 100)
                 SUM(a.valor) * (c.repasse / 100) as lucro_clinica
             FROM agendamentos a
             JOIN profissionais prof ON a.id_profissional = prof.id
-            JOIN usuarios_cpf p ON prof.id = p.id
+            JOIN usuarios_cpf p ON prof.id = p.id 
             JOIN usuarios_cnpj c ON a.id_clinica = c.id
-            WHERE a.id_clinica = ? AND a.status = 'Finalizado'
-            GROUP BY prof.id, c.repasse
+            WHERE a.id_clinica = ? AND a.status IN ('agendado', 'concluido')
+            GROUP BY prof.id, p.nome, c.repasse
         `;
         
         const [rows] = await pool.query(query, [req.userId]);

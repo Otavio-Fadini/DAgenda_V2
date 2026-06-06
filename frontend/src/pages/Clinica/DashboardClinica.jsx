@@ -18,6 +18,16 @@ const DashboardClinica = () => {
     const [paginaAtual, setPaginaAtual] = useState(1);
     const itensPorPagina = 6;
 
+    // --- LÓGICA VISUAL DOS STATUS (PADRONIZADA) ---
+    const getStatusStyle = (status) => {
+        const s = (status || '').toLowerCase();
+        if (s === 'agendado' || s === 'confirmado') return { bgcolor: '#ECFDF5', color: '#10B981', borderColor: '#A7F3D0' };
+        if (s === 'pendente pagamento' || s === 'pendente') return { bgcolor: '#FEFCE8', color: '#EAB308', borderColor: '#FEF08A' };
+        if (s === 'concluido' || s === 'finalizado') return { bgcolor: '#F0F9FF', color: '#0EA5E9', borderColor: '#BAE6FD' };
+        if (s === 'cancelado') return { bgcolor: '#FEF2F2', color: '#EF4444', borderColor: '#FECACA' };
+        return { bgcolor: '#F1F5F9', color: '#64748B', borderColor: '#E2E8F0' };
+    };
+
     const buscarAgendaCompleta = async (data) => {
         setLoadingAgenda(true);
         try {
@@ -223,11 +233,13 @@ const DashboardClinica = () => {
                                 <Chip 
                                     label={(item.status || 'Confirmado').toUpperCase()} 
                                     sx={{ 
-                                        fontWeight: 800, fontSize: '0.7rem', height: 28, px: 1, borderRadius: '8px', letterSpacing: '0.5px',
-                                        bgcolor: item.status === 'Em Espera' ? '#FEFCE8' : '#ECFDF5', 
-                                        color: item.status === 'Em Espera' ? '#F59E0B' : '#10B981', 
-                                        border: '1px solid', 
-                                        borderColor: item.status === 'Em Espera' ? '#FEF08A' : '#A7F3D0'
+                                        ...getStatusStyle(item.status),
+                                        fontWeight: 800, 
+                                        fontSize: '0.7rem', 
+                                        height: 28, 
+                                        px: 1, 
+                                        borderRadius: '8px', 
+                                        letterSpacing: '0.5px' 
                                     }} 
                                 />
                             </Box>
@@ -261,7 +273,17 @@ const DashboardClinica = () => {
                                                 <Typography fontWeight={800}>{item.nome_paciente}</Typography>
                                                 <Typography variant="caption" color="text.secondary">Médico: {item.nome_medico} • {item.horario}</Typography>
                                             </Box>
-                                            <Chip label={item.status} size="small" />
+                                            <Chip 
+                                                label={item.status.toUpperCase()} 
+                                                sx={{ 
+                                                    ...getStatusStyle(item.status),
+                                                    fontWeight: 800, 
+                                                    fontSize: '0.75rem', 
+                                                    height: 28, 
+                                                    px: 1, 
+                                                    borderRadius: '8px' 
+                                                }} 
+                                            />
                                         </Box>
                                     </ListItem>
                                 ))}

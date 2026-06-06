@@ -235,4 +235,34 @@ router.post('/enviar-convite', verifyToken, async (req, res) => {
     }
 });
 
+// ==========================================
+// ROTA: VER AGENDA ESPECÍFICA DO MÉDICO
+// ==========================================
+router.get('/medicos/:id/agenda', verifyToken, async (req, res) => {
+    const clinicaId = req.userId; // ou req.clinicaId, dependendo do seu verifyToken
+    const medicoId = req.params.id;
+    const dataFiltro = req.query.data;
+
+    try {
+        // Verifica as consultas do médico X, na clínica Y, no dia Z
+        const query = `
+            SELECT a.id, a.horario, a.status, a.tipo_consulta, 
+                   paciente.nome AS nome_paciente
+            FROM agendamentos a
+            JOIN usuarios_cpf paciente ON a.id_paciente = paciente.id
+            WHERE a.id_profissional = ? 
+            AND a.id_clinica = ? 
+            AND a.data_agendamento = ?
+            ORDER BY a.horario ASC
+        `;
+        
+        const [consultas] = await pool.query(query, [medicoId, clinicaId, dataFiltro]);
+        res.json(consultas);
+
+    } catch (error) {
+        console.error("Erro ao buscar agenda do médico:", error);
+        res.status(500).json({ error: "Erro interno no servidor." });
+    }
+});
+
 module.exports = router;

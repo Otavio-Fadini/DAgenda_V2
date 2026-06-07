@@ -4,12 +4,14 @@ import {
     Box, Typography, Paper, Grid, Avatar, Chip, Button, 
     IconButton, CircularProgress, TextField, InputAdornment, 
     Tooltip, Badge, Dialog, DialogTitle, DialogContent, 
-    DialogActions, Fade, Stack, Tabs, Tab, Alert, AlertTitle
+    DialogActions, Fade, Stack, Tabs, Tab, Alert, AlertTitle,
+    List, ListItem // Novos imports para a lista do modal
 } from '@mui/material';
 import { 
     Search, FilterX, MapPin, Play, FileText, 
     History, Calendar as CalIcon, Activity, AlertCircle, 
-    Download, XCircle, Paperclip, Stethoscope
+    Download, XCircle, Paperclip, Stethoscope,
+    ChevronLeft, ChevronRight, X // Novos ícones para o calendário
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,7 +19,7 @@ const AgendaMedica = () => {
     const [agenda, setAgenda] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // Filtros
+    // Filtros da tela principal
     const [filtroData, setFiltroData] = useState('');
     const [filtroStatus, setFiltroStatus] = useState('Todos'); 
     const [buscaNome, setBuscaNome] = useState('');
@@ -33,6 +35,15 @@ const AgendaMedica = () => {
     const [modalMotivoOpen, setModalMotivoOpen] = useState(false);
     const [motivoTexto, setMotivoTexto] = useState('');
 
+    // ==========================================
+    // NOVOS ESTADOS: MODAL DE AGENDA COMPLETA
+    // ==========================================
+    const [modalAgendaOpen, setModalAgendaOpen] = useState(false);
+    const [dataAgendaFiltro, setDataAgendaFiltro] = useState(new Date().toISOString().split('T')[0]);
+    const [agendaCompleta, setAgendaCompleta] = useState([]);
+    const [loadingAgendaCompleta, setLoadingAgendaCompleta] = useState(false);
+
+    // Carrega a agenda principal
     const carregarAgenda = useCallback(async () => {
         setLoading(true);
         try {
@@ -54,6 +65,41 @@ const AgendaMedica = () => {
         const delayDebounce = setTimeout(() => carregarAgenda(), 500);
         return () => clearTimeout(delayDebounce);
     }, [carregarAgenda]);
+
+    // ==========================================
+    // FUNÇÕES DO MODAL DE AGENDA COMPLETA
+    // ==========================================
+    const carregarAgendaCompleta = async (dataBusca) => {
+        setLoadingAgendaCompleta(true);
+        try {
+            const response = await api.get(`/profissional/agenda?data=${dataBusca}`);
+            // Ordena usando a mesma lógica que você já tem
+            const ordenada = response.data.sort((a, b) => {
+                const horaA = a.horario || a.hora || '00:00';
+                const horaB = b.horario || b.hora || '00:00';
+                return horaA.localeCompare(horaB);
+            });
+            setAgendaCompleta(ordenada);
+        } catch (error) {
+            console.error("Erro ao carregar agenda completa:", error);
+        } finally {
+            setLoadingAgendaCompleta(false);
+        }
+    };
+
+    const alterarDiaAgenda = (dias) => {
+        const d = new Date(dataAgendaFiltro + 'T12:00:00');
+        d.setDate(d.getDate() + dias);
+        const novaData = d.toISOString().split('T')[0];
+        setDataAgendaFiltro(novaData);
+        carregarAgendaCompleta(novaData);
+    };
+
+    const abrirAgendaCompleta = () => {
+        setModalAgendaOpen(true);
+        carregarAgendaCompleta(dataAgendaFiltro);
+    };
+    // ==========================================
 
     const verHistorico = async (idPaciente) => {
         if (!idPaciente) return alert("Paciente não identificado.");
@@ -87,7 +133,6 @@ const AgendaMedica = () => {
         setBuscaNome('');
     };
 
-    // Estilo Moderno para Inputs
     const modernInputStyle = {
         '& .MuiOutlinedInput-root': {
             borderRadius: '12px',
@@ -100,7 +145,6 @@ const AgendaMedica = () => {
         }
     };
 
-    // Definir as cores do Status
     const getStatusStyle = (status) => {
         const s = (status || '').toLowerCase();
         if (s === 'agendado' || s === 'confirmado') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
@@ -110,28 +154,19 @@ const AgendaMedica = () => {
         return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
     };
 
-    // ==========================================
-    // LÓGICA DE ORDENAÇÃO CUSTOMIZADA DA AGENDA
-    // ==========================================
     const getPesoStatus = (status) => {
         const s = (status || '').toLowerCase();
-        if (s === 'agendado' || s === 'confirmado') return 1;        // 1º Prioridade
-        if (s === 'pendente pagamento' || s === 'pendente') return 2; // 2º Prioridade
-        if (s === 'cancelado') return 3;                              // 3º Prioridade
-        if (s === 'concluido' || s === 'finalizado') return 4;        // 4º Prioridade
+        if (s === 'agendado' || s === 'confirmado') return 1; 
+        if (s === 'pendente pagamento' || s === 'pendente') return 2; 
+        if (s === 'cancelado') return 3; 
+        if (s === 'concluido' || s === 'finalizado') return 4; 
         return 5;
     };
 
     const agendaOrdenada = [...agenda].sort((a, b) => {
         const pesoA = getPesoStatus(a.status);
         const pesoB = getPesoStatus(b.status);
-
-        // Se tiverem pesos diferentes, ordena pela regra de prioridade acima
-        if (pesoA !== pesoB) {
-            return pesoA - pesoB; 
-        }
-        
-        // Se tiverem o mesmo status (peso igual), organiza pelo horário mais cedo
+        if (pesoA !== pesoB) return pesoA - pesoB; 
         const horaA = a.horario || a.hora || '00:00';
         const horaB = b.horario || b.hora || '00:00';
         return horaA.localeCompare(horaB);
@@ -155,6 +190,7 @@ const AgendaMedica = () => {
                     <Button 
                         variant="contained" 
                         startIcon={<CalIcon size={20}/>} 
+                        onClick={abrirAgendaCompleta} // <--- FUNÇÃO ATIVADA AQUI
                         sx={{ 
                             bgcolor: '#0F172A', '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)' }, 
                             borderRadius: '12px', px: 3, py: 1.2, fontWeight: 800, textTransform: 'none', color: '#FFFFFF',
@@ -219,7 +255,7 @@ const AgendaMedica = () => {
                     </Tabs>
                 </Box>
 
-                {/* LISTA DE CARDS DE AGENDAMENTO (AGORA RENDERIZANDO A AGENDA ORDENADA) */}
+                {/* LISTA DE CARDS DE AGENDAMENTO */}
                 <Grid container spacing={3}>
                     {loading ? (
                         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', py: 10 }}>
@@ -262,18 +298,7 @@ const AgendaMedica = () => {
                                                 
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                                                     <Badge overlap="circular" anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} variant="dot" sx={{ '& .MuiBadge-badge': { bgcolor: style.color, width: 14, height: 14, borderRadius: '50%', border: '2px solid #FFF' } }}>
-                                                        <Avatar 
-                                                            src={item.foto_paciente} 
-                                                            sx={{ 
-                                                                width: 64, 
-                                                                height: 64, 
-                                                                bgcolor: '#0F172A', 
-                                                                color: '#FFF', 
-                                                                fontWeight: 900, 
-                                                                fontSize: '1.5rem', 
-                                                                border: '2px solid #F1F5F9' 
-                                                            }}
-                                                        >
+                                                        <Avatar src={item.foto_paciente} sx={{ width: 64, height: 64, bgcolor: '#0F172A', color: '#FFF', fontWeight: 900, fontSize: '1.5rem', border: '2px solid #F1F5F9' }}>
                                                             {!item.foto_paciente && nomePaciente[0].toUpperCase()}
                                                         </Avatar>
                                                     </Badge>
@@ -289,7 +314,6 @@ const AgendaMedica = () => {
                                                                 size="small" 
                                                                 sx={{ fontWeight: 800, fontSize: '0.65rem', height: 24, bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border, borderRadius: '6px' }} 
                                                             />
-                                                            {/* Aviso visual caso o paciente tenha enviado um exame */}
                                                             {item.exame_base64 && (
                                                                 <Chip 
                                                                     icon={<Paperclip size={12} />} label="Exame Anexado" size="small"
@@ -303,7 +327,6 @@ const AgendaMedica = () => {
                                                 {/* Botões de Ação Dinâmicos */}
                                                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', width: { xs: '100%', lg: 'auto' } }}>
                                                     
-                                                    {/* Botão de Histórico */}
                                                     <Button 
                                                         onClick={() => verHistorico(item.id_paciente)}
                                                         variant="outlined" size="small" startIcon={<History size={16}/>}
@@ -312,7 +335,6 @@ const AgendaMedica = () => {
                                                         Histórico
                                                     </Button>
 
-                                                    {/* Botão de Exame */}
                                                     {item.exame_base64 && (
                                                         <Button 
                                                             variant="outlined" size="small" startIcon={<Download size={16} />} 
@@ -323,7 +345,6 @@ const AgendaMedica = () => {
                                                         </Button>
                                                     )}
 
-                                                    {/* Botões de Status */}
                                                     {item.status === 'Cancelado' ? (
                                                         <Button 
                                                             variant="outlined" color="error" startIcon={<AlertCircle size={16} />} 
@@ -363,6 +384,69 @@ const AgendaMedica = () => {
                     )}
                 </Grid>
 
+                {/* ========================================== */}
+                {/* NOVO MODAL: AGENDA COMPLETA DO DIA         */}
+                {/* ========================================== */}
+                <Dialog open={modalAgendaOpen} onClose={() => setModalAgendaOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 2 } }}>
+                    <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h6" fontWeight={900}>Navegador de Agenda</Typography>
+                        <IconButton onClick={() => setModalAgendaOpen(false)}><X /></IconButton>
+                    </DialogTitle>
+                    <DialogContent>
+                        {/* CONTROLES DE NAVEGAÇÃO DE DIA */}
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, p: 2, bgcolor: '#F8FAFC', borderRadius: '16px' }}>
+                            <IconButton onClick={() => alterarDiaAgenda(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}><ChevronLeft size={20} /></IconButton>
+                            <TextField 
+                                fullWidth 
+                                type="date" 
+                                size="small"
+                                value={dataAgendaFiltro} 
+                                onChange={(e) => { setDataAgendaFiltro(e.target.value); carregarAgendaCompleta(e.target.value); }} 
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: 'white' } }}
+                            />
+                            <IconButton onClick={() => alterarDiaAgenda(1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}><ChevronRight size={20} /></IconButton>
+                        </Box>
+
+                        {/* LISTA COMPACTA DO DIA SELECIONADO */}
+                        {loadingAgendaCompleta ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                <CircularProgress size={30} sx={{ color: '#32B5FE' }} />
+                            </Box>
+                        ) : agendaCompleta.length === 0 ? (
+                            <Box sx={{ textAlign: 'center', p: 4, opacity: 0.6 }}>
+                                <CalIcon size={40} color="#CBD5E1" style={{ marginBottom: '16px' }} />
+                                <Typography variant="subtitle1" fontWeight={800} color="#64748B">Agenda Livre</Typography>
+                                <Typography variant="body2" color="#94A3B8" fontWeight={500}>Nenhum paciente agendado para este dia.</Typography>
+                            </Box>
+                        ) : (
+                            <List sx={{ pt: 0 }}>
+                                {agendaCompleta.map((item) => {
+                                    const style = getStatusStyle(item.status);
+                                    const nomePac = item.paciente || item.paciente_nome || 'Paciente';
+                                    return (
+                                        <ListItem key={item.id} sx={{ borderBottom: '1px solid #F1F5F9', py: 2, px: 0, display: 'flex', gap: 2 }}>
+                                            <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: '12px', minWidth: 60, textAlign: 'center' }}>
+                                                <Typography fontWeight={900} color="#0F172A">{item.horario || item.hora}</Typography>
+                                            </Box>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography fontWeight={800} color="#0F172A">{nomePac}</Typography>
+                                                <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <MapPin size={12} /> {item.clinica || item.clinica_nome || 'Unidade Padrão'}
+                                                </Typography>
+                                            </Box>
+                                            <Chip 
+                                                label={(item.status || 'Confirmado').toUpperCase()} 
+                                                size="small" 
+                                                sx={{ fontWeight: 800, fontSize: '0.65rem', bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border, borderRadius: '6px' }} 
+                                            />
+                                        </ListItem>
+                                    );
+                                })}
+                            </List>
+                        )}
+                    </DialogContent>
+                </Dialog>
+
                 {/* MODAL DE HISTÓRICO PREMIUM */}
                 <Dialog open={openHistorico} onClose={() => setOpenHistorico(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
                     <DialogTitle sx={{ fontWeight: 900, color: '#0F172A', pb: 1 }}>Histórico Clínico</DialogTitle>
@@ -381,8 +465,6 @@ const AgendaMedica = () => {
                         ) : (
                             dadosHistorico.map((h, i) => (
                                 <Box key={i} sx={{ mb: 3, p: 3, bgcolor: '#F8FAFC', borderRadius: '16px', border: '1px solid #F1F5F9' }}>
-                                    
-                                    {/* CABEÇALHO DO PRONTUÁRIO (Data + Médico) */}
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             <CalIcon size={14} color="#32B5FE" />
@@ -390,17 +472,11 @@ const AgendaMedica = () => {
                                                 {h.data_formatada || h.data}
                                             </Typography>
                                         </Box>
-
-                                        {/* SELO DO PROFISSIONAL */}
                                         <Chip 
                                             icon={<Stethoscope size={14} />} 
                                             label={`Dr(a). ${h.profissional_nome || 'Não informado'} • CRM: ${h.profissional_crm || 'N/I'}`} 
                                             size="small" 
-                                            sx={{ 
-                                                fontWeight: 800, fontSize: '0.65rem', bgcolor: '#E2E8F0', 
-                                                color: '#475569', borderRadius: '8px', 
-                                                '& .MuiChip-icon': { color: '#64748B' } 
-                                            }} 
+                                            sx={{ fontWeight: 800, fontSize: '0.65rem', bgcolor: '#E2E8F0', color: '#475569', borderRadius: '8px', '& .MuiChip-icon': { color: '#64748B' } }} 
                                         />
                                     </Box>
 

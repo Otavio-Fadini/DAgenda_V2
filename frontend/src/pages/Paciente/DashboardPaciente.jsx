@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { 
     Box, Typography, Paper, List, ListItem, 
-    ListItemText, Avatar, Chip, Skeleton, IconButton, Tooltip, Button, Fade 
+    ListItemText, Avatar, Chip, Skeleton, Fade, Button 
 } from '@mui/material';
 import { 
-    Calendar, Clock, User, Trash2, 
-    Activity, CreditCard, ClipboardList, HeadphonesIcon 
+    Calendar, User, 
+    Activity, CreditCard, ClipboardList, HeadphonesIcon, Clock, MapPin, Stethoscope 
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -13,6 +13,7 @@ const DashboardPaciente = () => {
     const [consultas, setConsultas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [totalDebito, setTotalDebito] = useState(0);
+
     const fetchConsultas = async () => {
         setLoading(true);
         try {
@@ -42,16 +43,14 @@ const DashboardPaciente = () => {
 
     useEffect(() => { fetchConsultas(); fetchDebitos(); }, []);
 
-    const handleCancelar = async (id) => {
-        if (window.confirm("Deseja realmente cancelar esta consulta?")) {
-            try {
-                const token = localStorage.getItem('token');
-                await axios.delete(`https://dagenda.com.br/api/agendamentos/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setConsultas(consultas.filter(c => c.id !== id));
-            } catch (err) { alert("Erro ao cancelar."); }
-        }
+    // Função de Cores Padronizada do DAGENDA
+    const getStatusStyle = (status) => {
+        const s = (status || '').toLowerCase();
+        if (s === 'agendado' || s === 'confirmado') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
+        if (s === 'pendente pagamento' || s === 'pendente') return { bg: '#FEFCE8', color: '#EAB308', border: '#FEF08A' };
+        if (s === 'concluido' || s === 'finalizado') return { bg: '#F0F9FF', color: '#32B5FE', border: '#BAE6FD' };
+        if (s === 'cancelado') return { bg: '#FEF2F2', color: '#EF4444', border: '#FECACA' };
+        return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
     };
 
     // Componente de Estatística Premium
@@ -93,17 +92,11 @@ const DashboardPaciente = () => {
         </Paper>
     );
 
-    // Nova lógica para encontrar a próxima consulta válida:
     const proximaConsulta = consultas
         .filter(c => {
-            // 1. Apenas consultas confirmadas (ignora pendente pagamento e cancelados)
-            const isAgendado = c.status === 'Agendado' || c.status === 'agendado'; // Ajuste conforme seu banco
-            
-            // 2. Transforma data e hora em um objeto Date para comparar
+            const isAgendado = c.status === 'Agendado' || c.status === 'agendado';
             const dataConsulta = new Date(`${c.data_agendamento}T${c.horario}`);
             const hoje = new Date();
-            
-            // 3. Verifica se a data é maior ou igual a agora
             return isAgendado && dataConsulta >= hoje;
         })
         .sort((a, b) => {
@@ -178,18 +171,25 @@ const DashboardPaciente = () => {
                                 </Box>
                             ) : consultas.filter(c => c.status !== 'Cancelado').length > 0 ? (
                                 <List sx={{ p: 0 }}>
-                                    {/* A mágica acontece aqui: filtramos o status e ordenamos por data */}
                                     {consultas
                                         .filter(c => c.status !== 'Cancelado')
                                         .sort((a, b) => new Date(a.data_agendamento) - new Date(b.data_agendamento))
-                                        .map((c) => (
+                                        .map((c) => {
+                                            const statusStyle = getStatusStyle(c.status);
+                                            const nomeMedico = c.nome_medico || 'Médico N/I';
+                                            
+                                            return (
                                             <ListItem 
                                                 key={c.id} 
                                                 sx={{ 
                                                     mb: 2, 
                                                     border: '1px solid #F1F5F9', 
                                                     borderRadius: '16px', 
-                                                    p: 3,
+                                                    p: { xs: 2.5, md: 3.5 },
+                                                    display: 'flex',
+                                                    flexDirection: { xs: 'column', md: 'row' },
+                                                    alignItems: { xs: 'flex-start', md: 'center' },
+                                                    gap: { xs: 2, md: 0 },
                                                     bgcolor: '#ffffff',
                                                     transition: 'all 0.3s ease',
                                                     '&:hover': { 
@@ -199,37 +199,62 @@ const DashboardPaciente = () => {
                                                     }
                                                 }}
                                             >
-                                                {/* ... o conteúdo do seu ListItem permanece igual ... */}
-                                                <Avatar sx={{ mr: 3, bgcolor: '#F8FAFC', color: '#64748B', width: 56, height: 56, border: '1px solid #E2E8F0' }}>
-                                                    <User size={28} />
-                                                </Avatar>
-                                                
-                                                <ListItemText 
-                                                    primary={<Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#0F172A' }}>{c.nome_medico}</Typography>}
-                                                    secondary={
-                                                        <Typography variant="body2" sx={{ color: '#32B5FE', fontWeight: 600, mt: 0.5, display: 'flex', alignItems: 'center' }}>
-                                                            {c.especialidade} <Box component="span" sx={{ color: '#CBD5E1', mx: 1.5 }}>•</Box> {c.nome_clinica}
+                                                {/* BLOCO ESQUERDO: Avatar + Info Médico */}
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flex: 1 }}>
+                                                    <Avatar 
+                                                        src={c.foto_medico} // Puxa a foto do banco se existir
+                                                        sx={{ width: 64, height: 64, bgcolor: '#0F172A', color: '#FFF', fontWeight: 900, border: '2px solid #F1F5F9', fontSize: '1.2rem' }}
+                                                    >
+                                                        {!c.foto_medico && nomeMedico[0].toUpperCase()}
+                                                    </Avatar>
+                                                    <Box>
+                                                        <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', color: '#0F172A', mb: 0.5 }}>
+                                                            {nomeMedico}
                                                         </Typography>
-                                                    }
-                                                />
-
-                                                <Box sx={{ textAlign: 'right', mr: 4 }}>
-                                                    <Typography sx={{ fontWeight: 800, color: '#0F172A' }}>{c.data_agendamento}</Typography>
-                                                    <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 600 }}>{c.horario}</Typography>
+                                                        
+                                                        {/* CRM e Especialidade */}
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 0.5 }}>
+                                                            <Typography variant="body2" sx={{ color: '#32B5FE', fontWeight: 700 }}>
+                                                                {c.especialidade}
+                                                            </Typography>
+                                                            {c.crm_medico && (
+                                                                <>
+                                                                    <Box component="span" sx={{ color: '#CBD5E1' }}>•</Box>
+                                                                    <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B', fontWeight: 600 }}>
+                                                                        <Stethoscope size={12} /> CRM: {c.crm_medico}
+                                                                    </Typography>
+                                                                </>
+                                                            )}
+                                                        </Box>
+                                                        
+                                                        <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B', fontWeight: 600 }}>
+                                                            <MapPin size={12} /> {c.nome_clinica || 'Unidade Padrão'}
+                                                        </Typography>
+                                                    </Box>
                                                 </Box>
 
-                                                <Chip 
-                                                    label={c.status.toUpperCase()} 
-                                                    sx={{ 
-                                                        fontWeight: 800, fontSize: '0.75rem', height: 28, px: 1, borderRadius: '8px',
-                                                        bgcolor: c.status === 'confirmado' ? '#ECFDF5' : '#FEFCE8',
-                                                        color: c.status === 'confirmado' ? '#10B981' : '#EAB308',
-                                                        border: '1px solid',
-                                                        borderColor: c.status === 'confirmado' ? '#A7F3D0' : '#FEF08A'
-                                                    }} 
-                                                />
+                                                {/* BLOCO DIREITO: Data, Hora e Status */}
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: { xs: '100%', md: 'auto' }, justifyContent: { xs: 'space-between', md: 'flex-end' } }}>
+                                                    <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                                                        <Typography sx={{ fontWeight: 900, color: '#0F172A' }}>{c.data_agendamento}</Typography>
+                                                        <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: { xs: 'flex-start', md: 'flex-end' }, gap: 0.5 }}>
+                                                            <Clock size={12} /> {c.horario}
+                                                        </Typography>
+                                                    </Box>
+
+                                                    <Chip 
+                                                        label={c.status.toUpperCase()} 
+                                                        sx={{ 
+                                                            fontWeight: 800, fontSize: '0.75rem', height: 28, px: 1, borderRadius: '8px',
+                                                            bgcolor: statusStyle.bg,
+                                                            color: statusStyle.color,
+                                                            border: '1px solid',
+                                                            borderColor: statusStyle.border
+                                                        }} 
+                                                    />
+                                                </Box>
                                             </ListItem>
-                                        ))}
+                                        )})}
                                 </List>
                             ) : (
                                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.6 }}>
@@ -284,12 +309,11 @@ const DashboardPaciente = () => {
                             flexGrow: 1, 
                             display: 'flex', 
                             flexDirection: 'column', 
-                            justifyContent: 'center', /* ALTERADO AQUI: De space-between para center */
+                            justifyContent: 'center',
                             boxShadow: '0 20px 40px -10px rgba(15, 23, 42, 0.4)',
                             position: 'relative',
                             overflow: 'hidden'
                         }}>
-                            {/* Efeito de brilho no fundo */}
                             <Box sx={{ 
                                 position: 'absolute', top: -50, right: -50, width: 150, height: 150, 
                                 background: 'radial-gradient(circle, rgba(50, 181, 254, 0.2) 0%, rgba(0,0,0,0) 70%)',

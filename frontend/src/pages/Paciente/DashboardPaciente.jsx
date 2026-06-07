@@ -53,6 +53,31 @@ const DashboardPaciente = () => {
         return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
     };
 
+    // Filtro inteligente para remover consultas que já passaram da data/hora atual
+    const isConsultaValida = (dataStr, horaStr) => {
+        if (!dataStr) return false;
+        try {
+            let ano, mes, dia;
+            if (dataStr.includes('/')) {
+                [dia, mes, ano] = dataStr.split('/');
+            } else {
+                [ano, mes, dia] = dataStr.split('-');
+            }
+            const [hora, min] = (horaStr || '23:59').split(':');
+            const dataConsulta = new Date(ano, mes - 1, dia, hora, min);
+            const agora = new Date();
+            
+            return dataConsulta >= agora; // Só retorna TRUE se a consulta for no futuro ou agora
+        } catch (e) {
+            return true;
+        }
+    };
+
+    // Lista de consultas filtradas (sem canceladas e sem as que já passaram)
+    const consultasAtivas = consultas.filter(c => 
+        c.status !== 'Cancelado' && isConsultaValida(c.data_agendamento, c.horario)
+    );
+
     // Componente de Estatística Premium
     const StatCard = ({ icon: Icon, title, value, color }) => (
         <Paper elevation={0} sx={{ 
@@ -92,16 +117,10 @@ const DashboardPaciente = () => {
         </Paper>
     );
 
-    const proximaConsulta = consultas
-        .filter(c => {
-            const isAgendado = c.status === 'Agendado' || c.status === 'agendado';
-            const dataConsulta = new Date(`${c.data_agendamento}T${c.horario}`);
-            const hoje = new Date();
-            return isAgendado && dataConsulta >= hoje;
-        })
+    const proximaConsulta = [...consultasAtivas]
         .sort((a, b) => {
-            const dataA = new Date(`${a.data_agendamento}T${a.horario}`);
-            const dataB = new Date(`${b.data_agendamento}T${b.horario}`);
+            const dataA = new Date(a.data_agendamento.includes('/') ? a.data_agendamento.split('/').reverse().join('-') : a.data_agendamento + 'T' + a.horario);
+            const dataB = new Date(b.data_agendamento.includes('/') ? b.data_agendamento.split('/').reverse().join('-') : b.data_agendamento + 'T' + b.horario);
             return dataA - dataB;
         })[0];
 
@@ -140,9 +159,9 @@ const DashboardPaciente = () => {
 
                 {/* INDICADORES */}
                 <Box sx={{ display: 'flex', gap: 3, mb: 4, width: '100%', flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
-                    <StatCard icon={Calendar} title="Consultas Ativas" value={consultas.filter(c => c.status !== 'Cancelado').length} color="primary" />
+                    <StatCard icon={Calendar} title="Próximas Consultas" value={consultasAtivas.length} color="primary" />
                     <StatCard icon={ClipboardList} title="Histórico Total" value={consultas.length} color="success" />
-                    <StatCard icon={CreditCard} title="Débitos Pendentes" value={totalDebito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} color="error" />
+                    <StatCard icon={CreditCard} title="Débitos Pendentes" value={Number(totalDebito || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} color="error" />
                 </Box>
 
                 {/* CONTEÚDO PRINCIPAL */}
@@ -161,7 +180,7 @@ const DashboardPaciente = () => {
                     }}>
                         <Box sx={{ p: 3.5, borderBottom: '1px solid #F8FAFC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A' }}>Agenda de Consultas</Typography>
-                            <Chip label={`${consultas.length} registros`} size="small" sx={{ fontWeight: 700, bgcolor: '#F1F5F9', color: '#64748B' }} />
+                            <Chip label={`${consultasAtivas.length} registros`} size="small" sx={{ fontWeight: 700, bgcolor: '#F1F5F9', color: '#64748B' }} />
                         </Box>
 
                         <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 3 }}>
@@ -169,11 +188,14 @@ const DashboardPaciente = () => {
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     {[1, 2, 3].map(i => <Skeleton key={i} variant="rounded" height={100} sx={{ borderRadius: '16px' }} />)}
                                 </Box>
-                            ) : consultas.filter(c => c.status !== 'Cancelado').length > 0 ? (
+                            ) : consultasAtivas.length > 0 ? (
                                 <List sx={{ p: 0 }}>
-                                    {consultas
-                                        .filter(c => c.status !== 'Cancelado')
-                                        .sort((a, b) => new Date(a.data_agendamento) - new Date(b.data_agendamento))
+                                    {consultasAtivas
+                                        .sort((a, b) => {
+                                            const dataA = new Date(a.data_agendamento.includes('/') ? a.data_agendamento.split('/').reverse().join('-') : a.data_agendamento + 'T' + a.horario);
+                                            const dataB = new Date(b.data_agendamento.includes('/') ? b.data_agendamento.split('/').reverse().join('-') : b.data_agendamento + 'T' + b.horario);
+                                            return dataA - dataB;
+                                        })
                                         .map((c) => {
                                             const statusStyle = getStatusStyle(c.status);
                                             const nomeMedico = c.nome_medico || 'Médico N/I';
@@ -202,7 +224,7 @@ const DashboardPaciente = () => {
                                                 {/* BLOCO ESQUERDO: Avatar + Info Médico */}
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flex: 1 }}>
                                                     <Avatar 
-                                                        src={c.foto_medico} // Puxa a foto do banco se existir
+                                                        src={c.foto_medico} // Tenta carregar a imagem do médico
                                                         sx={{ width: 64, height: 64, bgcolor: '#0F172A', color: '#FFF', fontWeight: 900, border: '2px solid #F1F5F9', fontSize: '1.2rem' }}
                                                     >
                                                         {!c.foto_medico && nomeMedico[0].toUpperCase()}
@@ -212,7 +234,7 @@ const DashboardPaciente = () => {
                                                             {nomeMedico}
                                                         </Typography>
                                                         
-                                                        {/* CRM e Especialidade */}
+                                                        {/* Especialidade e CRM */}
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 0.5 }}>
                                                             <Typography variant="body2" sx={{ color: '#32B5FE', fontWeight: 700 }}>
                                                                 {c.especialidade}
@@ -227,9 +249,12 @@ const DashboardPaciente = () => {
                                                             )}
                                                         </Box>
                                                         
-                                                        <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B', fontWeight: 600 }}>
-                                                            <MapPin size={12} /> {c.nome_clinica || 'Unidade Padrão'}
-                                                        </Typography>
+                                                        {/* Clínica (só mostra se o nome da clínica existir) */}
+                                                        {c.nome_clinica && (
+                                                            <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B', fontWeight: 600 }}>
+                                                                <MapPin size={12} /> {c.nome_clinica}
+                                                            </Typography>
+                                                        )}
                                                     </Box>
                                                 </Box>
 
@@ -260,6 +285,7 @@ const DashboardPaciente = () => {
                                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.6 }}>
                                     <Activity size={70} color="#CBD5E1" />
                                     <Typography variant="h6" sx={{ mt: 3, fontWeight: 700, color: '#64748B' }}>Sua agenda está livre!</Typography>
+                                    <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 500, color: '#94A3B8' }}>Você não tem consultas futuras marcadas.</Typography>
                                 </Box>
                             )}
                         </Box>
@@ -295,7 +321,7 @@ const DashboardPaciente = () => {
                                 </Box>
                             ) : (
                                 <Box sx={{ py: 3, textAlign: 'center' }}>
-                                    <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 600 }}>Nenhum compromisso agendado.</Typography>
+                                    <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 600 }}>Nenhum compromisso futuro agendado.</Typography>
                                 </Box>
                             )}
                         </Paper>

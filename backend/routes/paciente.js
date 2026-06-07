@@ -87,10 +87,19 @@ router.get('/meus-agendamentos', verifyToken, async (req, res) => {
     try {
         const query = `
             SELECT 
-                a.id, a.data_agendamento, a.horario, a.status, a.link_pagamento,
-                p.nome AS nome_medico, p.especialidade, p.foto_perfil
+                a.id, 
+                DATE_FORMAT(a.data_agendamento, '%d/%m/%Y') as data_agendamento, 
+                TIME_FORMAT(a.horario, '%H:%i') as horario, 
+                a.status, 
+                a.link_pagamento,
+                p.nome AS nome_medico, 
+                p.especialidade, 
+                p.foto_perfil AS foto_medico, 
+                p.conselho AS crm_medico,
+                c.nome_fantasia AS nome_clinica
             FROM agendamentos a
             INNER JOIN profissionais p ON a.id_profissional = p.id
+            LEFT JOIN usuarios_cnpj c ON a.id_clinica = c.id
             WHERE a.id_paciente = ?
             ORDER BY a.data_agendamento DESC, a.horario DESC
         `;

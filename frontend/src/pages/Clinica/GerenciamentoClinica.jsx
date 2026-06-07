@@ -160,8 +160,8 @@ const GerenciamentoClinica = () => {
             
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
-                    <Typography variant="h4" fontWeight={900} sx={{ color: '#0F172A', letterSpacing: '-1px' }}>Gerenciamento da Clínica</Typography>
-                    <Typography variant="body2" color="#64748B" fontWeight={500}>Configure os dados cadastrais, contato e a localização da sua unidade.</Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>Gerenciamento da Clínica</Typography>
+                    <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>Configure os dados cadastrais, contato e a localização da sua unidade.</Typography>
                 </Box>
                 <Button 
                     variant="contained" onClick={handleSalvar} disabled={salvando}

@@ -158,8 +158,8 @@ const MedicosUnidade = () => {
                 {/* CABEÇALHO */}
                 <Box sx={{ mb: 5, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
                     <Box>
-                        <Typography variant="h4" fontWeight={900} sx={{ color: '#0F172A', mb: 1, letterSpacing: '-1px' }}>Corpo Clínico</Typography>
-                        <Typography variant="body1" color="text.secondary" fontWeight={500}>Gerencie os especialistas vinculados à sua unidade.</Typography>
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>Corpo Clínico</Typography>
+                        <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>Gerencie os especialistas vinculados à sua unidade.</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                         <Chip label={`${medicos.length} PROFISSIONAIS`} sx={{ fontWeight: 800, bgcolor: '#F1F5F9', color: '#64748B', border: '1px solid #E2E8F0', px: 1, height: 32, borderRadius: '8px' }} />

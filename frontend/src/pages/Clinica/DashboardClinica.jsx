@@ -104,10 +104,10 @@ const DashboardClinica = () => {
                 {/* CABEÇALHO */}
                 <Box sx={{ mb: 5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
-                        <Typography variant="h4" fontWeight={900} sx={{ color: '#0F172A', mb: 1, letterSpacing: '-1px' }}>
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>
                             Painel da Unidade
                         </Typography>
-                        <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                        <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>
                             Monitoramento em tempo real da operação clínica.
                         </Typography>
                     </Box>

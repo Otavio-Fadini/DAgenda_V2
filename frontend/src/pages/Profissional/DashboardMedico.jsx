@@ -167,7 +167,7 @@ const DashboardProfissional = () => {
                                         <Button 
                                             variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
                                             onClick={() => navigate('/dashboard/atendimento', { state: c })} 
-                                            sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFF', py: 1, px: 2, boxShadow: 'none', minWidth: 120, '&:hover': { bgcolor: '#1E293B' } }}
+                                            sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)' }, py: 1, px: 2, boxShadow: 'none', minWidth: 120 }}
                                         >
                                             Ver Resumo
                                         </Button>
@@ -210,7 +210,7 @@ const DashboardProfissional = () => {
                                                 <Button 
                                                     variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
                                                     onClick={() => navigate('/dashboard/atendimento', { state: c })} 
-                                                    sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#32B5FE', color: '#FFF', py: 1, px: 2, boxShadow: 'none', minWidth: 120, '&:hover': { bgcolor: '#0284C7', boxShadow: '0 4px 10px rgba(50, 181, 254, 0.3)' } }}
+                                                    sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#32B5FE', color: '#FFFFFF', '&:hover': { bgcolor: '#0284C7', transform: 'translateY(-2px)', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)' }, py: 1, px: 2, boxShadow: 'none', minWidth: 120 }}
                                                 >
                                                     Atender
                                                 </Button>

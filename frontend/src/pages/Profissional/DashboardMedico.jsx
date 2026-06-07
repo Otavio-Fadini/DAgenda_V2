@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Avatar, Button, Chip, Fade, CircularProgress } from '@mui/material';
-import { Calendar, Users, TrendingUp, Clock, ChevronRight, Activity } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Importação adicionada
+import { Box, Typography, Grid, Paper, Avatar, Button, Chip, Fade, CircularProgress, Tooltip } from '@mui/material';
+import { Calendar, Users, TrendingUp, ChevronRight, Activity, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
 const DashboardProfissional = () => {
-    const navigate = useNavigate(); // Hook de navegação
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [dados, setDados] = useState({
         kpis: { consultasHoje: 0, totalPacientes: 0, faturamentoDia: 0 },
         proximasConsultas: []
     });
+    const [horaAtual, setHoraAtual] = useState(new Date());
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setHoraAtual(new Date());
+        }, 60000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         const carregarDashboard = async () => {
@@ -29,7 +37,6 @@ const DashboardProfissional = () => {
         carregarDashboard();
     }, []);
 
-    // Função auxiliar atualizada para as novas nomenclaturas de Status
     const getStatusStyle = (status) => {
         const s = (status || '').toLowerCase();
         if (s === 'agendado' || s === 'confirmado') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
@@ -148,7 +155,6 @@ const DashboardProfissional = () => {
                                         sx={{ fontWeight: 800, fontSize: '0.7rem', height: 28, px: 1, borderRadius: '8px', letterSpacing: '0.5px', bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border }} 
                                     />
                                     
-                                    {/* 👇 AQUI: Lógica condicional! Só mostra o botão se NÃO estiver pendente de pagamento nem cancelado 👇 */}
                                     {c.status === 'Pendente pagamento' || c.status === 'Pendente' ? (
                                         <Typography variant="body2" color="#94A3B8" fontWeight={700} sx={{ textAlign: 'center', minWidth: 120 }}>
                                             Aguardando pagamento
@@ -157,17 +163,59 @@ const DashboardProfissional = () => {
                                         <Typography variant="body2" color="#EF4444" fontWeight={700} sx={{ textAlign: 'center', minWidth: 120 }}>
                                             Consulta Cancelada
                                         </Typography>
-                                    ) : (
+                                    ) : c.status === 'Concluido' || c.status === 'Finalizado' ? (
                                         <Button 
                                             variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
                                             onClick={() => navigate('/dashboard/atendimento', { state: c })} 
-                                            sx={{ 
-                                                fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFF', py: 1, px: 2, boxShadow: 'none', minWidth: 120,
-                                                '&:hover': { bgcolor: '#32B5FE', boxShadow: '0 4px 10px rgba(50, 181, 254, 0.3)' }
-                                            }}
+                                            sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFF', py: 1, px: 2, boxShadow: 'none', minWidth: 120, '&:hover': { bgcolor: '#1E293B' } }}
                                         >
-                                            {c.status === 'Concluido' ? 'Ver Resumo' : 'Atender'}
+                                            Ver Resumo
                                         </Button>
+                                    ) : (
+                                        (() => {
+                                            const dataStr = c.data_agendamento || c.data;
+                                            const horaStr = c.horario || c.hora;
+                                            let atendimentoLiberado = true;
+
+                                            if (dataStr && horaStr) {
+                                                try {
+                                                    const [dia, mes, ano] = dataStr.split('/');
+                                                    const [hora, min] = horaStr.split(':');
+                                                    const dataAgendamento = new Date(ano, mes - 1, dia, hora, min);
+                                                    const diffEmMinutos = (dataAgendamento - horaAtual) / (1000 * 60);
+                                                    
+                                                    atendimentoLiberado = diffEmMinutos <= 15;
+                                                } catch (e) {
+                                                    atendimentoLiberado = true; 
+                                                }
+                                            }
+
+                                            if (!atendimentoLiberado) {
+                                                return (
+                                                    <Tooltip title="O atendimento é liberado 15 minutos antes do horário marcado." arrow>
+                                                        <span>
+                                                            <Button 
+                                                                disabled
+                                                                variant="contained" size="small" startIcon={<Clock size={16} />}
+                                                                sx={{ bgcolor: '#F1F5F9 !important', color: '#94A3B8 !important', borderRadius: '10px', py: 1, px: 2, fontWeight: 800, textTransform: 'none', boxShadow: 'none', minWidth: 120 }}
+                                                            >
+                                                                Aguarde
+                                                            </Button>
+                                                        </span>
+                                                    </Tooltip>
+                                                );
+                                            }
+
+                                            return (
+                                                <Button 
+                                                    variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
+                                                    onClick={() => navigate('/dashboard/atendimento', { state: c })} 
+                                                    sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#32B5FE', color: '#FFF', py: 1, px: 2, boxShadow: 'none', minWidth: 120, '&:hover': { bgcolor: '#0284C7', boxShadow: '0 4px 10px rgba(50, 181, 254, 0.3)' } }}
+                                                >
+                                                    Atender
+                                                </Button>
+                                            );
+                                        })()
                                     )}
                                 </Box>
                             </Box>

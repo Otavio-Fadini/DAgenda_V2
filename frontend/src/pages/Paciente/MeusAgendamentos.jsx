@@ -183,10 +183,10 @@ const MeusAgendamentos = () => {
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', width: '100%', boxSizing: 'border-box' }}>
             <Box sx={{ mb: 4 }}>
-                <Typography variant="h4" fontWeight={900} color="#0F172A" sx={{ letterSpacing: '-1px' }}>
+                <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>
                     Meus Agendamentos
                 </Typography>
-                <Typography variant="body1" color="#64748B" fontWeight={500}>
+                <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>
                     Acompanhe as suas consultas, pagamentos e anexos clínicos.
                 </Typography>
             </Box>

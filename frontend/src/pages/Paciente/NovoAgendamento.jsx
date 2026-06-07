@@ -233,8 +233,8 @@ const NovoAgendamento = () => {
                         <Box sx={{ height: '100%', overflowY: 'auto', p: { xs: 3, md: 6 } }}>
                             <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
                                 <Box sx={{ mb: 5 }}>
-                                    <Typography variant="h3" fontWeight={900} sx={{ color: '#0F172A', mb: 1, letterSpacing: '-1.5px' }}>Encontre seu especialista</Typography>
-                                    <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>Selecione o profissional ideal para o seu atendimento.</Typography>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>Encontre seu especialista</Typography>
+                                    <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>Selecione o profissional ideal para o seu atendimento.</Typography>
                                 </Box>
 
                                 <Paper elevation={0} sx={{ p: 1.5, mb: 6, borderRadius: '20px', display: 'flex', alignItems: 'center', border: '1px solid #F1F5F9', bgcolor: '#FFFFFF', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)' }}>

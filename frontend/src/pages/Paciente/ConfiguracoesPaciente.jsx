@@ -149,8 +149,8 @@ const ConfiguracoesPaciente = () => {
             
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
-                    <Typography variant="h4" fontWeight={900} sx={{ color: '#0F172A', letterSpacing: '-1px' }}>Meu Perfil</Typography>
-                    <Typography variant="body2" color="#64748B" fontWeight={500}>Gerencie suas informações pessoais e endereço de atendimento.</Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>Meu Perfil</Typography>
+                    <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>Gerencie suas informações pessoais e endereço de atendimento.</Typography>
                 </Box>
                 <Button 
                     variant="contained" onClick={handleSubmit} disabled={salvando}

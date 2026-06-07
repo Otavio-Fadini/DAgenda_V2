@@ -10,10 +10,11 @@ router.get('/perfil', verifyToken, async (req, res) => {
     try {
         const id = req.userId;
 
+        // Adicionado o campo "aceita_convites" na query abaixo
         const [rows] = await pool.query(
             `SELECT 
                 nome, email, conselho, especialidade, valor_consulta, cpf, data_nascimento,
-                duracao_sessao, atende_convenio, foto_perfil, telefone,
+                duracao_sessao, atende_convenio, aceita_convites, foto_perfil, telefone,
                 cep, rua, numero, complemento, bairro, cidade, estado
              FROM profissionais WHERE id = ?`,
             [id]
@@ -21,14 +22,13 @@ router.get('/perfil', verifyToken, async (req, res) => {
 
         if (rows.length === 0) return res.status(404).json({ message: "Profissional não encontrado" });
 
-        // Busca a disponibilidade cadastrada para este profissional
         const [horarios] = await pool.query(
             'SELECT dia_semana as dia, ativo, hora_inicio as inicio, hora_fim as fim FROM disponibilidade_profissional WHERE profissional_id = ?',
             [id]
         );
 
         const perfil = rows[0];
-        perfil.horarios = horarios; // Envia os horários junto com os dados do perfil
+        perfil.horarios = horarios; 
 
         res.json(perfil); 
     } catch (error) {
@@ -180,41 +180,39 @@ router.get('/agenda', verifyToken, async (req, res) => {
 });
 
 // ==========================================
-// ROTA: FINANCEIRO
+// ROTA: FINANCEIRO PROFISSIONAL
 // ==========================================
 router.get('/financeiro', verifyToken, async (req, res) => {
+    const { filtro_status } = req.query;
+    
+    let statusCondition = "IN ('agendado', 'concluido')";
+
+    if (filtro_status === 'atendidas') {
+        statusCondition = "= 'concluido'";
+    } else if (filtro_status === 'nao_atendidas') {
+        statusCondition = "= 'agendado'";
+    }
+
     try {
-        const profissionalId = req.userId;
-
-        const [rows] = await pool.query(
-            `SELECT id, data_agendamento as data, horario as hora, valor, 
-                    (valor * 0.1) as taxa, (valor * 0.9) as liquido, 
-                    status, 'C' as tipo, id_paciente 
-             FROM agendamentos 
-             WHERE id_profissional = ? 
-             ORDER BY id DESC`,
-            [profissionalId]
-        );
-
-        const saldoTotal = rows.reduce((acc, curr) => acc + Number(curr.liquido), 0);
-
-        res.json({
-            saldo_total: saldoTotal,
-            lancamentos: rows.map(r => ({
-                id: r.id,
-                pac: 'Consulta #' + r.id, 
-                data: r.data,
-                hora: r.hora,
-                valor: Number(r.valor || 0).toFixed(2),
-                taxa: Number(r.taxa || 0).toFixed(2),
-                liquido: Number(r.liquido || 0).toFixed(2),
-                status: r.status || 'Pendente',
-                tipo: r.tipo
-            }))
-        });
+        // O foco inverte: o profissional quer saber quanto ELE vai receber de cada clínica
+        const query = `
+            SELECT 
+                COALESCE(c.nome_fantasia, 'Atendimento Particular') as origem,
+                COUNT(a.id) as total_consultas,
+                SUM(a.valor) as faturamento_total,
+                -- Se não houver clínica (particular), o repasse é 100% para o médico
+                SUM(a.valor) * (COALESCE(c.repasse, 100) / 100) as meu_repasse
+            FROM agendamentos a
+            LEFT JOIN usuarios_cnpj c ON a.id_clinica = c.id
+            WHERE a.id_profissional = ? AND a.status ${statusCondition}
+            GROUP BY c.id, c.nome_fantasia, c.repasse
+        `;
+        
+        const [rows] = await pool.query(query, [req.userId]);
+        res.json(rows);
     } catch (error) {
-        console.error("Erro no financeiro:", error);
-        res.status(500).json({ error: "Erro ao buscar financeiro." });
+        console.error("Erro ao carregar financeiro do profissional:", error);
+        res.status(500).json({ error: "Erro interno no servidor." });
     }
 });
 

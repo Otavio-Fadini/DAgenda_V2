@@ -62,10 +62,10 @@ const DashboardProfissional = () => {
                 {/* CABEÇALHO */}
                 <Box sx={{ mb: 5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', mb: 1, letterSpacing: '-1px' }}>
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>
                             Painel do Médico
                         </Typography>
-                        <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                        <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>
                             Visão geral da sua agenda e fluxo de faturamento.
                         </Typography>
                     </Box>

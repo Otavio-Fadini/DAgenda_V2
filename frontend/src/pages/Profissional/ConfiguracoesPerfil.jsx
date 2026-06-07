@@ -194,8 +194,8 @@ const ConfiguracoesPerfil = () => {
             {/* TOPO FIXO */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
-                    <Typography variant="h4" fontWeight={900} color="#0F172A" sx={{ letterSpacing: '-1px' }}>Configurações</Typography>
-                    <Typography variant="body2" color="#64748B" fontWeight={500}>Gerencie sua identidade, agenda institucional e regras de negócio.</Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>Configurações</Typography>
+                    <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>Gerencie sua identidade, agenda institucional e regras de negócio.</Typography>
                 </Box>
                 <Button 
                     variant="contained" onClick={handleSubmit} disabled={saving}

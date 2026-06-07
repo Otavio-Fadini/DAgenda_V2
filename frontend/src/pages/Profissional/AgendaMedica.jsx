@@ -184,7 +184,7 @@ const AgendaMedica = () => {
                 {/* HEADER */}
                 <Box sx={{ mb: 4, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 3 }}>
                     <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1.5px' }}>
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>
                             Painel de Atendimento
                         </Typography>
                         <Box sx={{ display: 'flex', gap: 2, mt: 1.5 }}>

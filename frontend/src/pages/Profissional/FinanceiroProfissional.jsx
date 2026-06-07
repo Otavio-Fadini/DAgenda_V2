@@ -42,7 +42,7 @@ const FinanceiroProfissional = () => {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#F8FAFC', gap: 2 }}>
                 <CircularProgress sx={{ color: '#32B5FE' }} />
-                <Typography variant="body2" color="text.secondary" fontWeight={600}>Calculando seus repasses...</Typography>
+                <Typography variant="body1" sx={{ color: '#64748B', fontWeight: 600 }}>Calculando seus repasses...</Typography>
             </Box>
         );
     }
@@ -54,8 +54,8 @@ const FinanceiroProfissional = () => {
                 {/* HEADER */}
                 <Box sx={{ mb: 5, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'flex-end' }, gap: 3 }}>
                     <Box>
-                        <Typography variant="h4" fontWeight={900} sx={{ color: '#0F172A', letterSpacing: '-1px' }}>Painel Financeiro</Typography>
-                        <Typography variant="body1" color="text.secondary" fontWeight={500}>Acompanhamento de repasses e faturamento por clínica.</Typography>
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>Painel Financeiro</Typography>
+                        <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>Acompanhamento de repasses e faturamento por clínica.</Typography>
                     </Box>
                     <Button 
                         variant="contained" 

@@ -5,13 +5,13 @@ import {
     IconButton, CircularProgress, TextField, InputAdornment, 
     Tooltip, Badge, Dialog, DialogTitle, DialogContent, 
     DialogActions, Fade, Stack, Tabs, Tab, Alert, AlertTitle,
-    List, ListItem // Novos imports para a lista do modal
+    List, ListItem 
 } from '@mui/material';
 import { 
     Search, FilterX, MapPin, Play, FileText, 
     History, Calendar as CalIcon, Activity, AlertCircle, 
     Download, XCircle, Paperclip, Stethoscope,
-    ChevronLeft, ChevronRight, X // Novos ícones para o calendário
+    ChevronLeft, ChevronRight, X, Clock // Ícone Clock adicionado
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,6 +19,9 @@ const AgendaMedica = () => {
     const [agenda, setAgenda] = useState([]);
     const [loading, setLoading] = useState(true);
     
+    // Relógio em tempo real para controle do botão "Atender"
+    const [horaAtual, setHoraAtual] = useState(new Date());
+
     // Filtros da tela principal
     const [filtroData, setFiltroData] = useState('');
     const [filtroStatus, setFiltroStatus] = useState('Todos'); 
@@ -35,15 +38,22 @@ const AgendaMedica = () => {
     const [modalMotivoOpen, setModalMotivoOpen] = useState(false);
     const [motivoTexto, setMotivoTexto] = useState('');
 
-    // ==========================================
-    // NOVOS ESTADOS: MODAL DE AGENDA COMPLETA
-    // ==========================================
+    // Estados do Modal de Agenda Completa
     const [modalAgendaOpen, setModalAgendaOpen] = useState(false);
     const [dataAgendaFiltro, setDataAgendaFiltro] = useState(new Date().toISOString().split('T')[0]);
     const [agendaCompleta, setAgendaCompleta] = useState([]);
     const [loadingAgendaCompleta, setLoadingAgendaCompleta] = useState(false);
 
-    // Carrega a agenda principal
+    // ==========================================
+    // RELÓGIO AUTOMÁTICO (Atualiza a cada 1 minuto)
+    // ==========================================
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setHoraAtual(new Date());
+        }, 60000);
+        return () => clearInterval(interval);
+    }, []);
+
     const carregarAgenda = useCallback(async () => {
         setLoading(true);
         try {
@@ -66,14 +76,10 @@ const AgendaMedica = () => {
         return () => clearTimeout(delayDebounce);
     }, [carregarAgenda]);
 
-    // ==========================================
-    // FUNÇÕES DO MODAL DE AGENDA COMPLETA
-    // ==========================================
     const carregarAgendaCompleta = async (dataBusca) => {
         setLoadingAgendaCompleta(true);
         try {
             const response = await api.get(`/profissional/agenda?data=${dataBusca}`);
-            // Ordena usando a mesma lógica que você já tem
             const ordenada = response.data.sort((a, b) => {
                 const horaA = a.horario || a.hora || '00:00';
                 const horaB = b.horario || b.hora || '00:00';
@@ -99,7 +105,6 @@ const AgendaMedica = () => {
         setModalAgendaOpen(true);
         carregarAgendaCompleta(dataAgendaFiltro);
     };
-    // ==========================================
 
     const verHistorico = async (idPaciente) => {
         if (!idPaciente) return alert("Paciente não identificado.");
@@ -190,7 +195,7 @@ const AgendaMedica = () => {
                     <Button 
                         variant="contained" 
                         startIcon={<CalIcon size={20}/>} 
-                        onClick={abrirAgendaCompleta} // <--- FUNÇÃO ATIVADA AQUI
+                        onClick={abrirAgendaCompleta} 
                         sx={{ 
                             bgcolor: '#0F172A', '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)' }, 
                             borderRadius: '12px', px: 3, py: 1.2, fontWeight: 800, textTransform: 'none', color: '#FFFFFF',
@@ -201,7 +206,7 @@ const AgendaMedica = () => {
                     </Button>
                 </Box>
 
-                {/* BARRA DE FILTROS: Busca e Data */}
+                {/* BARRA DE FILTROS */}
                 <Paper elevation={0} sx={{ 
                     p: 2.5, mb: 2, borderRadius: '20px', border: '1px solid #F1F5F9', 
                     display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', 
@@ -366,13 +371,54 @@ const AgendaMedica = () => {
                                                             Aguardando pagamento
                                                         </Typography>
                                                     ) : (
-                                                        <Button 
-                                                            variant="contained" startIcon={<Play size={16} fill="currentColor" />}
-                                                            onClick={() => navigate('/dashboard/atendimento', { state: item })}
-                                                            sx={{ flex: { xs: '100%', sm: 'initial' }, bgcolor: '#32B5FE', color: '#FFFFFF', '&:hover': { bgcolor: '#0284C7' }, borderRadius: '10px', px: 3, py: 1, fontWeight: 800, textTransform: 'none', boxShadow: 'none' }}
-                                                        >
-                                                            Atender
-                                                        </Button>
+                                                        // VERIFICAÇÃO DE TEMPO PARA ATENDER (LÓGICA ADICIONADA AQUI)
+                                                        (() => {
+                                                            const dataStr = item.data || item.data_formatada;
+                                                            const horaStr = item.horario || item.hora;
+                                                            let atendimentoLiberado = true;
+
+                                                            if (dataStr && horaStr) {
+                                                                try {
+                                                                    const [dia, mes, ano] = dataStr.split('/');
+                                                                    const [hora, min] = horaStr.split(':');
+                                                                    // Formata a data agendada para comparar
+                                                                    const dataAgendamento = new Date(ano, mes - 1, dia, hora, min);
+                                                                    // Calcula a diferença em minutos
+                                                                    const diffEmMinutos = (dataAgendamento - horaAtual) / (1000 * 60);
+                                                                    
+                                                                    // Só libera se faltar 15 min ou menos (ou se já tiver passado do horário)
+                                                                    atendimentoLiberado = diffEmMinutos <= 15;
+                                                                } catch (e) {
+                                                                    atendimentoLiberado = true; // Fallback de segurança
+                                                                }
+                                                            }
+
+                                                            if (!atendimentoLiberado) {
+                                                                return (
+                                                                    <Tooltip title="O atendimento é liberado 15 minutos antes do horário marcado." arrow>
+                                                                        <span>
+                                                                            <Button 
+                                                                                disabled
+                                                                                variant="contained" startIcon={<Clock size={16} />}
+                                                                                sx={{ flex: { xs: '100%', sm: 'initial' }, bgcolor: '#F1F5F9 !important', color: '#94A3B8 !important', borderRadius: '10px', px: 3, py: 1, fontWeight: 800, textTransform: 'none', boxShadow: 'none' }}
+                                                                            >
+                                                                                Aguarde
+                                                                            </Button>
+                                                                        </span>
+                                                                    </Tooltip>
+                                                                );
+                                                            }
+
+                                                            return (
+                                                                <Button 
+                                                                    variant="contained" startIcon={<Play size={16} fill="currentColor" />}
+                                                                    onClick={() => navigate('/dashboard/atendimento', { state: item })}
+                                                                    sx={{ flex: { xs: '100%', sm: 'initial' }, bgcolor: '#32B5FE', color: '#FFFFFF', '&:hover': { bgcolor: '#0284C7' }, borderRadius: '10px', px: 3, py: 1, fontWeight: 800, textTransform: 'none', boxShadow: 'none' }}
+                                                                >
+                                                                    Atender
+                                                                </Button>
+                                                            );
+                                                        })()
                                                     )}
                                                 </Box>
                                             </Box>
@@ -384,16 +430,13 @@ const AgendaMedica = () => {
                     )}
                 </Grid>
 
-                {/* ========================================== */}
-                {/* NOVO MODAL: AGENDA COMPLETA DO DIA         */}
-                {/* ========================================== */}
+                {/* MODAL DE AGENDA COMPLETA DO DIA */}
                 <Dialog open={modalAgendaOpen} onClose={() => setModalAgendaOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 2 } }}>
                     <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="h6" fontWeight={900}>Navegador de Agenda</Typography>
                         <IconButton onClick={() => setModalAgendaOpen(false)}><X /></IconButton>
                     </DialogTitle>
                     <DialogContent>
-                        {/* CONTROLES DE NAVEGAÇÃO DE DIA */}
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, p: 2, bgcolor: '#F8FAFC', borderRadius: '16px' }}>
                             <IconButton onClick={() => alterarDiaAgenda(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}><ChevronLeft size={20} /></IconButton>
                             <TextField 
@@ -407,7 +450,6 @@ const AgendaMedica = () => {
                             <IconButton onClick={() => alterarDiaAgenda(1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}><ChevronRight size={20} /></IconButton>
                         </Box>
 
-                        {/* LISTA COMPACTA DO DIA SELECIONADO */}
                         {loadingAgendaCompleta ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                                 <CircularProgress size={30} sx={{ color: '#32B5FE' }} />

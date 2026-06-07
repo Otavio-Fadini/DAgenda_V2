@@ -161,12 +161,17 @@ const FinanceiroProfissional = () => {
                                         <TableRow key={index} hover sx={{ transition: 'all 0.2s', '&:last-child td, &:last-child th': { border: 0 } }}>
                                             <TableCell>
                                                 <Stack direction="row" spacing={2} alignItems="center">
-                                                    <Avatar sx={{ 
-                                                        bgcolor: row.origem === 'Atendimento Particular' ? '#F0FDF4' : '#F8FAFC', 
-                                                        color: row.origem === 'Atendimento Particular' ? '#16A34A' : '#0F172A',
-                                                        border: '1px solid #E2E8F0'
-                                                    }}>
-                                                        {row.origem === 'Atendimento Particular' ? <Briefcase size={20}/> : <Building size={20}/>}
+                                                    <Avatar 
+                                                        src={row.foto_perfil} 
+                                                        sx={{ 
+                                                            width: 44, height: 44,
+                                                            bgcolor: row.origem === 'Atendimento Particular' ? '#F0FDF4' : '#F8FAFC', 
+                                                            color: row.origem === 'Atendimento Particular' ? '#16A34A' : '#0F172A',
+                                                            border: '1px solid #E2E8F0',
+                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                                        }}
+                                                    >
+                                                        {!row.foto_perfil && (row.origem === 'Atendimento Particular' ? <Briefcase size={20}/> : <Building size={20}/>)}
                                                     </Avatar>
                                                     <Box>
                                                         <Typography variant="body2" fontWeight={800} color="#0F172A">

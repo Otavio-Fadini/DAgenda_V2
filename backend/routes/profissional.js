@@ -194,18 +194,17 @@ router.get('/financeiro', verifyToken, async (req, res) => {
     }
 
     try {
-        // O foco inverte: o profissional quer saber quanto ELE vai receber de cada clínica
         const query = `
             SELECT 
                 COALESCE(c.nome_fantasia, 'Atendimento Particular') as origem,
+                c.foto_perfil, -- Adicionada a foto da clínica
                 COUNT(a.id) as total_consultas,
                 SUM(a.valor) as faturamento_total,
-                -- Se não houver clínica (particular), o repasse é 100% para o médico
                 SUM(a.valor) * (COALESCE(c.repasse, 100) / 100) as meu_repasse
             FROM agendamentos a
             LEFT JOIN usuarios_cnpj c ON a.id_clinica = c.id
             WHERE a.id_profissional = ? AND a.status ${statusCondition}
-            GROUP BY c.id, c.nome_fantasia, c.repasse
+            GROUP BY c.id, c.nome_fantasia, c.repasse, c.foto_perfil
         `;
         
         const [rows] = await pool.query(query, [req.userId]);

@@ -197,7 +197,7 @@ const AgendaMedica = () => {
                         startIcon={<CalIcon size={20}/>} 
                         onClick={abrirAgendaCompleta} 
                         sx={{ 
-                            bgcolor: '#0F172A', '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)' }, 
+                            bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, 
                             borderRadius: '12px', px: 3, py: 1.2, fontWeight: 800, textTransform: 'none', color: '#FFFFFF',
                             boxShadow: '0 4px 10px rgba(15, 23, 42, 0.2)', transition: 'all 0.3s'
                         }}
@@ -362,7 +362,7 @@ const AgendaMedica = () => {
                                                         <Button 
                                                             variant="contained" startIcon={<FileText size={16}/>}
                                                             onClick={() => navigate('/dashboard/atendimento', { state: item })}
-                                                            sx={{ flex: { xs: '100%', sm: 'initial' }, bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)' }, borderRadius: '10px', px: 3, py: 1, fontWeight: 800, textTransform: 'none', boxShadow: 'none' }}
+                                                            sx={{ flex: { xs: '100%', sm: 'initial' }, bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, borderRadius: '10px', px: 3, py: 1, fontWeight: 800, textTransform: 'none', boxShadow: 'none' }}
                                                         >
                                                             Ver Resumo
                                                         </Button>

@@ -238,11 +238,9 @@ const FinanceiroClinica = () => {
                                                         borderRadius: '8px', 
                                                         fontSize: '0.7rem', 
                                                         fontWeight: 900, 
-                                                        bgcolor: '#F1F5F9', 
-                                                        color: '#0F172A',
                                                         boxShadow: 'none',
                                                         textTransform: 'none',
-                                                        '&:hover': { bgcolor: '#32B5FE', color: 'white', boxShadow: '0 4px 10px rgba(50, 181, 254, 0.3)' }
+                                                        bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }
                                                     }}
                                                 >
                                                     PAGAR REPASSE

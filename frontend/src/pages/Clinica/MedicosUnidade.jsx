@@ -163,7 +163,7 @@ const MedicosUnidade = () => {
                     </Box>
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                         <Chip label={`${medicos.length} PROFISSIONAIS`} sx={{ fontWeight: 800, bgcolor: '#F1F5F9', color: '#64748B', border: '1px solid #E2E8F0', px: 1, height: 32, borderRadius: '8px' }} />
-                        <Button variant="contained" startIcon={<UserPlus size={18} />} onClick={handleOpenModal} sx={{ bgcolor: '#32B5FE', fontWeight: 800, borderRadius: '10px', textTransform: 'none', px: 3, boxShadow: '0 4px 12px rgba(50, 181, 254, 0.3)', '&:hover': { bgcolor: '#0284C7', transform: 'translateY(-2px)' }, transition: 'all 0.2s' }}>
+                        <Button variant="contained" startIcon={<UserPlus size={18} />} onClick={handleOpenModal} sx={{ bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, fontWeight: 800, borderRadius: '10px', textTransform: 'none', px: 3, boxShadow: '0 4px 12px rgba(50, 181, 254, 0.3)', transition: 'all 0.2s' }}>
                             Encontrar Profissionais
                         </Button>
                     </Box>

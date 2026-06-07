@@ -188,7 +188,7 @@ const DashboardClinica = () => {
                     <Button 
                         onClick={() => { setModalOpen(true); buscarAgendaCompleta(dataFiltro); }}
                         endIcon={<ChevronRight size={16} />} 
-                        sx={{ fontWeight: 800, color: '#32B5FE', textTransform: 'none' }}
+                        sx={{ fontWeight: 800, bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, textTransform: 'none' }}
                     >
                         Ver agenda completa
                     </Button>

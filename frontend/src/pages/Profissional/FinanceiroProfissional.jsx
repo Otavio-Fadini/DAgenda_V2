@@ -63,7 +63,7 @@ const FinanceiroProfissional = () => {
                         sx={{ 
                             bgcolor: '#0F172A', borderRadius: '12px', fontWeight: 800, textTransform: 'none', px: 3, py: 1.2, 
                             boxShadow: '0 4px 10px rgba(15, 23, 42, 0.2)',
-                            '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)' }, transition: 'all 0.3s' 
+                            color: '#FFFFFF', '&:hover': { bgcolor: '#0284C7', transform: 'translateY(-2px)', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)' }, transition: 'all 0.3s' 
                         }}
                     >
                         Exportar Relatório

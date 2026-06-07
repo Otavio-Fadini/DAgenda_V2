@@ -354,7 +354,7 @@ const AgendaMedica = () => {
                                                         <Button 
                                                             variant="outlined" color="error" startIcon={<AlertCircle size={16} />} 
                                                             onClick={() => abrirMotivo(item.motivo_cancelamento)}
-                                                            sx={{ flex: { xs: '100%', sm: 'initial' }, borderRadius: '10px', textTransform: 'none', fontWeight: 800, py: 1 }}
+                                                            sx={{ flex: { xs: '100%', sm: 'initial' }, borderRadius: '10px', textTransform: 'none', fontWeight: 800, py: 1,  }}
                                                         >
                                                             Ver Motivo
                                                         </Button>
@@ -362,7 +362,7 @@ const AgendaMedica = () => {
                                                         <Button 
                                                             variant="contained" startIcon={<FileText size={16}/>}
                                                             onClick={() => navigate('/dashboard/atendimento', { state: item })}
-                                                            sx={{ flex: { xs: '100%', sm: 'initial' }, bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#1E293B' }, borderRadius: '10px', px: 3, py: 1, fontWeight: 800, textTransform: 'none', boxShadow: 'none' }}
+                                                            sx={{ flex: { xs: '100%', sm: 'initial' }, bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)' }, borderRadius: '10px', px: 3, py: 1, fontWeight: 800, textTransform: 'none', boxShadow: 'none' }}
                                                         >
                                                             Ver Resumo
                                                         </Button>

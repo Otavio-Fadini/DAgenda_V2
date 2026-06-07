@@ -110,7 +110,7 @@ router.put('/perfil', verifyToken, async (req, res) => {
 });
 
 // ==========================================
-// ROTA: AGENDA
+// ROTA: AGENDA (ATUALIZADA COM FOTO DO PACIENTE)
 // ==========================================
 router.get('/agenda', verifyToken, async (req, res) => {
     try {
@@ -125,6 +125,7 @@ router.get('/agenda', verifyToken, async (req, res) => {
                 a.tipo_agendamento,
                 a.motivo_cancelamento,
                 p.nome as paciente_nome,
+                p.foto_perfil as paciente_foto,
                 c.nome_fantasia as clinica_nome,
                 e.nome_arquivo as exame_nome,
                 e.arquivo_base64 as exame_base64
@@ -166,6 +167,7 @@ router.get('/agenda', verifyToken, async (req, res) => {
             data: row.data_formatada,
             paciente: row.paciente_nome || "Paciente não identificado",
             paciente_nome: row.paciente_nome || "Paciente não identificado", 
+            foto_paciente: row.paciente_foto,
             clinica: row.clinica_nome || "Unidade Principal",
             status: row.status,            
             tipo: row.tipo_agendamento || 'Consulta',

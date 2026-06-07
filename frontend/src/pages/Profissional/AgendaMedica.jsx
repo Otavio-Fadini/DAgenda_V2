@@ -262,8 +262,19 @@ const AgendaMedica = () => {
                                                 
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                                                     <Badge overlap="circular" anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} variant="dot" sx={{ '& .MuiBadge-badge': { bgcolor: style.color, width: 14, height: 14, borderRadius: '50%', border: '2px solid #FFF' } }}>
-                                                        <Avatar sx={{ width: 64, height: 64, bgcolor: '#0F172A', color: '#FFF', fontWeight: 900, fontSize: '1.5rem', border: '2px solid #F1F5F9' }}>
-                                                            {nomePaciente[0].toUpperCase()}
+                                                        <Avatar 
+                                                            src={item.foto_paciente} 
+                                                            sx={{ 
+                                                                width: 64, 
+                                                                height: 64, 
+                                                                bgcolor: '#0F172A', 
+                                                                color: '#FFF', 
+                                                                fontWeight: 900, 
+                                                                fontSize: '1.5rem', 
+                                                                border: '2px solid #F1F5F9' 
+                                                            }}
+                                                        >
+                                                            {!item.foto_paciente && nomePaciente[0].toUpperCase()}
                                                         </Avatar>
                                                     </Badge>
                                                     

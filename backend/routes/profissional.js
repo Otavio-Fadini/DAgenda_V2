@@ -10,7 +10,6 @@ router.get('/perfil', verifyToken, async (req, res) => {
     try {
         const id = req.userId;
 
-        // Adicionado o campo "aceita_convites" na query abaixo
         const [rows] = await pool.query(
             `SELECT 
                 nome, email, conselho, especialidade, valor_consulta, cpf, data_nascimento,
@@ -38,7 +37,7 @@ router.get('/perfil', verifyToken, async (req, res) => {
 });
 
 // ==========================================
-// ROTA: ATUALIZAR PERFIL COMPLETO (ATUALIZADA)
+// ROTA: ATUALIZAR PERFIL COMPLETO
 // ==========================================
 router.put('/perfil', verifyToken, async (req, res) => {
     try {
@@ -49,7 +48,6 @@ router.put('/perfil', verifyToken, async (req, res) => {
             cep, rua, numero, complemento, bairro, cidade, estado, cpf, data_nascimento, telefone
         } = req.body;
 
-        // 2. Atualiza os dados básicos, foto, e agora o endereço completo
         let query = `
             UPDATE profissionais 
             SET nome=?, email=?, conselho=?, especialidade=?, valor_consulta=?, duracao_sessao=?, atende_convenio=?, foto_perfil=?,
@@ -57,27 +55,12 @@ router.put('/perfil', verifyToken, async (req, res) => {
         `;
         
         let queryParams = [
-            nome || null, 
-            email || null, 
-            conselho || null, 
-            especialidade || null, 
-            valor_consulta || null, 
-            duracao_sessao || null, 
-            atende_convenio ? 1 : 0, 
-            foto_perfil || null,
-            cep || null, 
-            rua || null, 
-            numero || null, 
-            complemento || null, 
-            bairro || null, 
-            cidade || null, 
-            estado || null,
-            cpf || null,
-            data_nascimento || null,
-            telefone || null
+            nome || null, email || null, conselho || null, especialidade || null, 
+            valor_consulta || null, duracao_sessao || null, atende_convenio ? 1 : 0, foto_perfil || null,
+            cep || null, rua || null, numero || null, complemento || null, bairro || null, cidade || null, 
+            estado || null, cpf || null, data_nascimento || null, telefone || null
         ];
 
-        // 3. Se uma nova senha foi enviada, adiciona a criptografia dinamicamente
         if (senha && senha.trim() !== '') {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(senha, salt);
@@ -90,7 +73,6 @@ router.put('/perfil', verifyToken, async (req, res) => {
 
         await pool.query(query, queryParams);
 
-        // 4. Atualiza a tabela de disponibilidade_profissional (Limpa e reinsere)
         if (horarios && horarios.length > 0) {
             await pool.query('DELETE FROM disponibilidade_profissional WHERE profissional_id = ?', [id]);
 
@@ -110,7 +92,7 @@ router.put('/perfil', verifyToken, async (req, res) => {
 });
 
 // ==========================================
-// ROTA: AGENDA (ATUALIZADA COM FOTO DO PACIENTE)
+// ROTA: AGENDA
 // ==========================================
 router.get('/agenda', verifyToken, async (req, res) => {
     try {
@@ -199,7 +181,7 @@ router.get('/financeiro', verifyToken, async (req, res) => {
         const query = `
             SELECT 
                 COALESCE(c.nome_fantasia, 'Atendimento Particular') as origem,
-                c.foto_perfil, -- Adicionada a foto da clínica
+                c.foto_perfil, 
                 COUNT(a.id) as total_consultas,
                 SUM(a.valor) as faturamento_total,
                 SUM(a.valor) * (COALESCE(c.repasse, 100) / 100) as meu_repasse
@@ -224,7 +206,6 @@ router.post('/finalizar-atendimento', verifyToken, async (req, res) => {
     const { id_agendamento, id_paciente, evolucao, prescricao } = req.body;
     
     try {
-        // 1. Trava de segurança: Verifica se já existe prontuário para este agendamento
         const [check] = await pool.query(
             'SELECT id FROM prontuarios WHERE id_agendamento = ?', 
             [id_agendamento]
@@ -234,13 +215,11 @@ router.post('/finalizar-atendimento', verifyToken, async (req, res) => {
             return res.status(400).json({ message: "Este atendimento já foi finalizado anteriormente." });
         }
 
-        // 2. Insere os dados clínicos
         await pool.query(
             'INSERT INTO prontuarios (id_agendamento, id_paciente, id_profissional, evolucao, prescricao) VALUES (?, ?, ?, ?, ?)',
             [id_agendamento, id_paciente, req.userId, evolucao, prescricao]
         );
 
-        // 3. Atualiza o status do agendamento (Agora usando 'Concluido' para bater com o Frontend)
         await pool.query(
             'UPDATE agendamentos SET status = ? WHERE id = ?', 
             ['Concluido', id_agendamento]
@@ -264,7 +243,7 @@ router.get('/prontuario/:id_agendamento', verifyToken, async (req, res) => {
         );
         
         if (rows.length > 0) {
-            res.json(rows[0]); // Devolve os textos gravados
+            res.json(rows[0]); 
         } else {
             res.json({ evolucao: '', prescricao: '' });
         }
@@ -281,7 +260,6 @@ router.get('/historico-paciente/:id', verifyToken, async (req, res) => {
     try {
         const pacienteId = req.params.id;
 
-        // Fazemos um JOIN com a tabela de profissionais para buscar o nome e o CRM
         const [historico] = await pool.query(`
             SELECT 
                 h.id,
@@ -361,21 +339,18 @@ router.get('/dashboard', verifyToken, async (req, res) => {
     try {
         const id_profissional = req.userId;
 
-        // KPI 1: Consultas Hoje (Ignora os cancelados)
         const [resConsultasHoje] = await pool.query(
             `SELECT COUNT(*) AS total FROM agendamentos 
              WHERE id_profissional = ? AND data_agendamento = CURDATE() AND status != 'Cancelado'`,
             [id_profissional]
         );
 
-        // KPI 2: Total de pacientes únicos
         const [resTotalPacientes] = await pool.query(
             `SELECT COUNT(DISTINCT id_paciente) AS total FROM agendamentos 
              WHERE id_profissional = ?`,
             [id_profissional]
         );
 
-        // KPI 3: Faturamento Dia (Soma a coluna 'valor' apenas das consultas de HOJE que estão pagas ou concluídas)
         const [resFaturamento] = await pool.query(
             `SELECT SUM(CAST(valor AS DECIMAL(10,2))) AS total 
              FROM agendamentos 
@@ -385,7 +360,6 @@ router.get('/dashboard', verifyToken, async (req, res) => {
             [id_profissional]
         );
 
-        // Próximas Consultas: Busca os próximos 5 pacientes agendados a partir de hoje
         const [resProximas] = await pool.query(
             `SELECT 
                 a.id, 
@@ -408,7 +382,7 @@ router.get('/dashboard', verifyToken, async (req, res) => {
             kpis: {
                 consultasHoje: resConsultasHoje[0].total || 0,
                 totalPacientes: resTotalPacientes[0].total || 0,
-                faturamentoDia: resFaturamento[0].total || 0 // <-- Alterado o nome da variável
+                faturamentoDia: resFaturamento[0].total || 0 
             },
             proximasConsultas: resProximas
         });
@@ -455,10 +429,8 @@ router.put('/responder-convite', verifyToken, async (req, res) => {
     }
 
     try {
-        // Atualiza o status do convite
         await pool.query(`UPDATE convites_clinica SET status = ? WHERE id = ? AND profissional_id = ?`, [resposta, convite_id, profissionalId]);
 
-        // Se ele aceitou, cria o vínculo oficial!
         if (resposta === 'aceito') {
             const [convite] = await pool.query(`SELECT clinica_id FROM convites_clinica WHERE id = ?`, [convite_id]);
             
@@ -482,7 +454,7 @@ router.put('/responder-convite', verifyToken, async (req, res) => {
 // ==========================================
 router.put('/config-privacidade', verifyToken, async (req, res) => {
     const profissionalId = req.userId;
-    const { aceita_convites } = req.body; // 1 para SIM, 0 para NÃO
+    const { aceita_convites } = req.body; 
 
     try {
         await pool.query(`UPDATE profissionais SET aceita_convites = ? WHERE id = ?`, [aceita_convites, profissionalId]);
@@ -490,40 +462,6 @@ router.put('/config-privacidade', verifyToken, async (req, res) => {
     } catch (error) {
         console.error("Erro ao atualizar privacidade:", error);
         res.status(500).json({ error: "Erro ao salvar configuração." });
-    }
-});
-
-// ==========================================
-// ROTA: TOKEN DE VERIFICAÇÃO PARA INÍCIO DE CONSULTA
-// ==========================================
-// Gerar e enviar token
-router.post('/enviar-token', verifyToken, async (req, res) => {
-    const { agendamento_id } = req.body;
-    const token = Math.floor(100000 + Math.random() * 900000).toString(); // Gera 6 dígitos
-    
-    // Salva o token no banco
-    await pool.query('UPDATE agendamentos SET token_verificacao = ?, data_expiracao_token = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?', [token, agendamento_id]);
-    
-    // AQUI: Chame sua API de SMS/WhatsApp (Twilio/TotalVoice)
-    console.log(`Enviando SMS para paciente: Código ${token}`);
-    
-    res.json({ message: "Código enviado!" });
-});
-
-// Verificar token
-router.post('/verificar-token', verifyToken, async (req, res) => {
-    const { agendamento_id, codigo } = req.body;
-    
-    const [rows] = await pool.query(
-        'SELECT id FROM agendamentos WHERE id = ? AND token_verificacao = ? AND data_expiracao_token > NOW()', 
-        [agendamento_id, codigo]
-    );
-
-    if (rows.length > 0) {
-        await pool.query('UPDATE agendamentos SET status = "Em andamento", token_verificacao = NULL WHERE id = ?', [agendamento_id]);
-        res.json({ success: true });
-    } else {
-        res.status(400).json({ error: "Código inválido ou expirado." });
     }
 });
 

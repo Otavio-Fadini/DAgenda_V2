@@ -1,0 +1,72 @@
+/* Estilos para garantir que o layout seja responsivo e se adapte a diferentes tamanhos de tela */
+
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+.MuiContainer-root,
+.MuiBox-root,
+.MuiPaper-root {
+  max-width: 100%;
+}
+
+.MuiTableContainer-root {
+  overflow-x: auto;
+}
+
+.MuiGrid-container {
+  width: 100%;
+  margin-left: 0 !important;
+}
+
+/* Tablets */
+@media (max-width: 900px) {
+  body {
+    overflow: auto;
+  }
+
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+  }
+
+  .dashboard-content {
+    width: 100%;
+    padding: 16px !important;
+  }
+}
+
+/* Celulares */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.6rem !important;
+  }
+
+  h2 {
+    font-size: 1.3rem !important;
+  }
+
+  .MuiPaper-root {
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+
+  .MuiButton-root {
+    width: 100%;
+  }
+
+  .MuiTextField-root {
+    width: 100%;
+  }
+
+  .MuiGrid-item {
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+  }
+}

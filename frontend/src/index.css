@@ -2,58 +2,58 @@
 html, body {
   margin: 0;
   padding: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden; /* Impede rolagem na página inteira, deixando o scroll apenas para o conteúdo do dashboard */
-  background-color: #f8fafc; /* Cor de fundo padrão do sistema */
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #f8fafc;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* AJUSTE DO CONTAINER RAIZ DO REACT */
 #root {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  /* Removido o width de 1126px que causava o espaço branco */
-  max-width: none !important; 
+  max-width: none !important;
   border: none !important;
 }
 
-/* VARIÁVEIS DE CORES (Caso queira manter para algum componente customizado) */
 :root {
   --text-main: #0f172a;
   --text-secondary: #64748b;
   --bg-system: #f8fafc;
   --accent-green: #10b981;
   --sans: "Inter", "Roboto", "Segoe UI", sans-serif;
-  
+
   font-family: var(--sans);
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light;
 }
 
-/* TIPOGRAFIA BÁSICA */
-h1, h2, h3, h4, h5, h6 {
-  margin: 0;
-  color: var(--text-main);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6,
 p {
   margin: 0;
 }
 
-/* REMOVER DECORAÇÃO DE LINKS */
 a {
   text-decoration: none;
   color: inherit;
-}
-
-/* GARANTIR QUE ELEMENTOS NÃO "ESTUFEM" O LAYOUT */
-* {
-  box-sizing: border-box;
 }

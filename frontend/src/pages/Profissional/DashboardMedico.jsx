@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Avatar, Button, Chip, Fade, CircularProgress, Tooltip } from '@mui/material';
+import { Box, Typography, Grid, Paper, Avatar, Button, Chip, Fade, CircularProgress, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import { Calendar, Users, TrendingUp, ChevronRight, Activity, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';

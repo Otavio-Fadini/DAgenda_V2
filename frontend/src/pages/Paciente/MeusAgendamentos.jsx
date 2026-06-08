@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { 
     Calendar, Clock, CreditCard, XCircle, Paperclip, CheckCircle, 
-    AlertCircle, FileText, Stethoscope, FileUp, Search, FilterX 
+    AlertCircle, FileText, Stethoscope, FileUp, Search, FilterX, MapPin 
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -48,6 +48,45 @@ const MeusAgendamentos = () => {
     };
 
     // ==========================================
+    // FUNÇÕES DE TEMPO E ESTILO
+    // ==========================================
+    const isConsultaValidaNoTempo = (dataStr, horaStr) => {
+        if (!dataStr) return false;
+        try {
+            let ano, mes, dia;
+            if (dataStr.includes('/')) {
+                [dia, mes, ano] = dataStr.split('/');
+            } else {
+                [ano, mes, dia] = dataStr.split('-');
+            }
+            const [hora, min] = (horaStr || '23:59').split(':');
+            const dataConsulta = new Date(ano, mes - 1, dia, hora, min);
+            const agora = new Date();
+            
+            return dataConsulta >= agora; 
+        } catch (e) {
+            return true;
+        }
+    };
+
+    const getStatusStyle = (status) => {
+        const s = (status || '').toLowerCase();
+        if (s === 'agendado' || s === 'confirmado') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0', icon: <CheckCircle size={16} /> };
+        if (s === 'pendente pagamento' || s === 'pendente') return { bg: '#FEFCE8', color: '#EAB308', border: '#FEF08A', icon: <Clock size={16} /> };
+        if (s === 'concluido' || s === 'finalizado') return { bg: '#F0F9FF', color: '#32B5FE', border: '#BAE6FD', icon: <FileText size={16} /> };
+        if (s === 'cancelado') return { bg: '#FEF2F2', color: '#EF4444', border: '#FECACA', icon: <XCircle size={16} /> };
+        return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0', icon: <AlertCircle size={16} /> }; 
+    };
+
+    // Ajustado para aceitar o formato DD/MM/YYYY que já vem do backend
+    const formatarData = (dataStr) => {
+        if (!dataStr) return '';
+        if (dataStr.includes('/')) return dataStr; // Se já vier com barra do banco, não faz nada
+        const [ano, mes, dia] = dataStr.split('-');
+        return `${dia}/${mes}/${ano}`;
+    };
+
+    // ==========================================
     // LÓGICA DE FILTRAGEM
     // ==========================================
     const limparFiltros = () => {
@@ -57,13 +96,26 @@ const MeusAgendamentos = () => {
     };
 
     const agendamentosFiltrados = agendamentos.filter((agendamento) => {
-        // 1. Filtro por Texto (Nome do médico ou especialidade)
+        const s = (agendamento.status || '').toLowerCase();
+        const isPendenteOuAgendado = s === 'agendado' || s === 'pendente pagamento' || s === 'pendente';
+        
+        // Remove da lista consultas que já passaram da data/hora e não foram finalizadas/canceladas
+        if (isPendenteOuAgendado && !isConsultaValidaNoTempo(agendamento.data_agendamento, agendamento.horario)) {
+            return false;
+        }
+
+        // 1. Filtro por Texto 
         const termoBusca = buscaTexto.toLowerCase();
         const matchNome = (agendamento.nome_medico || '').toLowerCase().includes(termoBusca) || 
                           (agendamento.especialidade || '').toLowerCase().includes(termoBusca);
         
-        // 2. Filtro por Data
-        const matchData = filtroData ? (agendamento.data_agendamento || '').startsWith(filtroData) : true;
+        // 2. Filtro por Data (Reverte para AAAA-MM-DD para comparar com o input type="date")
+        let dataComparacao = agendamento.data_agendamento;
+        if (dataComparacao && dataComparacao.includes('/')) {
+            const [d, m, a] = dataComparacao.split('/');
+            dataComparacao = `${a}-${m}-${d}`;
+        }
+        const matchData = filtroData ? (dataComparacao || '').startsWith(filtroData) : true;
         
         // 3. Filtro por Status
         const matchStatus = filtroStatus === 'Todos' || agendamento.status === filtroStatus;
@@ -74,7 +126,14 @@ const MeusAgendamentos = () => {
     // ==========================================
 
     const verificarPodeCancelar = (dataAgendamento) => {
-        const dataConsulta = new Date(dataAgendamento);
+        if (!dataAgendamento) return false;
+        let ano, mes, dia;
+        if (dataAgendamento.includes('/')) {
+            [dia, mes, ano] = dataAgendamento.split('/');
+        } else {
+            [ano, mes, dia] = dataAgendamento.split('-');
+        }
+        const dataConsulta = new Date(ano, mes - 1, dia);
         const hoje = new Date();
         const diferencaDias = Math.ceil((dataConsulta.getTime() - hoje.getTime()) / (1000 * 3600 * 24));
         return diferencaDias >= 7;
@@ -153,23 +212,6 @@ const MeusAgendamentos = () => {
         }
     };
 
-    const getStatusConfig = (status) => {
-        switch (status) {
-            case 'Pendente pagamento': return { color: '#B45309', bg: '#FEF3C7', icon: <Clock size={16} /> };
-            case 'Agendado': return { color: '#047857', bg: '#D1FAE5', icon: <CheckCircle size={16} /> };
-            case 'Concluido': return { color: '#1D4ED8', bg: '#DBEAFE', icon: <FileText size={16} /> };
-            case 'Cancelado': return { color: '#B91C1C', bg: '#FEE2E2', icon: <XCircle size={16} /> };
-            default: return { color: '#475569', bg: '#F1F5F9', icon: <AlertCircle size={16} /> };
-        }
-    };
-
-    const formatarData = (dataStr) => {
-        if (!dataStr) return '';
-        const [ano, mes, dia] = dataStr.split('-');
-        return `${dia}/${mes}/${ano}`;
-    };
-
-    // Estilo dos inputs da barra de filtros
     const modernInputStyle = {
         '& .MuiOutlinedInput-root': {
             borderRadius: '12px', bgcolor: '#FFFFFF', transition: 'all 0.2s ease-in-out',
@@ -252,17 +294,16 @@ const MeusAgendamentos = () => {
                 <Paper elevation={0} sx={{ p: 6, textAlign: 'center', borderRadius: '24px', border: '2px dashed #E2E8F0', bgcolor: 'transparent' }}>
                     <Calendar size={48} color="#CBD5E1" style={{ marginBottom: 16 }} />
                     <Typography variant="h6" fontWeight={800} color="#64748B">Nenhum agendamento encontrado.</Typography>
-                    <Typography variant="body2" color="#94A3B8" fontWeight={500}>Tente alterar os filtros de busca para encontrar o que procura.</Typography>
+                    <Typography variant="body2" color="#94A3B8" fontWeight={500}>Tente alterar os filtros de busca ou verifique se as consultas agendadas já não expiraram.</Typography>
                 </Paper>
             ) : (
                 <Grid container spacing={3}>
                     {agendamentosFiltrados.map((agendamento) => {
-                        const statusCfg = getStatusConfig(agendamento.status);
+                        const statusStyle = getStatusStyle(agendamento.status);
                         const podeCancelar = verificarPodeCancelar(agendamento.data_agendamento);
 
                         return (
                             <Grid item key={agendamento.id}>
-                                {/* Defina a largura fixa aqui, por exemplo, 320px */}
                                 <Paper elevation={0} sx={{ 
                                     p: 3, 
                                     borderRadius: '20px', 
@@ -270,7 +311,7 @@ const MeusAgendamentos = () => {
                                     display: 'flex', 
                                     flexDirection: 'column', 
                                     height: '100%', 
-                                    width: '320px', // <--- LARGURA FIXA AQUI
+                                    width: '320px', 
                                     boxSizing: 'border-box', 
                                     overflow: 'hidden', 
                                     transition: 'all 0.2s', 
@@ -282,33 +323,47 @@ const MeusAgendamentos = () => {
                                     opacity: agendamento.status === 'Cancelado' ? 0.75 : 1 
                                 }}>
                                     
-                                    {/* TOPO: FOTO E NOME */}
+                                    {/* TOPO: FOTO, NOME, CRM e CLÍNICA */}
                                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, width: '100%' }}>
-                                        <Avatar src={agendamento.foto_perfil} sx={{ width: 56, height: 56, bgcolor: '#F8FAFC', color: '#32B5FE', border: '2px solid #F1F5F9', flexShrink: 0 }}>
-                                            <Stethoscope size={28} />
+                                        <Avatar src={agendamento.foto_medico} sx={{ width: 56, height: 56, bgcolor: '#F8FAFC', color: '#32B5FE', border: '2px solid #F1F5F9', flexShrink: 0 }}>
+                                            {!agendamento.foto_medico && <Stethoscope size={28} />}
                                         </Avatar>
                                         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                            {/* 👇 Forçamos o CSS a quebrar textos em vez de alargar o ecrã 👇 */}
                                             <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2, whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                                                 Dr(a). {agendamento.nome_medico}
                                             </Typography>
-                                            <Typography variant="body2" color="#32B5FE" fontWeight={700} sx={{ whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                                                {agendamento.especialidade}
-                                            </Typography>
+                                            
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
+                                                <Typography variant="body2" color="#32B5FE" fontWeight={700}>
+                                                    {agendamento.especialidade}
+                                                </Typography>
+                                                {agendamento.crm_medico && (
+                                                    <>
+                                                        <Box component="span" sx={{ color: '#CBD5E1' }}>•</Box>
+                                                        <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>
+                                                            CRM: {agendamento.crm_medico}
+                                                        </Typography>
+                                                    </>
+                                                )}
+                                            </Box>
+                                            
+                                            {agendamento.nome_clinica && (
+                                                <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B', fontWeight: 600, mt: 0.5 }}>
+                                                    <MapPin size={12} /> {agendamento.nome_clinica}
+                                                </Typography>
+                                            )}
                                         </Box>
                                     </Box>
 
                                     {/* MEIO: DATA, HORA E STATUS */}
                                     <Stack spacing={1.5} sx={{ mb: 3, flexGrow: 1, width: '100%' }}>
-                                        {/* 👇 flexWrap: 'wrap' permite que os chips desçam se a tela for pequena 👇 */}
                                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                                             <Chip icon={<Calendar size={16} />} label={formatarData(agendamento.data_agendamento)} sx={{ bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 800, borderRadius: '10px' }} />
-                                            <Chip icon={<Clock size={16} />} label={agendamento.horario.substring(0,5)} sx={{ bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 800, borderRadius: '10px' }} />
+                                            <Chip icon={<Clock size={16} />} label={agendamento.horario ? agendamento.horario.substring(0,5) : ''} sx={{ bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 800, borderRadius: '10px' }} />
                                         </Box>
                                         
-                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: statusCfg.bg, color: statusCfg.color, px: 2, py: 1, borderRadius: '10px', alignSelf: 'flex-start', maxWidth: '100%', boxSizing: 'border-box' }}>
-                                            {statusCfg.icon}
-                                            {/* 👇 Previne que o status estoure a tela 👇 */}
+                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: statusStyle.bg, color: statusStyle.color, border: '1px solid', borderColor: statusStyle.border, px: 2, py: 1, borderRadius: '10px', alignSelf: 'flex-start', maxWidth: '100%', boxSizing: 'border-box' }}>
+                                            {statusStyle.icon}
                                             <Typography variant="body2" fontWeight={800} sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{agendamento.status}</Typography>
                                         </Box>
                                     </Stack>

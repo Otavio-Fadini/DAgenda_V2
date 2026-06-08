@@ -1,7 +1,7 @@
 /* RESPONSIVIDADE GLOBAL DO SISTEMA */
 .app-shell {
   width: 100%;
-  min-height: 100dvh;
+  height: 100vh;
   display: flex;
   background: #f8fafc;
   overflow: hidden;
@@ -10,20 +10,23 @@
 .app-content {
   min-width: 0;
   flex: 1;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  overflow: hidden;
 }
 
 .app-main {
   flex: 1;
   width: 100%;
   min-width: 0;
+  height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
   background: #f8fafc;
 }
 
+/* Componentes MUI */
 .MuiContainer-root,
 .MuiBox-root,
 .MuiPaper-root,
@@ -49,18 +52,24 @@
   max-width: 100%;
 }
 
+/* Tablets e celulares */
 @media (max-width: 900px) {
   .app-shell {
     display: block;
+    height: auto;
     min-height: 100dvh;
     overflow: visible;
   }
 
   .app-content {
+    height: auto;
     min-height: 100dvh;
+    overflow: visible;
   }
 
   .app-main {
+    height: auto;
+    min-height: 100dvh;
     overflow: visible;
   }
 

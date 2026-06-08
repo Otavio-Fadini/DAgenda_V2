@@ -13,6 +13,11 @@ const DashboardProfissional = () => {
     });
     const [horaAtual, setHoraAtual] = useState(new Date());
 
+    // Novos estados para o Token
+    const [openTokenModal, setOpenTokenModal] = useState(false);
+    const [codigoDigitado, setCodigoDigitado] = useState('');
+    const [consultaSelecionada, setConsultaSelecionada] = useState(null);
+
     useEffect(() => {
         const interval = setInterval(() => {
             setHoraAtual(new Date());
@@ -55,10 +60,7 @@ const DashboardProfissional = () => {
         );
     }
 
-    // Novos estados para o Token
-    const [openTokenModal, setOpenTokenModal] = useState(false);
-    const [codigoDigitado, setCodigoDigitado] = useState('');
-    const [consultaSelecionada, setConsultaSelecionada] = useState(null);
+    
 
     const iniciarProcessoAtendimento = (c) => {
         setConsultaSelecionada(c);

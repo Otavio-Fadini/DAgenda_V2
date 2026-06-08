@@ -556,7 +556,7 @@ const AgendaMedica = () => {
                         </Alert>
                     </DialogContent>
                     <DialogActions sx={{ px: 3, pb: 3 }}>
-                        <Button variant="contained" onClick={() => setModalMotivoOpen(false)} sx={{ bgcolor: '#0F172A', borderRadius: '10px', fontWeight: 800, boxShadow: 'none', textTransform: 'none', '&:hover': { bgcolor: '#1E293B' } }}>
+                        <Button variant="contained" onClick={() => setModalMotivoOpen(false)} sx={{ bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, borderRadius: '10px', fontWeight: 800, boxShadow: 'none', textTransform: 'none' }}>
                             Fechar
                         </Button>
                     </DialogActions>

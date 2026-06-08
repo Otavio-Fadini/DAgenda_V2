@@ -6,6 +6,10 @@ import api from '../../services/api';
 
 const DashboardProfissional = () => {
     const navigate = useNavigate();
+    
+    // ==========================================
+    // 1. TODOS OS HOOKS (USESTATE / USEEFFECT) NO TOPO
+    // ==========================================
     const [loading, setLoading] = useState(true);
     const [dados, setDados] = useState({
         kpis: { consultasHoje: 0, totalPacientes: 0, faturamentoDia: 0 },
@@ -42,6 +46,9 @@ const DashboardProfissional = () => {
         carregarDashboard();
     }, []);
 
+    // ==========================================
+    // 2. FUNÇÕES AUXILIARES
+    // ==========================================
     const getStatusStyle = (status) => {
         const s = (status || '').toLowerCase();
         if (s === 'agendado' || s === 'confirmado') return { bg: '#ECFDF5', color: '#10B981', border: '#A7F3D0' };
@@ -50,17 +57,6 @@ const DashboardProfissional = () => {
         if (s === 'cancelado') return { bg: '#FEF2F2', color: '#EF4444', border: '#FECACA' };
         return { bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' }; 
     };
-
-    if (loading) {
-        return (
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#F8FAFC' }}>
-                <CircularProgress sx={{ color: '#32B5FE' }} size={48} thickness={4} />
-                <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 600, mt: 2 }}>Carregando métricas...</Typography>
-            </Box>
-        );
-    }
-
-    
 
     const iniciarProcessoAtendimento = (c) => {
         setConsultaSelecionada(c);
@@ -82,6 +78,21 @@ const DashboardProfissional = () => {
         }
     };
 
+    // ==========================================
+    // 3. RENDERIZAÇÃO CONDICIONAL APÓS OS HOOKS
+    // ==========================================
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#F8FAFC' }}>
+                <CircularProgress sx={{ color: '#32B5FE' }} size={48} thickness={4} />
+                <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 600, mt: 2 }}>Carregando métricas...</Typography>
+            </Box>
+        );
+    }
+
+    // ==========================================
+    // 4. RENDERIZAÇÃO PRINCIPAL DO COMPONENTE
+    // ==========================================
     return (
         <Fade in={true} timeout={600}>
             <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', width: '100%', minHeight: '100vh', boxSizing: 'border-box' }}>
@@ -148,7 +159,10 @@ const DashboardProfissional = () => {
                 
                 <Paper elevation={0} sx={{ borderRadius: '24px', border: '1px solid #F1F5F9', overflow: 'hidden', bgcolor: 'white', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)' }}>
                     {dados.proximasConsultas && dados.proximasConsultas.length > 0 ? dados.proximasConsultas.map((c, index) => {
-                        if (!c) return null; // Proteção extra: se o objeto for nulo, ignora
+                        
+                        // PROTEÇÃO EXTRA: Ignora itens inválidos no array
+                        if (!c) return null; 
+
                         const style = getStatusStyle(c.status || 'Pendente');
                         
                         return (
@@ -200,46 +214,46 @@ const DashboardProfissional = () => {
                                             Ver Resumo
                                         </Button>
                                     ) : (
+                                        // BOTÃO ATENDER E VALIDAÇÃO DE TEMPO
                                         (() => {
-                                            const renderBotaoAtender = (c) => {
-                                                const dataStr = c.data_agendamento || c.data;
-                                                const horaStr = c.horario || c.hora;
-                                                
-                                                // Calcula se pode atender (15 min antes)
-                                                let atendimentoLiberado = true;
-                                                if (dataStr && horaStr) {
-                                                    try {
-                                                        const [dia, mes, ano] = dataStr.split('/');
-                                                        const [hora, min] = horaStr.split(':');
-                                                        const dataAgendamento = new Date(ano, mes - 1, dia, hora, min);
-                                                        const diffEmMinutos = (dataAgendamento - horaAtual) / (1000 * 60);
-                                                        atendimentoLiberado = diffEmMinutos <= 15;
-                                                    } catch (e) { atendimentoLiberado = true; }
-                                                }
+                                            const dataStr = c.data_agendamento || c.data;
+                                            const horaStr = c.horario || c.hora;
+                                            let atendimentoLiberado = true;
 
-                                                if (!atendimentoLiberado) {
-                                                    return (
-                                                        <Tooltip title="O atendimento é liberado 15 minutos antes." arrow>
-                                                            <span>
-                                                                <Button disabled variant="contained" size="small" startIcon={<Clock size={16} />} 
-                                                                    sx={{ bgcolor: '#F1F5F9 !important', color: '#94A3B8 !important', borderRadius: '10px', py: 1, px: 2, fontWeight: 800, textTransform: 'none', boxShadow: 'none', minWidth: 120 }}>
-                                                                    Aguarde
-                                                                </Button>
-                                                            </span>
-                                                        </Tooltip>
-                                                    );
+                                            if (dataStr && horaStr) {
+                                                try {
+                                                    const [dia, mes, ano] = dataStr.split('/');
+                                                    const [hora, min] = horaStr.split(':');
+                                                    const dataAgendamento = new Date(ano, mes - 1, dia, hora, min);
+                                                    const diffEmMinutos = (dataAgendamento - horaAtual) / (1000 * 60);
+                                                    atendimentoLiberado = diffEmMinutos <= 15;
+                                                } catch (e) { 
+                                                    atendimentoLiberado = true; 
                                                 }
+                                            }
 
+                                            if (!atendimentoLiberado) {
                                                 return (
-                                                    <Button 
-                                                        variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
-                                                        onClick={() => iniciarProcessoAtendimento(c)}
-                                                        sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, py: 1, px: 2, boxShadow: 'none', minWidth: 120 }}
-                                                    >
-                                                        Atender
-                                                    </Button>
+                                                    <Tooltip title="O atendimento é liberado 15 minutos antes." arrow>
+                                                        <span>
+                                                            <Button disabled variant="contained" size="small" startIcon={<Clock size={16} />} 
+                                                                sx={{ bgcolor: '#F1F5F9 !important', color: '#94A3B8 !important', borderRadius: '10px', py: 1, px: 2, fontWeight: 800, textTransform: 'none', boxShadow: 'none', minWidth: 120 }}>
+                                                                Aguarde
+                                                            </Button>
+                                                        </span>
+                                                    </Tooltip>
                                                 );
-                                            };
+                                            }
+
+                                            return (
+                                                <Button 
+                                                    variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
+                                                    onClick={() => iniciarProcessoAtendimento(c)}
+                                                    sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, py: 1, px: 2, boxShadow: 'none', minWidth: 120 }}
+                                                >
+                                                    Atender
+                                                </Button>
+                                            );
                                         })()
                                     )}
                                 </Box>
@@ -254,6 +268,8 @@ const DashboardProfissional = () => {
                     )}
                 </Paper>
             </Box>
+            
+            {/* MODAL DO TOKEN (Fica fora do Box principal, mas dentro do Fade) */}
             <Dialog open={openTokenModal} onClose={() => setOpenTokenModal(false)} maxWidth="xs" fullWidth>
                 <DialogTitle sx={{ fontWeight: 900 }}>Validar Atendimento</DialogTitle>
                 <DialogContent>

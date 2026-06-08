@@ -41,6 +41,18 @@ const calcularDistanciaLinhaReta = (lat1, lon1, lat2, lon2) => {
     return (R * c).toFixed(1);
 };
 
+// NOVA FUNÇÃO: Limpa sujeiras do banco de dados (como ["Wifi", "Acesso"])
+const formatarComodidades = (comodidadesData) => {
+    if (!comodidadesData) return [];
+    try {
+        if (Array.isArray(comodidadesData)) return comodidadesData;
+        const parsed = JSON.parse(comodidadesData);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return comodidadesData.replace(/[\[\]"']/g, '').split(',').map(s => s.trim()).filter(Boolean);
+    }
+};
+
 const NovoAgendamento = () => {
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
@@ -54,7 +66,6 @@ const NovoAgendamento = () => {
     const [busca, setBusca] = useState('');
     const [apenasConvenio, setApenasConvenio] = useState(false);
 
-    // ESTADOS PARA OS HORÁRIOS DINÂMICOS
     const [horariosDisponiveis, setHorariosDisponiveis] = useState([]);
     const [loadingHorarios, setLoadingHorarios] = useState(false);
 
@@ -151,7 +162,6 @@ const NovoAgendamento = () => {
         finally { setLoading(false); }
     };
 
-    // FUNÇÃO INTELIGENTE QUE BUSCA OS HORÁRIOS QUANDO A DATA É SELECIONADA
     const handleDataChange = async (e) => {
         const dataSelecionada = e.target.value;
         setAgendamento({ ...agendamento, data_agendamento: dataSelecionada, horario: '' });
@@ -172,7 +182,6 @@ const NovoAgendamento = () => {
         }
     };
 
-    // NOVA FUNÇÃO: PRÉ-AGENDAR E REDIRECIONAR PARA TELA DE PAGAMENTO
     const handleConfirmarAgendamento = async () => {
         setLoading(true);
         try {
@@ -185,7 +194,6 @@ const NovoAgendamento = () => {
                 nome_medico: agendamento.nome_medico
             });
 
-            // Redireciona para o painel de agendamentos onde está o botão do Mercado Pago
             navigate('/dashboard/meus-agendamentos');
         } catch (err) { 
             console.error(err);
@@ -311,7 +319,6 @@ const NovoAgendamento = () => {
                                     let enderecoCompleto = c.endereco || 'Endereço não cadastrado';
                                     if (c.rua) enderecoCompleto = `${c.rua}${c.numero ? `, ${c.numero}` : ''} • ${c.bairro || c.cidade}${c.estado ? `/${c.estado}` : ''}`;
                                     
-                                    const comodidadesArray = c.comodidades ? c.comodidades.split(',').map(item => item.trim()) : [];
                                     const imagemClinica = c.foto_perfil || c.logo;
 
                                     return (
@@ -328,21 +335,34 @@ const NovoAgendamento = () => {
                                                 
                                                 <Box sx={{ flex: 1 }}>
                                                     <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2, mb: 0.5 }}>{c.nome_fantasia}</Typography>
+                                                    
                                                     <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1.5 }}>
                                                         <MapPin size={14} color="#64748B" style={{ marginTop: '2px', marginRight: '6px', flexShrink: 0 }} />
                                                         <Typography variant="body2" color="#64748B" fontWeight={500} sx={{ lineHeight: 1.3 }}>{enderecoCompleto}</Typography>
                                                     </Box>
-                                                    <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ gap: '8px 0' }}>
+                                                    
+                                                    {/* 👇 BLOCO CORRIGIDO COM FLEXWRAP 👇 */}
+                                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                                         {c.distancia && (
-                                                            <Chip label={`${c.distancia} km`} size="small" sx={{ fontWeight: 800, bgcolor: '#F1F5F9', color: '#64748B', borderRadius: '8px', height: 24, fontSize: '0.7rem' }} icon={<LocateFixed size={12}/>} />
+                                                            <Chip 
+                                                                icon={<LocateFixed size={12}/>} 
+                                                                label={`${c.distancia} km`} 
+                                                                size="small" 
+                                                                sx={{ fontWeight: 800, bgcolor: '#F1F5F9', color: '#64748B', borderRadius: '8px', height: 24, fontSize: '0.7rem' }} 
+                                                            />
                                                         )}
-                                                        {comodidadesArray.map((comodidade, index) => (
-                                                            <Stack key={index} direction="row" spacing={0.5} alignItems="center" sx={{ color: '#10B981', bgcolor: '#ECFDF5', px: 1, py: 0.5, borderRadius: '8px' }}>
+                                                        {formatarComodidades(c.comodidades).map((comodidade, index) => (
+                                                            <Box 
+                                                                key={index} 
+                                                                sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#10B981', bgcolor: '#ECFDF5', px: 1, py: 0.5, borderRadius: '8px', border: '1px solid #A7F3D0' }}
+                                                            >
                                                                 {getIconForComodidade(comodidade)}
-                                                                <Typography variant="caption" fontWeight={800}>{comodidade}</Typography>
-                                                            </Stack>
+                                                                <Typography variant="caption" fontWeight={800} sx={{ fontSize: '0.7rem' }}>
+                                                                    {comodidade}
+                                                                </Typography>
+                                                            </Box>
                                                         ))}
-                                                    </Stack>
+                                                    </Box>
                                                 </Box>
                                             </Stack>
                                         </CardActionArea>

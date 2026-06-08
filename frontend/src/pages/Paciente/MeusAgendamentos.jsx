@@ -221,6 +221,7 @@ const MeusAgendamentos = () => {
             '&.Mui-focused': { boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
         }
     };
+    
 
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', width: '100%', boxSizing: 'border-box' }}>
@@ -413,7 +414,7 @@ const MeusAgendamentos = () => {
                 </Grid>
             )}
 
-            {/* MODAIS (Mantidos 100% inalterados) */}
+            {/* MODAIS  */}
             <Dialog open={modalCancelarOpen} onClose={() => setModalCancelarOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '20px', p: 1 } }}>
                 <DialogTitle sx={{ pb: 1 }}>
                     <Typography variant="h6" fontWeight={900} color="#0F172A">Cancelar Consulta</Typography>

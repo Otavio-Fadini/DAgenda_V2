@@ -148,10 +148,11 @@ const DashboardProfissional = () => {
                 
                 <Paper elevation={0} sx={{ borderRadius: '24px', border: '1px solid #F1F5F9', overflow: 'hidden', bgcolor: 'white', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)' }}>
                     {dados.proximasConsultas && dados.proximasConsultas.length > 0 ? dados.proximasConsultas.map((c, index) => {
-                        const style = getStatusStyle(c.status);
+                        if (!c) return null; // Proteção extra: se o objeto for nulo, ignora
+                        const style = getStatusStyle(c.status || 'Pendente');
                         
                         return (
-                            <Box key={c.id} sx={{ 
+                            <Box key={c.id || index} sx={{ 
                                 p: { xs: 2.5, md: 3.5 }, display: 'flex', flexDirection: { xs: 'column', md: 'row' },
                                 alignItems: { xs: 'flex-start', md: 'center' }, justifyContent: 'space-between', gap: { xs: 3, md: 0 },
                                 borderBottom: index !== dados.proximasConsultas.length - 1 ? '1px solid #F8FAFC' : 'none', 
@@ -200,48 +201,45 @@ const DashboardProfissional = () => {
                                         </Button>
                                     ) : (
                                         (() => {
-                                            const dataStr = c.data_agendamento || c.data;
-                                            const horaStr = c.horario || c.hora;
-                                            let atendimentoLiberado = true;
-
-                                            if (dataStr && horaStr) {
-                                                try {
-                                                    const [dia, mes, ano] = dataStr.split('/');
-                                                    const [hora, min] = horaStr.split(':');
-                                                    const dataAgendamento = new Date(ano, mes - 1, dia, hora, min);
-                                                    const diffEmMinutos = (dataAgendamento - horaAtual) / (1000 * 60);
-                                                    
-                                                    atendimentoLiberado = diffEmMinutos <= 15;
-                                                } catch (e) {
-                                                    atendimentoLiberado = true; 
+                                            const renderBotaoAtender = (c) => {
+                                                const dataStr = c.data_agendamento || c.data;
+                                                const horaStr = c.horario || c.hora;
+                                                
+                                                // Calcula se pode atender (15 min antes)
+                                                let atendimentoLiberado = true;
+                                                if (dataStr && horaStr) {
+                                                    try {
+                                                        const [dia, mes, ano] = dataStr.split('/');
+                                                        const [hora, min] = horaStr.split(':');
+                                                        const dataAgendamento = new Date(ano, mes - 1, dia, hora, min);
+                                                        const diffEmMinutos = (dataAgendamento - horaAtual) / (1000 * 60);
+                                                        atendimentoLiberado = diffEmMinutos <= 15;
+                                                    } catch (e) { atendimentoLiberado = true; }
                                                 }
-                                            }
 
-                                            if (!atendimentoLiberado) {
+                                                if (!atendimentoLiberado) {
+                                                    return (
+                                                        <Tooltip title="O atendimento é liberado 15 minutos antes." arrow>
+                                                            <span>
+                                                                <Button disabled variant="contained" size="small" startIcon={<Clock size={16} />} 
+                                                                    sx={{ bgcolor: '#F1F5F9 !important', color: '#94A3B8 !important', borderRadius: '10px', py: 1, px: 2, fontWeight: 800, textTransform: 'none', boxShadow: 'none', minWidth: 120 }}>
+                                                                    Aguarde
+                                                                </Button>
+                                                            </span>
+                                                        </Tooltip>
+                                                    );
+                                                }
+
                                                 return (
-                                                    <Tooltip title="O atendimento é liberado 15 minutos antes do horário marcado." arrow>
-                                                        <span>
-                                                            <Button 
-                                                                disabled
-                                                                variant="contained" size="small" startIcon={<Clock size={16} />}
-                                                                sx={{ bgcolor: '#F1F5F9 !important', color: '#94A3B8 !important', borderRadius: '10px', py: 1, px: 2, fontWeight: 800, textTransform: 'none', boxShadow: 'none', minWidth: 120 }}
-                                                            >
-                                                                Aguarde
-                                                            </Button>
-                                                        </span>
-                                                    </Tooltip>
+                                                    <Button 
+                                                        variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
+                                                        onClick={() => iniciarProcessoAtendimento(c)}
+                                                        sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, py: 1, px: 2, boxShadow: 'none', minWidth: 120 }}
+                                                    >
+                                                        Atender
+                                                    </Button>
                                                 );
-                                            }
-
-                                            return (
-                                                <Button 
-                                                    variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
-                                                    onClick={() => iniciarProcessoAtendimento(c)} // <-- Chamada do novo processo
-                                                    sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, py: 1, px: 2, boxShadow: 'none', minWidth: 120 }}
-                                                >
-                                                    Atender
-                                                </Button>
-                                            );
+                                            };
                                         })()
                                     )}
                                 </Box>

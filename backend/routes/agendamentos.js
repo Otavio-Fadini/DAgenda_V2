@@ -69,6 +69,15 @@ router.get('/horarios-disponiveis', verifyToken, async (req, res) => {
         );
         const horariosOcupados = agendados.map(a => a.horario.substring(0, 5));
 
+        // ==========================================
+        // NOVA LÓGICA DE TEMPO (BLOQUEAR PASSADO)
+        // ==========================================
+        const agora = new Date();
+        const dataHojeStr = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+        const isHoje = (data === dataHojeStr);
+        const horaAtualStr = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+        // ==========================================
+
         const horarios = [];
         let atual = new Date(`1970-01-01T${disp[0].hora_inicio.length === 5 ? disp[0].hora_inicio + ':00' : disp[0].hora_inicio}`);
         const fim = new Date(`1970-01-01T${disp[0].hora_fim.length === 5 ? disp[0].hora_fim + ':00' : disp[0].hora_fim}`);
@@ -78,9 +87,14 @@ router.get('/horarios-disponiveis', verifyToken, async (req, res) => {
             if (fimDestaConsulta > fim) break;
 
             const horaStr = atual.toTimeString().substring(0, 5);
+            
+            // Verifica se está livre E (Se não for hoje OU se a hora for maior que a atual)
             if (!horariosOcupados.includes(horaStr)) {
-                horarios.push(horaStr);
+                if (!isHoje || horaStr > horaAtualStr) {
+                    horarios.push(horaStr);
+                }
             }
+            
             atual.setMinutes(atual.getMinutes() + duracaoMinutos);
         }
         

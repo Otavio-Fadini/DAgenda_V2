@@ -163,7 +163,7 @@ const NovoAgendamento = () => {
     };
 
     const handleDataChange = async (e) => {
-        const dataSelecionada = e.target.value;
+        const dataSelecionada = e.target.value; // Formato AAAA-MM-DD
         setAgendamento({ ...agendamento, data_agendamento: dataSelecionada, horario: '' });
         
         if (!dataSelecionada) {
@@ -174,7 +174,28 @@ const NovoAgendamento = () => {
         setLoadingHorarios(true);
         try {
             const res = await api.get(`/agendamentos/horarios-disponiveis?id_profissional=${agendamento.id_profissional}&data=${dataSelecionada}`);
-            setHorariosDisponiveis(res.data);
+            
+            // --- NOVA LÓGICA DE FILTRAGEM ---
+            const agora = new Date();
+            const dataHojeStr = agora.toISOString().split('T')[0]; // AAAA-MM-DD
+            
+            let horariosFiltrados = res.data;
+
+            // Se a data selecionada for hoje, filtra horários anteriores
+            if (dataSelecionada === dataHojeStr) {
+                const horaAtual = agora.getHours();
+                const minAtual = agora.getMinutes();
+                
+                horariosFiltrados = res.data.filter(horario => {
+                    const [horaH, minM] = horario.split(':').map(Number);
+                    // Se a hora do horário for maior que a atual, ou se for a mesma hora e minutos futuros
+                    return horaH > horaAtual || (horaH === horaAtual && minM > minAtual);
+                });
+            }
+            
+            setHorariosDisponiveis(horariosFiltrados);
+            // --------------------------------
+            
         } catch (err) {
             console.error("Erro ao buscar horários", err);
         } finally {
@@ -434,6 +455,7 @@ const NovoAgendamento = () => {
                                                 fullWidth type="date" variant="outlined" sx={modernInputStyle} 
                                                 value={agendamento.data_agendamento} 
                                                 onChange={handleDataChange} 
+                                                inputProps={{ min: new Date().toISOString().split('T')[0] }}
                                             />
                                         </Box>
                                         <Box>

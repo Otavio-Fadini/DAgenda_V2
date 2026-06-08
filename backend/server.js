@@ -6,6 +6,7 @@ const fs = require('fs');
 
 // IMPORTAÇÃO DO BANCO DE DADOS PARA O WEBHOOK
 const pool = require('./config/db');
+const iniciarJobs = require('./jobs/cronJobs');
 
 // Forçando o caminho absoluto para o serviço do Windows nunca se perder
 const envPath = path.join('C:\\Projetos\\DAgenda\\backend', '.env');
@@ -31,6 +32,8 @@ app.use('/api/profissional', profissionalRoutes);
 app.use('/api/paciente', pacienteRoutes);
 app.use('/api/agendamentos', agendamentoRoutes);
 app.use('/api/clinica', clinicaRoutes);
+
+iniciarJobs();
 
 // ==========================================
 // ROTA GLOBAL: WEBHOOK DO MERCADO PAGO (À PROVA DE BALAS)

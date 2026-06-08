@@ -55,6 +55,31 @@ const DashboardProfissional = () => {
         );
     }
 
+    // Novos estados para o Token
+    const [openTokenModal, setOpenTokenModal] = useState(false);
+    const [codigoDigitado, setCodigoDigitado] = useState('');
+    const [consultaSelecionada, setConsultaSelecionada] = useState(null);
+
+    const iniciarProcessoAtendimento = (c) => {
+        setConsultaSelecionada(c);
+        // Chama a API que envia o token ao paciente
+        api.post('/profissional/enviar-token', { agendamento_id: c.id });
+        setOpenTokenModal(true);
+    };
+
+    const validarEIniciar = async () => {
+        try {
+            await api.post('/profissional/verificar-token', { 
+                agendamento_id: consultaSelecionada.id, 
+                codigo: codigoDigitado 
+            });
+            setOpenTokenModal(false);
+            navigate('/dashboard/atendimento', { state: consultaSelecionada });
+        } catch (e) {
+            alert("Código inválido ou expirado!");
+        }
+    };
+
     return (
         <Fade in={true} timeout={600}>
             <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', width: '100%', minHeight: '100vh', boxSizing: 'border-box' }}>
@@ -209,7 +234,7 @@ const DashboardProfissional = () => {
                                             return (
                                                 <Button 
                                                     variant="contained" size="small" endIcon={<ChevronRight size={16}/>} 
-                                                    onClick={() => navigate('/dashboard/atendimento', { state: c })} 
+                                                    onClick={() => iniciarProcessoAtendimento(c)} // <-- Chamada do novo processo
                                                     sx={{ fontWeight: 800, textTransform: 'none', borderRadius: '10px', bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, py: 1, px: 2, boxShadow: 'none', minWidth: 120 }}
                                                 >
                                                     Atender
@@ -229,6 +254,26 @@ const DashboardProfissional = () => {
                     )}
                 </Paper>
             </Box>
+            <Dialog open={openTokenModal} onClose={() => setOpenTokenModal(false)} maxWidth="xs" fullWidth>
+                <DialogTitle sx={{ fontWeight: 900 }}>Validar Atendimento</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" sx={{ mb: 2, color: '#64748B' }}>
+                        Um código de segurança foi enviado para o celular do paciente. Digite abaixo para iniciar:
+                    </Typography>
+                    <TextField 
+                        autoFocus 
+                        fullWidth 
+                        value={codigoDigitado} 
+                        onChange={(e) => setCodigoDigitado(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        inputProps={{ style: { fontSize: '2rem', textAlign: 'center', letterSpacing: '10px' } }}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={() => setOpenTokenModal(false)} sx={{ color: '#64748B' }}>Cancelar</Button>
+                    <Button onClick={validarEIniciar} variant="contained" sx={{ bgcolor: '#0F172A', '&:hover': { bgcolor: '#32B5FE' } }}>Validar e Iniciar</Button>
+                </DialogActions>
+            </Dialog>
         </Fade>
     );
 };

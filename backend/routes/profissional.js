@@ -493,4 +493,38 @@ router.put('/config-privacidade', verifyToken, async (req, res) => {
     }
 });
 
+// ==========================================
+// ROTA: TOKEN DE VERIFICAÇÃO PARA INÍCIO DE CONSULTA
+// ==========================================
+// Gerar e enviar token
+router.post('/enviar-token', verifyToken, async (req, res) => {
+    const { agendamento_id } = req.body;
+    const token = Math.floor(100000 + Math.random() * 900000).toString(); // Gera 6 dígitos
+    
+    // Salva o token no banco
+    await pool.query('UPDATE agendamentos SET token_verificacao = ?, data_expiracao_token = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?', [token, agendamento_id]);
+    
+    // AQUI: Chame sua API de SMS/WhatsApp (Twilio/TotalVoice)
+    console.log(`Enviando SMS para paciente: Código ${token}`);
+    
+    res.json({ message: "Código enviado!" });
+});
+
+// Verificar token
+router.post('/verificar-token', verifyToken, async (req, res) => {
+    const { agendamento_id, codigo } = req.body;
+    
+    const [rows] = await pool.query(
+        'SELECT id FROM agendamentos WHERE id = ? AND token_verificacao = ? AND data_expiracao_token > NOW()', 
+        [agendamento_id, codigo]
+    );
+
+    if (rows.length > 0) {
+        await pool.query('UPDATE agendamentos SET status = "Em andamento", token_verificacao = NULL WHERE id = ?', [agendamento_id]);
+        res.json({ success: true });
+    } else {
+        res.status(400).json({ error: "Código inválido ou expirado." });
+    }
+});
+
 module.exports = router;

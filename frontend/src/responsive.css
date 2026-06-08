@@ -1,72 +1,102 @@
-/* Estilos para garantir que o layout seja responsivo e se adapte a diferentes tamanhos de tela */
+/* RESPONSIVIDADE GLOBAL DO SISTEMA */
+.app-shell {
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  background: #f8fafc;
+  overflow: hidden;
+}
 
-img, video {
-  max-width: 100%;
-  height: auto;
+.app-content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #f8fafc;
 }
 
 .MuiContainer-root,
 .MuiBox-root,
-.MuiPaper-root {
+.MuiPaper-root,
+.MuiCard-root {
   max-width: 100%;
 }
 
 .MuiTableContainer-root {
-  overflow-x: auto;
-}
-
-.MuiGrid-container {
   width: 100%;
-  margin-left: 0 !important;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Tablets */
+.MuiTable-root {
+  white-space: nowrap;
+}
+
+.MuiDialog-paper {
+  max-width: calc(100vw - 24px) !important;
+}
+
+.leaflet-container {
+  max-width: 100%;
+}
+
 @media (max-width: 900px) {
-  body {
-    overflow: auto;
+  .app-shell {
+    display: block;
+    min-height: 100dvh;
+    overflow: visible;
   }
 
-  .dashboard-layout {
-    flex-direction: column;
+  .app-content {
+    min-height: 100dvh;
   }
 
-  .sidebar {
-    width: 100% !important;
-    min-width: 100% !important;
-    height: auto !important;
+  .app-main {
+    overflow: visible;
   }
 
-  .dashboard-content {
+  .MuiGrid-container {
     width: 100%;
-    padding: 16px !important;
-  }
-}
-
-/* Celulares */
-@media (max-width: 600px) {
-  h1 {
-    font-size: 1.6rem !important;
-  }
-
-  h2 {
-    font-size: 1.3rem !important;
-  }
-
-  .MuiPaper-root {
-    padding: 16px !important;
-    border-radius: 16px !important;
-  }
-
-  .MuiButton-root {
-    width: 100%;
-  }
-
-  .MuiTextField-root {
-    width: 100%;
+    margin-left: 0 !important;
   }
 
   .MuiGrid-item {
-    max-width: 100% !important;
-    flex-basis: 100% !important;
+    padding-left: 0 !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .MuiPaper-root,
+  .MuiCard-root {
+    border-radius: 18px !important;
+  }
+
+  .MuiButton-root {
+    min-height: 42px;
+  }
+
+  .MuiTabs-flexContainer {
+    overflow-x: auto;
+  }
+
+  .MuiTypography-h4 {
+    font-size: 1.65rem !important;
+  }
+
+  .MuiTypography-h5 {
+    font-size: 1.35rem !important;
+  }
+
+  .MuiTypography-h6 {
+    font-size: 1.05rem !important;
   }
 }

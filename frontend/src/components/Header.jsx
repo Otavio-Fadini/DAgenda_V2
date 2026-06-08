@@ -3,10 +3,10 @@ import {
   Box, Typography, Avatar, IconButton, Badge, Popover, List, ListItem, 
   ListItemAvatar, ListItemText, Button, CircularProgress, Divider 
 } from '@mui/material';
-import { Bell, Check, X, Building2 } from 'lucide-react';
+import { Bell, Check, X, Building2, Menu } from 'lucide-react';
 import api from '../services/api'; // Ajuste o caminho se necessário
 
-const Header = () => {
+const Header = ({ onMenuClick, showMenuButton = false }) => {
   const [convites, setConvites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -63,16 +63,27 @@ const Header = () => {
     <Box
       component="header"
       sx={{
-        height: '70px', bgcolor: 'white', display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', px: 3, borderBottom: '1px solid #e2e8f0',
+        minHeight: { xs: '64px', md: '70px' }, bgcolor: 'white', display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', px: { xs: 2, md: 3 }, gap: 2, borderBottom: '1px solid #e2e8f0',
         width: '100%', boxSizing: 'border-box', flexShrink: 0,
       }}
     >
-      <Typography variant="h6" fontWeight="900" color="#0F172A" sx={{ letterSpacing: '-0.5px' }}>
-        DAGENDA
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+        {showMenuButton && (
+          <IconButton
+            onClick={onMenuClick}
+            aria-label="Abrir menu"
+            sx={{ bgcolor: '#F8FAFC', '&:hover': { bgcolor: '#F1F5F9' } }}
+          >
+            <Menu size={22} color="#0F172A" />
+          </IconButton>
+        )}
+        <Typography variant="h6" fontWeight="900" color="#0F172A" sx={{ letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>
+          DAGENDA
+        </Typography>
+      </Box>
       
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2, md: 3 }, minWidth: 0 }}>
         
         {/* SININHO DE NOTIFICAÇÕES (Apenas para Profissionais) */}
         {isProfissional && (
@@ -89,7 +100,7 @@ const Header = () => {
               onClose={handleCloseNotificacoes}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              PaperProps={{ sx: { width: 350, borderRadius: '16px', mt: 1.5, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)' } }}
+              PaperProps={{ sx: { width: { xs: 'calc(100vw - 24px)', sm: 350 }, borderRadius: '16px', mt: 1.5, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)' } }}
             >
               <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                 <Typography variant="subtitle2" fontWeight={800} color="#0F172A">Notificações</Typography>
@@ -146,8 +157,8 @@ const Header = () => {
           </>
         )}
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Typography variant="body2" fontWeight="800" color="#0F172A">{userName}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+          <Typography variant="body2" fontWeight="800" color="#0F172A" sx={{ display: { xs: 'none', sm: 'block' }, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userName}</Typography>
           <Avatar src={userFoto} sx={{ width: 42, height: 42, border: '2px solid #F1F5F9' }} />
         </Box>
       </Box>

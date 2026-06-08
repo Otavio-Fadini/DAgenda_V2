@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, Box, CssBaseline } from '@mui/material';
+import { ThemeProvider, createTheme, Box, CssBaseline, useMediaQuery } from '@mui/material';
 
 // Componentes de Layout
 import Sidebar from './components/Sidebar';
@@ -24,11 +24,11 @@ import ProntuarioPaciente from './pages/Paciente/ProntuarioPaciente';
 import FinanceiroPaciente from './pages/Paciente/FinanceiroPaciente';
 import ConfiguracoesPaciente from './pages/Paciente/ConfiguracoesPaciente';
 
-// Páginas Funcionais do Profissional 
+// Páginas Funcionais do Profissional
 import AgendaMedica from './pages/Profissional/AgendaMedica';
 import ConfiguracoesPerfil from './pages/Profissional/ConfiguracoesPerfil';
 import FinanceiroProfissional from './pages/Profissional/FinanceiroProfissional';
-import AtendimentoMedico from './pages/Profissional/AtendimentoMedico'; // Importada
+import AtendimentoMedico from './pages/Profissional/AtendimentoMedico';
 
 // Páginas Funcionais da Clinica
 import GerenciamentoClinica from './pages/Clinica/GerenciamentoClinica';
@@ -37,12 +37,36 @@ import FinanceiroClinica from './pages/Clinica/FinanceiroClinica';
 
 const medicalTheme = createTheme({
   palette: {
-    primary: { main: '#32B5FE' }, 
+    primary: { main: '#32B5FE' },
     secondary: { main: '#10b981' },
     background: { default: '#f8fafc' },
   },
   shape: { borderRadius: 12 },
-  typography: { fontFamily: '"Inter", sans-serif' },
+  typography: { fontFamily: '"Inter", "Roboto", "Segoe UI", sans-serif' },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: '#f8fafc',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 700,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+      },
+    },
+  },
 });
 
 function App() {
@@ -67,16 +91,11 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          {/* ROTAS PÚBLICAS */}
           <Route path="/" element={!token ? <Login onLogin={handleLoginSuccess} /> : <Navigate to="/dashboard" replace />} />
-          
           <Route path="/cadastro/paciente" element={<CadastroPaciente />} />
           <Route path="/cadastro/profissional" element={<CadastroProfissional />} />
           <Route path="/cadastro/clinica" element={<CadastroClinica />} />
-
-          {/* ROTA PROTEGIDA COM SUB-ROTAS */}
           <Route path="/dashboard/*" element={token ? <SystemLayout userType={userType} onLogout={handleLogout} /> : <Navigate to="/" replace />} />
-          
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
@@ -85,32 +104,34 @@ function App() {
 }
 
 function SystemLayout({ userType, onLogout }) {
-  const userName = localStorage.getItem('userName') || "Usuário";
+  const userName = localStorage.getItem('userName') || 'Usuário';
+  const isMobile = useMediaQuery(medicalTheme.breakpoints.down('md'));
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
-    <Box sx={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', m: 0, p: 0, bgcolor: '#f8fafc' }}>
-      
-      {/* SIDEBAR DINÂMICA */}
-      <Sidebar onLogout={onLogout} userType={userType} />
-      
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh' }}>
-        <Header userName={userName} />
-        
-        <Box component="main" sx={{ 
-          p: 0, flexGrow: 1, width: '100%', maxWidth: '100%', 
-          overflowY: 'auto', overflowX: 'hidden', display: 'flex', 
-          flexDirection: 'column', bgcolor: '#f8fafc' 
-        }}>
+    <Box className="app-shell">
+      <Sidebar
+        onLogout={onLogout}
+        userType={userType}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={closeMobileMenu}
+        isMobile={isMobile}
+      />
+
+      <Box className="app-content">
+        <Header userName={userName} onMenuClick={() => setMobileMenuOpen(true)} showMenuButton={isMobile} />
+
+        <Box component="main" className="app-main">
           <Routes>
-            {/* ROTA INICIAL DO DASHBOARD */}
             <Route index element={
-               userType === 'usuarios_cpf' ? <DashboardPaciente /> :
-               userType === 'profissionais' ? <DashboardMedico /> :
-               userType === 'usuarios_cnpj' ? <DashboardClinica /> : 
-               <Navigate to="/" replace /> 
+              userType === 'usuarios_cpf' ? <DashboardPaciente /> :
+              userType === 'profissionais' ? <DashboardMedico /> :
+              userType === 'usuarios_cnpj' ? <DashboardClinica /> :
+              <Navigate to="/" replace />
             } />
 
-            {/* ROTAS ESPECÍFICAS DO PACIENTE */}
             {userType === 'usuarios_cpf' && (
               <>
                 <Route path="novo-agendamento" element={<NovoAgendamento />} />
@@ -121,17 +142,15 @@ function SystemLayout({ userType, onLogout }) {
               </>
             )}
 
-            {/* ROTAS ESPECÍFICAS DO PROFISSIONAL */}
             {userType === 'profissionais' && (
               <>
                 <Route path="agenda-medica" element={<AgendaMedica />} />
                 <Route path="configuracao" element={<ConfiguracoesPerfil />} />
                 <Route path="financeiro" element={<FinanceiroProfissional />} />
-                <Route path="atendimento" element={<AtendimentoMedico />} /> 
+                <Route path="atendimento" element={<AtendimentoMedico />} />
               </>
             )}
 
-            {/* ROTAS ESPECÍFICAS DA CLINICA */}
             {userType === 'usuarios_cnpj' && (
               <>
                 <Route path="medicos-unidade" element={<MedicosUnidade />} />
@@ -140,7 +159,6 @@ function SystemLayout({ userType, onLogout }) {
               </>
             )}
 
-            {/* REDIRECIONAMENTO DE SEGURANÇA DENTRO DO DASHBOARD */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Box>

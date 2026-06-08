@@ -54,23 +54,33 @@
 
 /* Tablets e celulares */
 @media (max-width: 900px) {
+  html,
+  body,
+  #root {
+    height: auto !important;
+    min-height: 100vh;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
   .app-shell {
     display: block;
-    height: auto;
+    height: auto !important;
     min-height: 100dvh;
-    overflow: visible;
+    overflow: visible !important;
   }
 
   .app-content {
-    height: auto;
+    height: auto !important;
     min-height: 100dvh;
-    overflow: visible;
+    overflow: visible !important;
   }
 
   .app-main {
-    height: auto;
+    height: auto !important;
     min-height: 100dvh;
-    overflow: visible;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
   }
 
   .MuiGrid-container {

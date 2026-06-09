@@ -115,7 +115,7 @@ const CadastroProfissional = () => {
         <Box sx={{ 
             minHeight: '100vh',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: { xs: 'flex-start', md: 'center' },
             justifyContent: 'center',
             background: 'linear-gradient(135deg, #F0F4F8 0%, #D9E2EC 100%)',
             p: 2,
@@ -125,30 +125,30 @@ const CadastroProfissional = () => {
                 <Box
                     sx={{
                         width: '100%',
-                        maxWidth: '1100px',
+                        maxWidth: '1040px',
                         mx: 'auto',
                         display: 'flex',
                         justifyContent: 'center',
+                        alignItems: 'flex-start',
+                        gap: { xs: 3, md: 3 },
+                        flexDirection: { xs: 'column', md: 'row' },
                     }}
                 >
-                    {/* CONTAINER PRINCIPAL QUE DIVIDE A TELA */}
-                    <Grid
-                        container
-                        spacing={4}
-                        sx={{
-                            width: '100%',
-                            margin: '0 !important',
-                            justifyContent: 'center',
-                            alignItems: 'flex-start',
-                        }}
-                    >
                     
                     {/* COLUNA ESQUERDA: FORMULÁRIO */}
-                    <Grid item xs={12} md={7} sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Box
+                        sx={{
+                            width: '100%',
+                            maxWidth: 560,
+                            display: 'flex',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                        }}
+                    >
                         <Paper elevation={0} sx={{ 
                             p: { xs: 3, md: 4 }, 
                             borderRadius: '20px', 
-                            maxWidth: 650, 
+                            maxWidth: 560, 
                             width: '100%', 
                             bgcolor: '#ffffff',
                             boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 0 10px rgba(50, 181, 254, 0.05)' 
@@ -191,7 +191,7 @@ const CadastroProfissional = () => {
                                                 </Box>
                                             </Box>
 
-                                            <Grid container spacing={4} sx={{ width: '100%', maxWidth: '1100px', mx: 'auto', justifyContent: 'center', alignItems: 'flex-start', margin: '0 !important' }}>
+                                            <Grid container spacing={2} sx={{ width: '100%', maxWidth: 430, mx: 'auto', justifyContent: 'center', alignItems: 'flex-start', margin: '0 !important' }}>
                                                 <Grid item xs={12}>
                                                     <TextField fullWidth label="Nome Completo" variant="outlined" sx={modernInputStyle} value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} required />
                                                 </Grid>
@@ -229,7 +229,7 @@ const CadastroProfissional = () => {
                                 {tabValue === 1 && (
                                     <Fade in={true}>
                                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 2 }}>
-                                            <Grid container spacing={4} sx={{ width: '100%', maxWidth: '1100px', mx: 'auto', justifyContent: 'center', alignItems: 'flex-start', margin: '0 !important' }}>
+                                            <Grid container spacing={2} sx={{ width: '100%', maxWidth: 430, mx: 'auto', justifyContent: 'center', alignItems: 'flex-start', margin: '0 !important' }}>
                                                 <Grid item xs={12} sm={4}>
                                                     <TextField fullWidth label="CEP" value={formData.cep} onChange={handleCepChange} inputProps={{ maxLength: 9 }} sx={modernInputStyle} required />
                                                 </Grid>
@@ -278,12 +278,20 @@ const CadastroProfissional = () => {
                                 </Typography>
                             </Box>
                         </Paper>
-                    </Grid>
+                    </Box>
 
                     {/* COLUNA DIREITA: AVISO INFORMATIVO LATERAL */}
-                    <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Box
+                        sx={{
+                            width: '100%',
+                            maxWidth: 360,
+                            display: 'flex',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                        }}
+                    >
                         <Box sx={{ 
-                            p: 4, 
+                            p: { xs: 3, md: 3.5 }, 
                             bgcolor: '#F0F9FF', 
                             borderRadius: '24px', 
                             border: '1px dashed #BAE6FD', 
@@ -292,7 +300,7 @@ const CadastroProfissional = () => {
                             gap: 2,
                             position: { xs: 'static', lg: 'sticky' },
                             top: 24,
-                            maxWidth: 500,
+                            maxWidth: 360,
                             width: '100%',
                             boxShadow: '0 10px 25px -5px rgba(14, 165, 233, 0.1)'
                         }}>
@@ -317,9 +325,7 @@ const CadastroProfissional = () => {
                                 </Typography>
                             </Box>
                         </Box>
-                    </Grid>
-
-                    </Grid>
+                    </Box>
                 </Box>
             </Fade>
         </Box>

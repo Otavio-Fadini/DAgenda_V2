@@ -139,15 +139,7 @@ const GerenciamentoClinica = () => {
 
     const showNotification = (message, type) => setNotification({ open: true, message, type });
 
-    const modernInputStyle = {
-        '& .MuiOutlinedInput-root': {
-            borderRadius: '12px', backgroundColor: '#F8FAFC', transition: 'all 0.2s',
-            '& fieldset': { borderColor: '#E2E8F0' },
-            '&:hover fieldset': { borderColor: '#32B5FE' },
-            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
-            '&.Mui-focused': { backgroundColor: '#FFFFFF', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
-        }
-    };
+    const modernInputStyle = {};
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#F8FAFC' }}>

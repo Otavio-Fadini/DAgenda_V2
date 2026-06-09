@@ -182,7 +182,7 @@ const ConfiguracoesPerfil = () => {
     };
 
     const showNotification = (message, type) => setNotification({ open: true, message, type });
-    const inputStyle = { '& .MuiOutlinedInput-root': { borderRadius: '12px', backgroundColor: '#F8FAFC' } };
+    const inputStyle = {};
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress sx={{ color: '#32B5FE' }} /></Box>

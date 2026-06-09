@@ -107,17 +107,7 @@ const AtendimentoMedico = () => {
     };
 
     // Estilo Moderno para o Input (Muda visualmente se for Modo Leitura)
-    const modernInputStyle = {
-        '& .MuiOutlinedInput-root': { 
-            bgcolor: isConcluido ? '#F1F5F9' : '#FAFAFA', 
-            borderRadius: '16px', fontSize: '1.05rem', lineHeight: 1.6,
-            transition: 'all 0.2s',
-            '& fieldset': { borderColor: isConcluido ? 'transparent' : '#E2E8F0', borderWidth: '1px' },
-            '&:hover fieldset': { borderColor: isConcluido ? 'transparent' : '#CBD5E1' },
-            '&.Mui-focused fieldset': { borderColor: isConcluido ? 'transparent' : '#32B5FE', borderWidth: isConcluido ? '0px' : '2px' },
-            '&.Mui-focused': { bgcolor: isConcluido ? '#F1F5F9' : '#FFFFFF', boxShadow: isConcluido ? 'none' : '0 4px 20px rgba(50, 181, 254, 0.08)' }
-        }
-    };
+    const modernInputStyle = {};
 
     return (
         <Fade in={true} timeout={600}>

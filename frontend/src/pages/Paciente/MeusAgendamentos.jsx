@@ -237,15 +237,7 @@ const MeusAgendamentos = () => {
         }
     };
 
-    const modernInputStyle = {
-        '& .MuiOutlinedInput-root': {
-            borderRadius: '12px', bgcolor: '#FFFFFF', transition: 'all 0.2s ease-in-out',
-            '& fieldset': { borderColor: '#E2E8F0' },
-            '&:hover fieldset': { borderColor: '#CBD5E1' },
-            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
-            '&.Mui-focused': { boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
-        }
-    };
+    const modernInputStyle = {};
     
 
     return (

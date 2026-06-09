@@ -232,16 +232,7 @@ const NovoAgendamento = () => {
         return <ShieldCheck size={14} />;
     };
 
-    const modernInputStyle = {
-        '& .MuiOutlinedInput-root': {
-            borderRadius: '12px', bgcolor: '#F8FAFC', transition: 'all 0.2s',
-            '& fieldset': { borderColor: 'transparent' },
-            '&:hover fieldset': { borderColor: '#E2E8F0' },
-            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
-            '&.Mui-focused': { bgcolor: '#FFFFFF', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' },
-            '&.Mui-disabled': { bgcolor: '#F1F5F9' }
-        }
-    };
+    const modernInputStyle = {};
 
     return (
         <Box className="novo-agendamento-page" sx={{ height: { xs: 'auto', md: '100vh' }, minHeight: { xs: '100dvh', md: '100vh' }, display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', overflow: { xs: 'visible', md: 'hidden' } }}>

@@ -129,14 +129,7 @@ const ConfiguracoesPaciente = () => {
 
     const showNotification = (message, type) => setNotification({ open: true, message, type });
 
-    const inputStyle = {
-        '& .MuiOutlinedInput-root': {
-            borderRadius: '12px', backgroundColor: '#F8FAFC', transition: 'all 0.2s',
-            '& fieldset': { borderColor: '#E2E8F0' },
-            '&:hover fieldset': { borderColor: '#32B5FE' },
-            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' }
-        }
-    };
+    const inputStyle = {};
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#F8FAFC' }}>

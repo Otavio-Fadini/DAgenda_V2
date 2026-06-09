@@ -96,18 +96,7 @@ const CadastroPaciente = () => {
         }
     };
 
-    const modernInputStyle = {
-        '& .MuiOutlinedInput-root': {
-            borderRadius: '10px',
-            backgroundColor: '#F8FAFC',
-            transition: 'all 0.2s ease-in-out',
-            '& fieldset': { borderColor: 'transparent' },
-            '&:hover fieldset': { borderColor: '#E2E8F0' },
-            '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' },
-            '&.Mui-focused': { backgroundColor: '#FFFFFF', boxShadow: '0 4px 12px rgba(50, 181, 254, 0.1)' }
-        },
-        '& .MuiInputBase-input': { padding: '14px' } 
-    };
+    const modernInputStyle = {};
 
     return (
         <Box sx={{ 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, Box, CssBaseline, useMediaQuery } from '@mui/material';
+import { Box, useMediaQuery, useTheme } from '@mui/material';
 
 // Componentes de Layout
 import Sidebar from './components/Sidebar';
@@ -35,40 +35,6 @@ import GerenciamentoClinica from './pages/Clinica/GerenciamentoClinica';
 import MedicosUnidade from './pages/Clinica/MedicosUnidade';
 import FinanceiroClinica from './pages/Clinica/FinanceiroClinica';
 
-const medicalTheme = createTheme({
-  palette: {
-    primary: { main: '#32B5FE' },
-    secondary: { main: '#10b981' },
-    background: { default: '#f8fafc' },
-  },
-  shape: { borderRadius: 12 },
-  typography: { fontFamily: '"Inter", "Roboto", "Segoe UI", sans-serif' },
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          backgroundColor: '#f8fafc',
-        },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          fontWeight: 700,
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-        },
-      },
-    },
-  },
-});
-
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [userType, setUserType] = useState(localStorage.getItem('userType'));
@@ -87,9 +53,7 @@ function App() {
   };
 
   return (
-    <ThemeProvider theme={medicalTheme}>
-      <CssBaseline />
-      <Router>
+    <Router>
         <Routes>
           <Route path="/" element={!token ? <Login onLogin={handleLoginSuccess} /> : <Navigate to="/dashboard" replace />} />
           <Route path="/cadastro/paciente" element={<CadastroPaciente />} />
@@ -98,14 +62,14 @@ function App() {
           <Route path="/dashboard/*" element={token ? <SystemLayout userType={userType} onLogout={handleLogout} /> : <Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Router>
-    </ThemeProvider>
+    </Router>
   );
 }
 
 function SystemLayout({ userType, onLogout }) {
+  const theme = useTheme();
   const userName = localStorage.getItem('userName') || 'Usuário';
-  const isMobile = useMediaQuery(medicalTheme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const closeMobileMenu = () => setMobileMenuOpen(false);

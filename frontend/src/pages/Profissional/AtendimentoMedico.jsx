@@ -79,6 +79,14 @@ const AtendimentoMedico = () => {
 
     const nomePaciente = state.paciente || state.paciente_nome || 'Paciente não identificado';
 
+    const fotoPaciente =
+        state.foto_paciente ||
+        state.paciente_foto ||
+        state.foto_perfil ||
+        state.foto_url ||
+        state.avatar_paciente ||
+        '';
+
     const finalizarAtendimento = async () => {
         if (!evolucao.trim()) {
             setAbaAtiva(0); 
@@ -161,34 +169,128 @@ const AtendimentoMedico = () => {
             <Box className="atendimento-medico-page" sx={{ height: { xs: 'auto', md: '100vh' }, minHeight: { xs: '100dvh', md: '100vh' }, display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', overflow: { xs: 'visible', md: 'hidden' } }}>
                 
                 {/* 1. CABEÇALHO FIXO PREMIUM */}
-                <Paper elevation={0} sx={{ px: 4, py: 2, borderBottom: '1px solid #E2E8F0', borderRadius: 0, bgcolor: 'white', zIndex: 10, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2, boxShadow: '0 4px 20px -10px rgba(0,0,0,0.05)' }}>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 3 }} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        px: { xs: 2, md: 4 },
+                        py: { xs: 2, md: 2 },
+                        borderBottom: '1px solid #E2E8F0',
+                        borderRadius: 0,
+                        bgcolor: 'white',
+                        zIndex: 10,
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        textAlign: { xs: 'center', md: 'left' },
+                        gap: { xs: 2, md: 3 },
+                        boxShadow: '0 4px 20px -10px rgba(0,0,0,0.05)',
+                        position: 'relative'
+                    }}
+                >
+                    <Stack
+                        direction={{ xs: 'column', md: 'row' }}
+                        spacing={{ xs: 1.5, md: 3 }}
+                        alignItems="center"
+                        justifyContent={{ xs: 'center', md: 'flex-start' }}
+                        sx={{ width: { xs: '100%', md: 'auto' }, minWidth: 0 }}
+                    >
                         <Tooltip title="Voltar para Agenda" arrow>
-                            <IconButton onClick={() => navigate('/dashboard/agenda-medica')} sx={{ bgcolor: '#F1F5F9', '&:hover': { bgcolor: '#E2E8F0', color: '#0F172A' } }}>
+                            <IconButton
+                                onClick={() => navigate('/dashboard/agenda-medica')}
+                                sx={{
+                                    bgcolor: '#F1F5F9',
+                                    alignSelf: { xs: 'flex-start', md: 'center' },
+                                    mb: { xs: 1, md: 0 },
+                                    '&:hover': { bgcolor: '#E2E8F0', color: '#0F172A' }
+                                }}
+                            >
                                 <ArrowLeft size={20} />
                             </IconButton>
                         </Tooltip>
-                        
-                        <Divider orientation="vertical" flexItem sx={{ borderColor: '#E2E8F0' }} />
-                        
-                        <Avatar sx={{ bgcolor: '#0F172A', color: '#FFF', fontWeight: 900, width: 48, height: 48, border: '2px solid #F1F5F9' }}>
-                            {nomePaciente[0].toUpperCase()}
-                        </Avatar>
-                        
-                        <Box>
-                            <Typography variant="h6" fontWeight={900} color="#0F172A" sx={{ lineHeight: 1.2 }}>
-                                {nomePaciente}
-                            </Typography>
-                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
-                                <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+
+                        <Divider
+                            orientation="vertical"
+                            flexItem
+                            sx={{
+                                borderColor: '#E2E8F0',
+                                display: { xs: 'none', md: 'block' }
+                            }}
+                        />
+
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: { xs: 'column', md: 'row' },
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: { xs: 1.5, md: 2 },
+                                width: { xs: '100%', md: 'auto' },
+                                minWidth: 0
+                            }}
+                        >
+                            <Avatar
+                                src={fotoPaciente}
+                                alt={nomePaciente}
+                                imgProps={{ referrerPolicy: 'no-referrer' }}
+                                sx={{
+                                    bgcolor: '#0F172A',
+                                    color: '#FFF',
+                                    fontWeight: 900,
+                                    width: { xs: 90, md: 58 },
+                                    height: { xs: 90, md: 58 },
+                                    border: '3px solid #FFFFFF',
+                                    boxShadow: '0 8px 24px rgba(15, 23, 42, 0.16)',
+                                    fontSize: { xs: '2rem', md: '1.2rem' }
+                                }}
+                            >
+                                {nomePaciente?.charAt(0)?.toUpperCase()}
+                            </Avatar>
+
+                            <Box sx={{ minWidth: 0, textAlign: { xs: 'center', md: 'left' } }}>
+                                <Typography
+                                    variant="h6"
+                                    fontWeight={900}
+                                    color="#0F172A"
+                                    sx={{ lineHeight: 1.2, wordBreak: 'break-word' }}
+                                >
+                                    {nomePaciente}
+                                </Typography>
+
+                                <Typography
+                                    variant="caption"
+                                    color="#64748B"
+                                    fontWeight={700}
+                                    sx={{
+                                        mt: 0.5,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 0.5
+                                    }}
+                                >
                                     <Activity size={14} /> {isConcluido ? 'Resumo do Atendimento' : 'Atendimento Presencial'}
                                 </Typography>
-                            </Stack>
+                            </Box>
                         </Box>
                     </Stack>
 
                     {/* Cronômetro ou Cadeado de Leitura */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1, bgcolor: isConcluido ? '#F1F5F9' : '#F8FAFC', borderRadius: '12px', border: '1px solid', borderColor: isConcluido ? '#E2E8F0' : '#E2E8F0' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 1.5,
+                            px: 2,
+                            py: 1,
+                            bgcolor: isConcluido ? '#F1F5F9' : '#F8FAFC',
+                            borderRadius: '12px',
+                            border: '1px solid #E2E8F0',
+                            width: { xs: '100%', sm: 'auto' },
+                            maxWidth: { xs: 220, sm: 'none' }
+                        }}
+                    >
                         {isConcluido ? (
                             <>
                                 <Lock size={18} color="#64748B" />

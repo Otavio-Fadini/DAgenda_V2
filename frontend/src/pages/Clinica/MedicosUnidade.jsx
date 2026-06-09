@@ -27,7 +27,7 @@ const MedicosUnidade = () => {
     const [agendaLista, setAgendaLista] = useState([]);
     const [loadingAgenda, setLoadingAgenda] = useState(false);
     const [paginaAtual, setPaginaAtual] = useState(1);
-    const itensPorPagina = 5;
+    const itensPorPagina = 4;
 
     useEffect(() => {
         carregarMedicos();

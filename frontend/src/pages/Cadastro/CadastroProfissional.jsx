@@ -113,19 +113,34 @@ const CadastroProfissional = () => {
 
     return (
         <Box sx={{ 
-            minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            background: 'linear-gradient(135deg, #F0F4F8 0%, #D9E2EC 100%)', p: 2 
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #F0F4F8 0%, #D9E2EC 100%)',
+            p: { xs: 2, sm: 3, md: 4 },
+            boxSizing: 'border-box' 
         }}>
             <Fade in={true} timeout={800}>
                 {/* CONTAINER PRINCIPAL QUE DIVIDE A TELA */}
-                <Grid container spacing={4} sx={{ maxWidth: '1100px', mx: 'auto', alignItems: 'flex-start', justifyContent: 'center' }}>
+                <Grid
+                    container
+                    spacing={{ xs: 3, md: 4 }}
+                    sx={{
+                        width: '100%',
+                        maxWidth: '1200px',
+                        mx: 'auto',
+                        alignItems: { xs: 'center', lg: 'flex-start' },
+                        justifyContent: 'center',
+                    }}
+                >
                     
                     {/* COLUNA ESQUERDA: FORMULÁRIO */}
-                    <Grid item xs={12} md={7} sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Grid item xs={12} lg={7} sx={{ display: 'flex', justifyContent: 'center' }}>
                         <Paper elevation={0} sx={{ 
                             p: { xs: 3, md: 4 }, 
                             borderRadius: '20px', 
-                            maxWidth: 600, 
+                            maxWidth: 650, 
                             width: '100%', 
                             bgcolor: '#ffffff',
                             boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 0 10px rgba(50, 181, 254, 0.05)' 
@@ -258,7 +273,7 @@ const CadastroProfissional = () => {
                     </Grid>
 
                     {/* COLUNA DIREITA: AVISO INFORMATIVO LATERAL */}
-                    <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Grid item xs={12} lg={5} sx={{ display: 'flex', justifyContent: 'center' }}>
                         <Box sx={{ 
                             p: 4, 
                             bgcolor: '#F0F9FF', 
@@ -267,9 +282,9 @@ const CadastroProfissional = () => {
                             display: 'flex', 
                             flexDirection: 'column', 
                             gap: 2,
-                            position: 'sticky', 
+                            position: { xs: 'static', lg: 'sticky' },
                             top: 24,
-                            maxWidth: 450,
+                            maxWidth: 500,
                             width: '100%',
                             boxShadow: '0 10px 25px -5px rgba(14, 165, 233, 0.1)'
                         }}>

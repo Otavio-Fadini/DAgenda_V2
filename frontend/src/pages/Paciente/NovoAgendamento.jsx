@@ -244,37 +244,37 @@ const NovoAgendamento = () => {
     };
 
     return (
-        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', overflow: 'hidden' }}>
+        <Box className="novo-agendamento-page" sx={{ height: { xs: 'auto', md: '100vh' }, minHeight: { xs: '100dvh', md: '100vh' }, display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', overflow: { xs: 'visible', md: 'hidden' } }}>
             
             {/* TOP BAR */}
-            <Box sx={{ px: { xs: 2, md: 4 }, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#FFF', borderBottom: '1px solid #F1F5F9', zIndex: 10 }}>
-                <Stepper activeStep={activeStep} sx={{ width: '100%', maxWidth: 800, '& .MuiStepLabel-label': { fontWeight: 700, fontSize: '0.9rem', color: '#64748B' }, '& .MuiStepLabel-label.Mui-active': { color: '#0F172A', fontWeight: 900 } }}>
+            <Box className="agendamento-stepbar" sx={{ px: { xs: 1.5, md: 4 }, py: { xs: 1.25, md: 2 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#FFF', borderBottom: '1px solid #F1F5F9', zIndex: 10, overflowX: { xs: 'auto', md: 'visible' }, gap: { xs: 1, md: 2 } }}>
+                <Stepper className="agendamento-stepper" activeStep={activeStep} sx={{ width: '100%', maxWidth: 800, minWidth: { xs: 520, md: 'auto' }, '& .MuiStepLabel-label': { fontWeight: 700, fontSize: { xs: '0.72rem', md: '0.9rem' }, color: '#64748B' }, '& .MuiStepLabel-label.Mui-active': { color: '#0F172A', fontWeight: 900 } }}>
                     {['Especialista', 'Localização', 'Agendamento', 'Confirmação'].map(label => (<Step key={label}><StepLabel>{label}</StepLabel></Step>))}
                 </Stepper>
                 <Button variant="outlined" onClick={() => navigate(-1)} sx={{ ml: 2, borderRadius: '12px', textTransform: 'none', fontWeight: 700, color: '#64748B', borderColor: '#E2E8F0', '&:hover': { bgcolor: '#F1F5F9', borderColor: '#CBD5E1' } }}>Cancelar</Button>
             </Box>
 
-            <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            <Box className="agendamento-content" sx={{ flex: 1, position: 'relative', overflow: { xs: 'visible', md: 'hidden' }, minHeight: 0 }}>
                 
                 {/* PASSO 0: PROFISSIONAIS */}
                 {activeStep === 0 && (
                     <Fade in={activeStep === 0}>
-                        <Box sx={{ height: '100%', overflowY: 'auto', p: { xs: 3, md: 6 } }}>
+                        <Box sx={{ height: { xs: 'auto', md: '100%' }, overflowY: { xs: 'visible', md: 'auto' }, p: { xs: 2, md: 6 }, pb: { xs: 4, md: 6 } }}>
                             <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
                                 <Box sx={{ mb: 5 }}>
                                     <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>Encontre seu especialista</Typography>
                                     <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>Selecione o profissional ideal para o seu atendimento.</Typography>
                                 </Box>
 
-                                <Paper elevation={0} sx={{ p: 1.5, mb: 6, borderRadius: '20px', display: 'flex', alignItems: 'center', border: '1px solid #F1F5F9', bgcolor: '#FFFFFF', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)' }}>
-                                    <Box sx={{ flex: 2, px: 2 }}>
+                                <Paper className="agendamento-filtros" elevation={0} sx={{ p: { xs: 2, sm: 1.5 }, mb: { xs: 3, md: 6 }, borderRadius: '20px', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center' }, gap: { xs: 2, sm: 0 }, border: '1px solid #F1F5F9', bgcolor: '#FFFFFF', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)', overflow: 'hidden' }}>
+                                    <Box sx={{ flex: 2, px: { xs: 0, sm: 2 }, width: '100%' }}>
                                         <Stack direction="row" spacing={2} sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: '14px', display: 'flex', alignItems: 'center' }}>
                                             <Search size={22} color="#32B5FE" />
                                             <InputBase fullWidth placeholder="Busque por nome ou especialidade..." value={busca} onChange={e => setBusca(e.target.value)} sx={{ fontWeight: 600, fontSize: '1.05rem', color: '#0F172A' }} />
                                         </Stack>
                                     </Box>
                                     <Divider orientation="vertical" flexItem sx={{ height: 40, mx: 2, borderColor: '#F1F5F9' }} />
-                                    <Box sx={{ flex: 1, px: 2 }}>
+                                    <Box sx={{ flex: 1, px: { xs: 0, sm: 2 }, width: '100%', display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
                                         <FormControlLabel control={<Switch checked={apenasConvenio} onChange={e => setApenasConvenio(e.target.checked)} sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#32B5FE' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#32B5FE' } }} />} label={<Typography variant="subtitle2" fontWeight={800} color="#64748B">ACEITA CONVÊNIO</Typography>} />
                                     </Box>
                                 </Paper>
@@ -325,9 +325,9 @@ const NovoAgendamento = () => {
 
                 {/* PASSO 1: LOCALIZAÇÃO */}
                 {activeStep === 1 && (
-                    <Box sx={{ display: 'flex', height: '100%' }}>
-                        <Box sx={{ width: { xs: '100%', md: 460 }, borderRight: '1px solid #F1F5F9', bgcolor: '#FFF', display: 'flex', flexDirection: 'column', zIndex: 5, boxShadow: '20px 0 40px -20px rgba(0,0,0,0.05)' }}>
-                            <Box sx={{ p: 4, bgcolor: '#F8FAFC', borderBottom: '1px solid #F1F5F9' }}>
+                    <Box sx={{ display: 'flex', height: { xs: 'auto', md: '100%' }, minHeight: { xs: 'auto', md: 0 }, flexDirection: { xs: 'column', md: 'row' } }}>
+                        <Box sx={{ width: { xs: '100%', md: 460 }, borderRight: { xs: 0, md: '1px solid #F1F5F9' }, bgcolor: '#FFF', display: 'flex', flexDirection: 'column', zIndex: 5, boxShadow: { xs: 'none', md: '20px 0 40px -20px rgba(0,0,0,0.05)' } }}>
+                            <Box sx={{ p: { xs: 2.5, md: 4 }, bgcolor: '#F8FAFC', borderBottom: '1px solid #F1F5F9' }}>
                                 <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 1, letterSpacing: '-0.5px' }}>Onde agendar?</Typography>
                                 <Typography variant="body2" color="#64748B" fontWeight={600}>Unidades que atendem com <Box component="span" fontWeight={800} color="#0F172A">{agendamento.nome_medico}</Box></Typography>
                             </Box>
@@ -422,10 +422,10 @@ const NovoAgendamento = () => {
                 {/* PASSO 2: REVISÃO DE HORÁRIO (COM BUSCA INTELIGENTE) */}
                 {activeStep === 2 && (
                     <Fade in={activeStep === 2}>
-                        <Box sx={{ height: '100%', overflowY: 'auto', p: { xs: 2, md: 6 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box sx={{ height: { xs: 'auto', md: '100%' }, overflowY: { xs: 'visible', md: 'auto' }, p: { xs: 2, md: 6 }, pt: { xs: 3, md: 6 }, display: 'flex', alignItems: { xs: 'flex-start', md: 'center' }, justifyContent: 'center' }}>
                             <Paper elevation={0} sx={{ maxWidth: 1000, width: '100%', borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, border: '1px solid #F1F5F9', boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.08)' }}>
                                 
-                                <Box sx={{ flex: 1, p: 6, background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: '#FFF', position: 'relative', overflow: 'hidden' }}>
+                                <Box sx={{ flex: 1, p: { xs: 3, md: 6 }, background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: '#FFF', position: 'relative', overflow: 'hidden', textAlign: { xs: 'center', md: 'left' } }}>
                                     <Box sx={{ position: 'absolute', top: -50, left: -50, width: 200, height: 200, background: 'radial-gradient(circle, rgba(50, 181, 254, 0.15) 0%, rgba(0,0,0,0) 70%)' }} />
                                     
                                     <Box sx={{ position: 'relative', zIndex: 1 }}>
@@ -491,9 +491,9 @@ const NovoAgendamento = () => {
                 {/* PASSO 3: CONFIRMAÇÃO DE PRÉ-AGENDAMENTO */}
                 {activeStep === 3 && (
                     <Fade in={activeStep === 3}>
-                        <Box sx={{ height: '100%', overflowY: 'auto', p: { xs: 2, md: 6 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box sx={{ height: { xs: 'auto', md: '100%' }, overflowY: { xs: 'visible', md: 'auto' }, p: { xs: 2, md: 6 }, pt: { xs: 3, md: 6 }, display: 'flex', alignItems: { xs: 'flex-start', md: 'center' }, justifyContent: 'center' }}>
                             <Paper elevation={0} sx={{ maxWidth: 1000, width: '100%', borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, border: '1px solid #F1F5F9', boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.08)' }}>
-                                <Box sx={{ flex: 1, p: 6, bgcolor: '#F8FAFC', borderRight: '1px solid #F1F5F9' }}>
+                                <Box sx={{ flex: 1, p: { xs: 3, md: 6 }, bgcolor: '#F8FAFC', borderRight: { xs: 0, md: '1px solid #F1F5F9' } }}>
                                     <Typography variant="h5" fontWeight={900} color="#0F172A" sx={{ mb: 4, letterSpacing: '-0.5px' }}>Resumo do Pedido</Typography>
                                     <Stack spacing={3} sx={{ mb: 5 }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><Typography variant="body2" color="#64748B" fontWeight={700}>Serviço</Typography><Typography variant="body1" fontWeight={800} color="#0F172A">Consulta Médica</Typography></Box>
@@ -505,7 +505,7 @@ const NovoAgendamento = () => {
                                     <Button startIcon={<ChevronLeft />} onClick={() => setActiveStep(2)} sx={{ mt: 6, color: '#64748B', fontWeight: 800, textTransform: 'none', borderRadius: '10px', '&:hover': { bgcolor: '#E2E8F0' } }}>Voltar e editar horário</Button>
                                 </Box>
 
-                                <Box sx={{ flex: 1.3, p: 6, bgcolor: '#FFF', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                <Box sx={{ flex: 1.3, p: { xs: 3, md: 6 }, bgcolor: '#FFF', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
                                         <Box sx={{ p: 1, bgcolor: '#EFF6FF', borderRadius: '8px', display: 'flex' }}>
                                             <Clock size={16} color="#3B82F6" />

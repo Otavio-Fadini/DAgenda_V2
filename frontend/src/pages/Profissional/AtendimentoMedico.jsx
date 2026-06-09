@@ -121,11 +121,11 @@ const AtendimentoMedico = () => {
 
     return (
         <Fade in={true} timeout={600}>
-            <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', overflow: 'hidden' }}>
+            <Box className="atendimento-medico-page" sx={{ height: { xs: 'auto', md: '100vh' }, minHeight: { xs: '100dvh', md: '100vh' }, display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', overflow: { xs: 'visible', md: 'hidden' } }}>
                 
                 {/* 1. CABEÇALHO FIXO PREMIUM */}
                 <Paper elevation={0} sx={{ px: 4, py: 2, borderBottom: '1px solid #E2E8F0', borderRadius: 0, bgcolor: 'white', zIndex: 10, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2, boxShadow: '0 4px 20px -10px rgba(0,0,0,0.05)' }}>
-                    <Stack direction="row" spacing={3} alignItems="center">
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 3 }} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
                         <Tooltip title="Voltar para Agenda" arrow>
                             <IconButton onClick={() => navigate('/dashboard/agenda-medica')} sx={{ bgcolor: '#F1F5F9', '&:hover': { bgcolor: '#E2E8F0', color: '#0F172A' } }}>
                                 <ArrowLeft size={20} />
@@ -167,14 +167,17 @@ const AtendimentoMedico = () => {
                 </Paper>
 
                 {/* 2. ÁREA CENTRAL DE TRABALHO */}
-                <Box sx={{ flexGrow: 1, display: 'flex', overflow: 'hidden' }}>
+                <Box className="atendimento-workspace" sx={{ flexGrow: 1, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, overflow: { xs: 'visible', md: 'hidden' }, minHeight: 0 }}>
                     
                     {/* ESQUERDA: EDITOR DO PRONTUÁRIO */}
-                    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF' }}>
+                    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF', minWidth: 0 }}>
                         
                         {/* Menu de Abas */}
-                        <Box sx={{ borderBottom: 1, borderColor: '#E2E8F0', px: 4, pt: 2 }}>
+                        <Box sx={{ borderBottom: 1, borderColor: '#E2E8F0', px: { xs: 1, md: 4 }, pt: 2, overflowX: 'auto' }}>
                             <Tabs 
+                                variant="scrollable"
+                                scrollButtons="auto"
+                                allowScrollButtonsMobile
                                 value={abaAtiva} 
                                 onChange={(e, newValue) => setAbaAtiva(newValue)}
                                 sx={{ 
@@ -195,7 +198,7 @@ const AtendimentoMedico = () => {
                                 <CircularProgress sx={{ color: '#32B5FE' }} />
                             </Box>
                         ) : (
-                            <Box sx={{ flexGrow: 1, p: 4, overflowY: 'auto', bgcolor: '#F8FAFC' }}>
+                            <Box sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, overflowY: { xs: 'visible', md: 'auto' }, bgcolor: '#F8FAFC' }}>
                                 
                                 {/* ABA 0: ANAMNESE E EVOLUÇÃO */}
                                 {abaAtiva === 0 && (
@@ -256,7 +259,7 @@ const AtendimentoMedico = () => {
                     </Box>
 
                     {/* DIREITA: PAINEL AUXILIAR (Resumo) */}
-                    <Box sx={{ width: 340, bgcolor: 'white', borderLeft: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column' }}>
+                    <Box sx={{ width: { xs: '100%', md: 340 }, bgcolor: 'white', borderLeft: { xs: 0, md: '1px solid #E2E8F0' }, borderTop: { xs: '1px solid #E2E8F0', md: 0 }, display: 'flex', flexDirection: 'column' }}>
                         <Box sx={{ p: 3, borderBottom: '1px solid #F1F5F9' }}>
                             <Typography variant="subtitle1" fontWeight={900} color="#0F172A">Resumo da Sessão</Typography>
                         </Box>
@@ -303,7 +306,7 @@ const AtendimentoMedico = () => {
                 </Box>
 
                 {/* 3. BARRA DE AÇÕES INFERIOR (Oculta ou Alterada se Concluído) */}
-                <Paper elevation={0} sx={{ p: 2, px: 4, borderTop: '1px solid #E2E8F0', bgcolor: 'white', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Paper elevation={0} sx={{ p: { xs: 2, md: 2 }, px: { xs: 2, md: 4 }, borderTop: '1px solid #E2E8F0', bgcolor: 'white', zIndex: 10, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'space-between', alignItems: 'center' }}>
                     <Button 
                         variant="text" 
                         onClick={() => navigate('/dashboard/agenda-medica')}

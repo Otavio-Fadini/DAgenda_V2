@@ -280,3 +280,110 @@
     max-width: 340px !important;
   }
 }
+
+
+/* =====================================================
+   AJUSTES FINOS DAS TELAS DO PACIENTE E ATENDIMENTO
+===================================================== */
+@media (max-width: 900px) {
+  .novo-agendamento-page,
+  .novo-agendamento-page .agendamento-content,
+  .atendimento-medico-page,
+  .atendimento-medico-page .atendimento-workspace {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+  }
+
+  .novo-agendamento-page .agendamento-stepbar {
+    position: relative !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .novo-agendamento-page .agendamento-stepbar::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .novo-agendamento-page .agendamento-filtros {
+    align-items: stretch !important;
+    text-align: center !important;
+  }
+
+  .novo-agendamento-page .MuiInputBase-input {
+    text-align: center;
+  }
+
+  .novo-agendamento-page .MuiStepConnector-root {
+    min-width: 18px;
+  }
+
+  .paciente-stats .MuiPaper-root {
+    min-height: 124px;
+  }
+
+  .atendimento-medico-page .MuiTabs-root {
+    max-width: 100% !important;
+  }
+
+  .atendimento-medico-page .MuiTab-root {
+    min-width: max-content !important;
+    font-size: 0.86rem !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .atendimento-medico-page .MuiTextField-root {
+    max-width: 100% !important;
+  }
+
+  .atendimento-medico-page .MuiListItem-root,
+  .atendimento-medico-page .MuiListItemText-root {
+    text-align: left !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .paciente-stats .MuiPaper-root {
+    width: 100% !important;
+    max-width: 320px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .paciente-stats .MuiTypography-h4 {
+    font-size: 1.75rem !important;
+    word-break: break-word;
+  }
+
+  .novo-agendamento-page .agendamento-stepbar {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .novo-agendamento-page .agendamento-stepper {
+    min-width: 560px !important;
+  }
+
+  .novo-agendamento-page .MuiStepLabel-label {
+    white-space: nowrap !important;
+  }
+
+  .novo-agendamento-page .MuiPaper-root {
+    max-width: 100% !important;
+  }
+
+  .novo-agendamento-page .MuiButton-root {
+    width: auto;
+    min-width: 0;
+  }
+
+  .atendimento-medico-page .MuiPaper-root {
+    max-width: 100% !important;
+  }
+
+  .atendimento-medico-page textarea {
+    text-align: left !important;
+  }
+}

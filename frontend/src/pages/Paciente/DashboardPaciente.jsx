@@ -81,14 +81,19 @@ const DashboardPaciente = () => {
     // Componente de Estatística Premium
     const StatCard = ({ icon: Icon, title, value, color }) => (
         <Paper elevation={0} sx={{ 
-            p: 3, 
+            p: { xs: 2.2, sm: 3 }, 
             borderRadius: '24px', 
             display: 'flex', 
             alignItems: 'center', 
-            gap: 2.5, 
+            gap: { xs: 1.5, sm: 2.5 }, 
+            flexDirection: { xs: 'column', sm: 'row' },
             border: '1px solid #F1F5F9', 
             bgcolor: '#ffffff', 
-            flex: 1,
+            flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', lg: 1 },
+            minWidth: { xs: 0, sm: 240 },
+            width: { xs: '100%', sm: 'auto' },
+            justifyContent: { xs: 'center', sm: 'flex-start' },
+            textAlign: { xs: 'center', sm: 'left' },
             boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)',
             transition: 'all 0.3s ease',
             '&:hover': {
@@ -104,7 +109,7 @@ const DashboardPaciente = () => {
                 color: color === 'primary' ? '#32B5FE' : color === 'success' ? '#10B981' : '#EF4444', 
                 display: 'flex' 
             }}>
-                <Icon size={28} strokeWidth={2.5} />
+                <Icon size={32} strokeWidth={2.5} />
             </Box>
             <Box>
                 <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -158,7 +163,7 @@ const DashboardPaciente = () => {
                 </Box>
 
                 {/* INDICADORES */}
-                <Box sx={{ display: 'flex', gap: 3, mb: 4, width: '100%', flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
+                <Box className="paciente-stats" sx={{ display: 'flex', gap: { xs: 2, md: 3 }, mb: 4, width: '100%', flexDirection: { xs: 'column', sm: 'row' }, flexWrap: { xs: 'nowrap', sm: 'wrap', lg: 'nowrap' } }}>
                     <StatCard icon={Calendar} title="Próximas Consultas" value={consultasAtivas.length} color="primary" />
                     <StatCard icon={ClipboardList} title="Histórico Total" value={consultas.length} color="success" />
                     <StatCard icon={CreditCard} title="Débitos Pendentes" value={Number(totalDebito || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} color="error" />

@@ -167,7 +167,7 @@ const GerenciamentoClinica = () => {
             <Tabs 
                 value={tabValue} onChange={(e, v) => setTabValue(v)}
                 variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile 
-                sx={{ mb: 3, borderBottom: '1px solid #E2E8F0', '& .MuiTab-root': { fontWeight: 800, textTransform: 'none' }, '& .Mui-selected': { color: '#32B5FE !important' }, '& .MuiTabs-indicator': { backgroundColor: '#32B5FE', height: 3 } }}
+                sx={{ mb: 3, borderBottom: '1px solid #E2E8F0', '& .MuiTab-root': { fontWeight: 800, textTransform: 'none' }, '& .Mui-selected': { color: '#32B5FE !important' }, '& .MuiTabs-indicator': { backgroundColor: '#32B5FE', height: 3 }, '& .MuiTabs-scrollButtons': { display: { xs: 'flex', md: 'none' } } }}
             >
                 <Tab icon={<Building2 size={18}/>} iconPosition="start" label="Identidade & Contato" />
                 <Tab icon={<Map size={18}/>} iconPosition="start" label="Localização" />
@@ -179,109 +179,251 @@ const GerenciamentoClinica = () => {
                         
                         {/* ABA 0: IDENTIDADE E CONTATO */}
                         {tabValue === 0 && (
-                            <Grid container spacing={4}>
-    
-                            {/* === LADO ESQUERDO: LOGOMARCA / FOTO === */}
-                            <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRight: { md: '1px solid #F1F5F9' } }}>
-                                <Box sx={{ position: 'relative', mb: 2 }}>
-                                    <Avatar variant="rounded" src={preview} sx={{ width: 160, height: 160, borderRadius: '24px', border: '4px solid #F8FAFC', bgcolor: '#F1F5F9', color: '#94A3B8' }}>
-                                        {!preview && <Building2 size={60} strokeWidth={1.5} />}
-                                    </Avatar>
-                                    <input accept="image/*" type="file" id="logo-upload" style={{ display: 'none' }} onChange={handleImageChange} />
-                                    <label htmlFor="logo-upload">
-                                        <IconButton component="span" sx={{ position: 'absolute', bottom: -10, right: -10, bgcolor: '#32B5FE', color: 'white', border: '4px solid #fff', width: 44, height: 44, '&:hover': { bgcolor: '#0F172A' } }}>
-                                            <Camera size={20} />
-                                        </IconButton>
-                                    </label>
-                                </Box>
-                                <Typography variant="caption" color="text.secondary" textAlign="center" fontWeight={600} sx={{ maxWidth: 200, mt: 2 }}>
-                                    Logomarca da unidade. Formatos suportados: PNG ou JPG.
-                                </Typography>
-                            </Grid>
-                            
-                            {/* === LADO DIREITO: DADOS PRINCIPAIS (COM CSS GRID) === */}
-                            <Grid item xs={12} md={8}>
-                                <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>
-                                    Dados Principais
-                                </Typography>
-                                
-                                {/* A OPÇÃO NUCLEAR: CSS Grid para blindar o formulário */}
-                                <Box sx={{
-                                    display: 'grid',
-                                    gap: 3, 
-                                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }
-                                }}>
-                                    
-                                    {/* LINHA 1 */}
-                                    <Box sx={{ gridColumn: '1 / -1' }}>
-                                        <TextField fullWidth label="Razão Social" value={formData.razao_social} onChange={(e) => setFormData({...formData, razao_social: e.target.value})} sx={modernInputStyle} />
-                                    </Box>
+                            <Grid container spacing={{ xs: 3, md: 4 }} alignItems="stretch">
 
-                                    {/* LINHA 2 */}
-                                    <Box sx={{ gridColumn: '1 / -1' }}>
-                                        <TextField fullWidth label="Nome Fantasia" value={formData.nome_fantasia} onChange={(e) => setFormData({...formData, nome_fantasia: e.target.value})} sx={modernInputStyle} />
-                                    </Box>
+                                {/* === LADO ESQUERDO: LOGOMARCA / FOTO === */}
+                                <Grid
+                                    item
+                                    xs={12}
+                                    md={3}
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: { xs: 'center', md: 'flex-start' },
+                                        borderRight: { xs: 'none', md: '1px solid #F1F5F9' },
+                                        borderBottom: { xs: '1px solid #F1F5F9', md: 'none' },
+                                        pb: { xs: 3, md: 0 },
+                                        pr: { xs: 0, md: 3 },
+                                    }}
+                                >
+                                    <Box sx={{ position: 'relative', mb: 2 }}>
+                                        <Avatar
+                                            variant="rounded"
+                                            src={preview}
+                                            sx={{
+                                                width: { xs: 140, md: 150 },
+                                                height: { xs: 140, md: 150 },
+                                                borderRadius: '24px',
+                                                border: '4px solid #F8FAFC',
+                                                bgcolor: '#F1F5F9',
+                                                color: '#94A3B8'
+                                            }}
+                                        >
+                                            {!preview && <Building2 size={58} strokeWidth={1.5} />}
+                                        </Avatar>
 
-                                    {/* LINHA 3 (Dividido em 2 colunas) */}
-                                    <TextField fullWidth label="CNPJ" value={formData.cnpj} onChange={(e) => setFormData({...formData, cnpj: e.target.value})} sx={modernInputStyle} />
-                                    <TextField fullWidth label="Repasse para Médico (%)" placeholder="Ex: 60" value={formData.repasse} onChange={(e) => setFormData({...formData, repasse: e.target.value.replace(/\D/g, "")})} InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }} sx={modernInputStyle} />
-
-                                    {/* LINHA 4 (Dividido em 2 colunas) */}
-                                    <TextField fullWidth label="Telefone / WhatsApp" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} sx={modernInputStyle} />
-                                    <TextField fullWidth label="E-mail de Contato" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} sx={modernInputStyle} />
-
-                                    {/* LINHA 5: COMODIDADES (Ocupa a linha inteira) */}
-                                    <Box sx={{ gridColumn: '1 / -1', mt: 1 }}>
-                                        <Typography variant="subtitle2" fontWeight={800} color="#0F172A" sx={{ mb: 1.5 }}>
-                                            Comodidades e Estrutura
-                                        </Typography>
-                                        <TextField 
-                                            fullWidth 
-                                            label="Digite uma comodidade (Ex: Wi-fi, Acessibilidade)" 
-                                            variant="outlined" 
-                                            placeholder="Pressione Enter para adicionar"
-                                            value={novaComodidade}
-                                            onChange={(e) => setNovaComodidade(e.target.value)}
-                                            onKeyDown={handleAddComodidade}
-                                            sx={modernInputStyle}
-                                            InputProps={{
-                                                endAdornment: (
-                                                    <InputAdornment position="end">
-                                                        <IconButton onClick={handleAddComodidade} sx={{ color: '#32B5FE' }}>
-                                                            <Plus size={20} />
-                                                        </IconButton>
-                                                    </InputAdornment>
-                                                )
-                                            }} 
+                                        <input
+                                            accept="image/*"
+                                            type="file"
+                                            id="logo-upload"
+                                            style={{ display: 'none' }}
+                                            onChange={handleImageChange}
                                         />
-                                        
-                                        {/* Renderização dos Chips */}
-                                        {formData.comodidades && formData.comodidades.length > 0 && (
-                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.2, mt: 2, p: 2.5, bgcolor: '#F8FAFC', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
-                                                {formData.comodidades.map((item, index) => (
-                                                    <Chip 
-                                                        key={index} 
-                                                        label={item} 
-                                                        onDelete={() => handleRemoveComodidade(item)} 
-                                                        sx={{ 
-                                                            fontWeight: 700, 
-                                                            bgcolor: '#ffffff', 
-                                                            color: '#0F172A', 
-                                                            border: '1px solid #E2E8F0',
-                                                            fontSize: '0.85rem',
-                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-                                                            '& .MuiChip-deleteIcon': { color: '#EF4444', '&:hover': { color: '#DC2626' } }
-                                                        }} 
-                                                    />
-                                                ))}
-                                            </Box>
-                                        )}
+
+                                        <label htmlFor="logo-upload">
+                                            <IconButton
+                                                component="span"
+                                                sx={{
+                                                    position: 'absolute',
+                                                    bottom: -10,
+                                                    right: -10,
+                                                    bgcolor: '#32B5FE',
+                                                    color: 'white',
+                                                    border: '4px solid #fff',
+                                                    width: 44,
+                                                    height: 44,
+                                                    '&:hover': { bgcolor: '#0F172A' }
+                                                }}
+                                            >
+                                                <Camera size={20} />
+                                            </IconButton>
+                                        </label>
                                     </Box>
 
-                                </Box>
-                            </Grid>
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        textAlign="center"
+                                        fontWeight={600}
+                                        sx={{ maxWidth: 200, mt: 2 }}
+                                    >
+                                        Logomarca da unidade. Formatos suportados: PNG ou JPG.
+                                    </Typography>
+                                </Grid>
 
-                        </Grid>
+                                {/* === LADO DIREITO: DADOS + COMODIDADES === */}
+                                <Grid item xs={12} md={9}>
+                                    <Grid
+                                        container
+                                        spacing={{ xs: 3, md: 4 }}
+                                        alignItems="flex-start"
+                                    >
+                                        {/* DADOS PRINCIPAIS */}
+                                        <Grid item xs={12} lg={7}>
+                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>
+                                                Dados Principais
+                                            </Typography>
+
+                                            <Box
+                                                sx={{
+                                                    display: 'grid',
+                                                    gap: 3,
+                                                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }
+                                                }}
+                                            >
+                                                <Box sx={{ gridColumn: '1 / -1' }}>
+                                                    <TextField
+                                                        fullWidth
+                                                        label="Razão Social"
+                                                        value={formData.razao_social}
+                                                        onChange={(e) => setFormData({ ...formData, razao_social: e.target.value })}
+                                                        sx={modernInputStyle}
+                                                    />
+                                                </Box>
+
+                                                <Box sx={{ gridColumn: '1 / -1' }}>
+                                                    <TextField
+                                                        fullWidth
+                                                        label="Nome Fantasia"
+                                                        value={formData.nome_fantasia}
+                                                        onChange={(e) => setFormData({ ...formData, nome_fantasia: e.target.value })}
+                                                        sx={modernInputStyle}
+                                                    />
+                                                </Box>
+
+                                                <TextField
+                                                    fullWidth
+                                                    label="CNPJ"
+                                                    value={formData.cnpj}
+                                                    onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                                                    sx={modernInputStyle}
+                                                />
+
+                                                <TextField
+                                                    fullWidth
+                                                    label="Repasse para Médico (%)"
+                                                    placeholder="Ex: 60"
+                                                    value={formData.repasse}
+                                                    onChange={(e) => setFormData({ ...formData, repasse: e.target.value.replace(/\D/g, "") })}
+                                                    InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
+                                                    sx={modernInputStyle}
+                                                />
+
+                                                <TextField
+                                                    fullWidth
+                                                    label="Telefone / WhatsApp"
+                                                    value={formData.telefone}
+                                                    onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                                                    sx={modernInputStyle}
+                                                />
+
+                                                <TextField
+                                                    fullWidth
+                                                    label="E-mail de Contato"
+                                                    value={formData.email}
+                                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                    sx={modernInputStyle}
+                                                />
+                                            </Box>
+                                        </Grid>
+
+                                        {/* COMODIDADES */}
+                                        <Grid item xs={12} lg={5}>
+                                            <Paper
+                                                elevation={0}
+                                                sx={{
+                                                    p: { xs: 2.5, md: 3 },
+                                                    borderRadius: '20px',
+                                                    bgcolor: '#F8FAFC',
+                                                    border: '1px solid #E2E8F0',
+                                                    height: { xs: 'auto', lg: '100%' },
+                                                    minHeight: { lg: 320 },
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                }}
+                                            >
+                                                <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 1 }}>
+                                                    Comodidades e Estrutura
+                                                </Typography>
+
+                                                <Typography variant="body2" color="#64748B" fontWeight={600} sx={{ mb: 2 }}>
+                                                    Adicione os recursos disponíveis na clínica.
+                                                </Typography>
+
+                                                <TextField
+                                                    fullWidth
+                                                    label="Nova comodidade"
+                                                    variant="outlined"
+                                                    placeholder="Ex: Wi-fi, Acessibilidade"
+                                                    value={novaComodidade}
+                                                    onChange={(e) => setNovaComodidade(e.target.value)}
+                                                    onKeyDown={handleAddComodidade}
+                                                    sx={modernInputStyle}
+                                                    InputProps={{
+                                                        endAdornment: (
+                                                            <InputAdornment position="end">
+                                                                <IconButton onClick={handleAddComodidade} sx={{ color: '#32B5FE' }}>
+                                                                    <Plus size={20} />
+                                                                </IconButton>
+                                                            </InputAdornment>
+                                                        )
+                                                    }}
+                                                />
+
+                                                <Box
+                                                    sx={{
+                                                        mt: 2,
+                                                        p: 2,
+                                                        flexGrow: 1,
+                                                        minHeight: 140,
+                                                        maxHeight: { xs: 'none', lg: 220 },
+                                                        overflowY: { xs: 'visible', lg: 'auto' },
+                                                        display: 'flex',
+                                                        alignContent: 'flex-start',
+                                                        flexWrap: 'wrap',
+                                                        gap: 1.2,
+                                                        bgcolor: '#FFFFFF',
+                                                        borderRadius: '16px',
+                                                        border: '1px dashed #CBD5E1'
+                                                    }}
+                                                >
+                                                    {formData.comodidades && formData.comodidades.length > 0 ? (
+                                                        formData.comodidades.map((item, index) => (
+                                                            <Chip
+                                                                key={index}
+                                                                label={item}
+                                                                onDelete={() => handleRemoveComodidade(item)}
+                                                                sx={{
+                                                                    fontWeight: 700,
+                                                                    bgcolor: '#ffffff',
+                                                                    color: '#0F172A',
+                                                                    border: '1px solid #E2E8F0',
+                                                                    fontSize: '0.85rem',
+                                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                                                                    '& .MuiChip-deleteIcon': {
+                                                                        color: '#EF4444',
+                                                                        '&:hover': { color: '#DC2626' }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        ))
+                                                    ) : (
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="#94A3B8"
+                                                            fontWeight={600}
+                                                            sx={{ width: '100%', textAlign: 'center', alignSelf: 'center' }}
+                                                        >
+                                                            Nenhuma comodidade adicionada.
+                                                        </Typography>
+                                                    )}
+                                                </Box>
+                                            </Paper>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
                         )}
 
                         {/* ABA 1: LOCALIZAÇÃO */}

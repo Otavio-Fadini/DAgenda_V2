@@ -303,7 +303,7 @@ const NovoAgendamento = () => {
                                                                     <Typography variant="body2" color="#94A3B8" fontWeight={600}>(120 avaliações)</Typography>
                                                                 </Stack>
                                                                 <Divider sx={{ borderStyle: 'dashed', borderColor: '#E2E8F0' }} />
-                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2 }}>
                                                                     <Box>
                                                                         <Typography variant="caption" color="#94A3B8" fontWeight={800} letterSpacing="0.5px">VALOR DA SESSÃO</Typography>
                                                                         <Typography variant="h5" fontWeight={900} color="#10B981">R$ {prof.valor_consulta || '0,00'}</Typography>

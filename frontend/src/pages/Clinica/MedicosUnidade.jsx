@@ -153,7 +153,7 @@ const MedicosUnidade = () => {
 
     return (
         <Fade in={true} timeout={600}>
-            <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', width: '100%', boxSizing: 'border-box' }}>
+            <Box className="responsive-page" sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: '#F8FAFC', minHeight: { xs: '100dvh', md: '100%' }, width: '100%', boxSizing: 'border-box' }}>
                 
                 {/* CABEÇALHO */}
                 <Box sx={{ mb: 5, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
@@ -217,7 +217,7 @@ const MedicosUnidade = () => {
 
                 {/* MODAL ANTIGO: ADICIONAR PROFISSIONAL */}
                 <Dialog open={modalOpen} onClose={handleCloseModal} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
-                    <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+                    <DialogTitle sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2, pb: 1 }}>
                         <Box>
                             <Typography variant="h6" fontWeight={900} color="#0F172A">Adicionar à equipe clínica</Typography>
                             <Typography variant="body2" color="text.secondary" fontWeight={500}>Encontre profissionais na sua cidade.</Typography>

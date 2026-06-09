@@ -126,9 +126,9 @@ const DashboardPaciente = () => {
 
     return (
         <Fade in={true} timeout={600}>
-            <Box sx={{ 
+            <Box className="responsive-page" sx={{ 
                 width: '100%', 
-                height: '100%', 
+                minHeight: { xs: '100dvh', md: '100%' }, 
                 p: { xs: 2, md: 4 },
                 display: 'flex',
                 flexDirection: 'column',
@@ -136,7 +136,7 @@ const DashboardPaciente = () => {
                 bgcolor: '#F8FAFC'
             }}>
                 {/* CABEÇALHO */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2, mb: 4 }}>
                     <Box>
                         <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>
                             Painel do Paciente

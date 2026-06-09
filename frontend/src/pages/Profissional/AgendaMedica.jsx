@@ -179,7 +179,7 @@ const AgendaMedica = () => {
 
     return (
         <Fade in={true} timeout={600}>
-            <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', boxSizing: 'border-box' }}>
+            <Box className="responsive-page" sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: '#F8FAFC', minHeight: { xs: '100dvh', md: '100%' }, boxSizing: 'border-box' }}>
                 
                 {/* HEADER */}
                 <Box sx={{ mb: 4, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 3 }}>
@@ -432,7 +432,7 @@ const AgendaMedica = () => {
 
                 {/* MODAL DE AGENDA COMPLETA DO DIA */}
                 <Dialog open={modalAgendaOpen} onClose={() => setModalAgendaOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 2 } }}>
-                    <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <DialogTitle sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2 }}>
                         <Typography variant="h6" fontWeight={900}>Navegador de Agenda</Typography>
                         <IconButton onClick={() => setModalAgendaOpen(false)}><X /></IconButton>
                     </DialogTitle>

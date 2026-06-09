@@ -156,9 +156,9 @@ const GerenciamentoClinica = () => {
     );
 
     return (
-        <Box sx={{ height: 'calc(100vh - 64px)', overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', p: { xs: 2, md: 4 }, boxSizing: 'border-box' }}>
+        <Box className="gerenciamento-clinica responsive-page" sx={{ height: { xs: 'auto', md: 'calc(100vh - 64px)' }, minHeight: { xs: '100dvh', md: 'auto' }, overflow: { xs: 'visible', md: 'hidden' }, display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', p: { xs: 2, sm: 3, md: 4 }, boxSizing: 'border-box', minWidth: 0 }}>
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, gap: 2, textAlign: { xs: 'center', sm: 'left' }, mb: 3 }}>
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>Gerenciamento da Clínica</Typography>
                     <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>Configure os dados cadastrais, contato e a localização da sua unidade.</Typography>
@@ -166,21 +166,22 @@ const GerenciamentoClinica = () => {
                 <Button 
                     variant="contained" onClick={handleSalvar} disabled={salvando}
                     startIcon={salvando ? <CircularProgress size={18} color="inherit" /> : <Save size={18} />} 
-                    sx={{ py: 1.5, px: 4, borderRadius: '12px', bgcolor: '#0F172A', fontWeight: 800, color: '#FFFFFF', textTransform: 'none', '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)' }, transition: 'all 0.3s ease', boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)' }}
+                    sx={{ py: 1.5, px: 4, width: { xs: '100%', sm: 'auto' }, borderRadius: '12px', bgcolor: '#0F172A', fontWeight: 800, color: '#FFFFFF', textTransform: 'none', '&:hover': { bgcolor: '#32B5FE', transform: 'translateY(-2px)' }, transition: 'all 0.3s ease', boxShadow: '0 10px 20px -10px rgba(15, 23, 42, 0.5)' }}
                 >
                     {salvando ? 'Salvando...' : 'Salvar Alterações'}
                 </Button>
             </Box>
 
             <Tabs 
-                value={tabValue} onChange={(e, v) => setTabValue(v)} 
+                value={tabValue} onChange={(e, v) => setTabValue(v)}
+                variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile 
                 sx={{ mb: 3, borderBottom: '1px solid #E2E8F0', '& .MuiTab-root': { fontWeight: 800, textTransform: 'none' }, '& .Mui-selected': { color: '#32B5FE !important' }, '& .MuiTabs-indicator': { backgroundColor: '#32B5FE', height: 3 } }}
             >
                 <Tab icon={<Building2 size={18}/>} iconPosition="start" label="Identidade & Contato" />
                 <Tab icon={<Map size={18}/>} iconPosition="start" label="Localização" />
             </Tabs>
 
-            <Paper elevation={0} sx={{ flexGrow: 1, borderRadius: '24px', border: '1px solid #E2E8F0', p: 4, overflowY: 'auto', bgcolor: 'white' }}>
+            <Paper elevation={0} sx={{ flexGrow: 1, borderRadius: { xs: '18px', md: '24px' }, border: '1px solid #E2E8F0', p: { xs: 2, sm: 3, md: 4 }, overflowY: { xs: 'visible', md: 'auto' }, overflowX: 'hidden', bgcolor: 'white', minWidth: 0 }}>
                 <Fade in={true} timeout={400} key={tabValue}>
                     <Box>
                         

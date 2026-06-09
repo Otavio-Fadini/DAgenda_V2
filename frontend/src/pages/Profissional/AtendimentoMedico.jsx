@@ -124,7 +124,7 @@ const AtendimentoMedico = () => {
             <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', overflow: 'hidden' }}>
                 
                 {/* 1. CABEÇALHO FIXO PREMIUM */}
-                <Paper elevation={0} sx={{ px: 4, py: 2, borderBottom: '1px solid #E2E8F0', borderRadius: 0, bgcolor: 'white', zIndex: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 20px -10px rgba(0,0,0,0.05)' }}>
+                <Paper elevation={0} sx={{ px: 4, py: 2, borderBottom: '1px solid #E2E8F0', borderRadius: 0, bgcolor: 'white', zIndex: 10, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2, boxShadow: '0 4px 20px -10px rgba(0,0,0,0.05)' }}>
                     <Stack direction="row" spacing={3} alignItems="center">
                         <Tooltip title="Voltar para Agenda" arrow>
                             <IconButton onClick={() => navigate('/dashboard/agenda-medica')} sx={{ bgcolor: '#F1F5F9', '&:hover': { bgcolor: '#E2E8F0', color: '#0F172A' } }}>

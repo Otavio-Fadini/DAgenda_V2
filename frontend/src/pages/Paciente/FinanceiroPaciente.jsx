@@ -26,7 +26,7 @@ const FinanceiroPaciente = () => {
 
     return (
         <Fade in={true} timeout={600}>
-            <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', boxSizing: 'border-box' }}>
+            <Box className="responsive-page" sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: '#F8FAFC', minHeight: { xs: '100dvh', md: '100%' }, boxSizing: 'border-box' }}>
                 
                 {/* CABEÇALHO */}
                 <Box sx={{ mb: 5 }}>

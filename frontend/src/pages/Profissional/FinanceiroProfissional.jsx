@@ -49,7 +49,7 @@ const FinanceiroProfissional = () => {
 
     return (
         <Fade in={true} timeout={600}>
-            <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh', boxSizing: 'border-box' }}>
+            <Box className="responsive-page" sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: '#F8FAFC', minHeight: { xs: '100dvh', md: '100%' }, boxSizing: 'border-box' }}>
                 
                 {/* HEADER */}
                 <Box sx={{ mb: 5, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'flex-end' }, gap: 3 }}>
@@ -113,7 +113,7 @@ const FinanceiroProfissional = () => {
                 <Paper elevation={0} sx={{ borderRadius: '24px', border: '1px solid #F1F5F9', overflow: 'hidden', bgcolor: 'white', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.05)' }}>
                     
                     {/* CABEÇALHO DA TABELA COM FILTRO */}
-                    <Box sx={{ p: 3.5, borderBottom: '1px solid #F8FAFC', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                    <Box sx={{ p: 3.5, borderBottom: '1px solid #F8FAFC', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2, flexWrap: 'wrap', gap: 2 }}>
                         <Typography variant="h6" fontWeight={900} color="#0F172A">Detalhamento por Origem</Typography>
                         
                         <FormControl size="small" sx={{ minWidth: 260 }}>

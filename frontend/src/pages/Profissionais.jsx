@@ -1,4 +1,4 @@
-import React from 'react';
+/*import React from 'react';
 import { Box, Grid, Card, CardContent, Typography, Avatar, Button, Chip, Rating } from '@mui/material';
 import { Calendar, MapPin, Award } from 'lucide-react';
 
@@ -96,4 +96,4 @@ const Profissionais = () => {
   );
 };
 
-export default Profissionais;
+export default Profissionais;*/

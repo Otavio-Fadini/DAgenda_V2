@@ -209,7 +209,8 @@ const ConfiguracoesPerfil = () => {
                 sx={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: { xs: 'flex-start', sm: 'center' },
+                    alignItems: { xs: 'center', sm: 'center' },
+                    textAlign: { xs: 'center', sm: 'left' },
                     flexDirection: { xs: 'column', sm: 'row' },
                     gap: 2,
                     mb: 3,
@@ -262,7 +263,7 @@ const ConfiguracoesPerfil = () => {
                 
                 {/* ABA 0: IDENTIDADE VISUAL E DADOS */}
                 {tabValue === 0 && (
-                    <Grid container spacing={4}>
+                    <Grid container spacing={4} sx={{ justifyContent: { xs: 'center', md: 'flex-start' } }}>
                         
                         {/* === LADO ESQUERDO: FOTO DO PROFISSIONAL === */}
                         <Grid item xs={12} md={3} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRight: { md: '1px solid #F1F5F9' }, pb: { xs: 4, md: 0 } }}>
@@ -281,7 +282,7 @@ const ConfiguracoesPerfil = () => {
                         </Grid>
                         
                         {/* === LADO DIREITO: FORMULÁRIO BLINDADO COM CSS GRID === */}
-                        <Grid item xs={12} md={9}>
+                        <Grid item xs={12} md={9} sx={{ alignItems: { xs: 'center', md: 'stretch' }, textAlign: { xs: 'center', md: 'left' } }}>
                             <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>
                                 Dados Principais
                             </Typography>
@@ -289,7 +290,9 @@ const ConfiguracoesPerfil = () => {
                             <Box sx={{
                                 display: 'grid',
                                 gap: { xs: 2, sm: 3 },
-                                gridTemplateColumns: { xs: '1fr', sm: 'minmax(0, 1fr) minmax(0, 1fr)' },
+                                gridTemplateColumns: { xs: 'minmax(0, 430px)', sm: 'minmax(0, 1fr) minmax(0, 1fr)' },
+                                justifyContent: { xs: 'center', sm: 'stretch' },
+                                width: '100%',
                                 minWidth: 0
                             }}>
                                 
@@ -389,7 +392,7 @@ const ConfiguracoesPerfil = () => {
 
                 {/* ABA 1: DISPONIBILIDADE CALENDLY STYLE */}
                 {tabValue === 1 && (
-                    <Box sx={{ width: '100%', maxWidth: 720, mx: 'auto', minWidth: 0 }}>
+                    <Box sx={{ width: '100%', maxWidth: { xs: 430, md: 720 }, mx: 'auto', minWidth: 0, textAlign: { xs: 'center', md: 'left' } }}>
                         <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>Dias e Janelas de Atendimento</Typography>
                         {horarios.map((h, index) => (
                             <Box
@@ -430,7 +433,7 @@ const ConfiguracoesPerfil = () => {
 
                 {/* ABA 2: REGRA DE NEGÓCIO FINANCEIRO */}
                 {tabValue === 2 && (
-                    <Grid container spacing={3} sx={{ width: '100%', maxWidth: 720, mx: 'auto', minWidth: 0 }}>
+                    <Grid container spacing={3} sx={{ width: '100%', maxWidth: { xs: 430, md: 720 }, mx: 'auto', minWidth: 0, justifyContent: 'center' }}>
                         <Grid item xs={12} md={6}>
                             <Typography variant="subtitle2" fontWeight={800} color="#64748B" sx={{ mb: 1 }}>Preço Comercial da Consulta</Typography>
                             <TextField fullWidth value={formData.valor_consulta} onChange={(e) => setFormData({...formData, valor_consulta: e.target.value})} InputProps={{ startAdornment: <InputAdornment position="start"><DollarSign size={18} color="#32B5FE"/></InputAdornment> }} sx={inputStyle} />
@@ -478,7 +481,7 @@ const ConfiguracoesPerfil = () => {
                 )}
                 {/* ABA 3: ENDEREÇO */}
                 {tabValue === 3 && (
-                    <Box sx={{ width: '100%', maxWidth: 720, mx: 'auto', minWidth: 0 }}>
+                    <Box sx={{ width: '100%', maxWidth: { xs: 430, md: 720 }, mx: 'auto', minWidth: 0, textAlign: { xs: 'center', md: 'left' } }}>
                         <Alert icon={<EyeOff size={22} />} severity="info" sx={{ mb: 4, borderRadius: '16px', '& .MuiAlert-message': { width: '100%' }, bgcolor: '#F0F9FF', color: '#0369A1', border: '1px solid #BAE6FD' }}>
                             <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 0.5 }}>Privacidade Garantida</Typography>
                             <Typography variant="body2" fontWeight={500}>O seu endereço não será exibido no seu perfil público nem para clínicas ou pacientes. Ele é utilizado <strong>exclusivamente</strong> pelo nosso algoritmo para conectar o seu perfil a oportunidades em clínicas próximas de si.</Typography>

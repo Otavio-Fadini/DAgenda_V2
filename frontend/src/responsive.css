@@ -1,8 +1,12 @@
 /* =====================================================
-   RESPONSIVIDADE GLOBAL DO SISTEMA
+   RESPONSIVIDADE GLOBAL DO SISTEMA - DAGENDA
+   Desktop: sidebar/header fixos e scroll apenas no conteúdo.
+   Mobile: rolagem natural, campos centralizados e sem corte lateral.
 ===================================================== */
 
-/* Layout principal */
+/* =========================
+   LAYOUT PRINCIPAL
+========================= */
 .app-shell {
   width: 100%;
   height: 100vh;
@@ -29,24 +33,34 @@
   background: #f8fafc;
 }
 
-/* =====================================================
-   COMPONENTES GLOBAIS
-===================================================== */
-
+/* =========================
+   BASE GLOBAL
+========================= */
 .MuiContainer-root,
 .MuiPaper-root,
-.MuiCard-root {
+.MuiCard-root,
+.MuiDialog-paper {
   max-width: 100%;
 }
 
-.MuiBox-root {
+.MuiBox-root,
+.MuiStack-root,
+.MuiGrid-root,
+.MuiPaper-root,
+.MuiCard-root {
   min-width: 0;
 }
 
-/* =====================================================
-   TABELAS
-===================================================== */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
 
+/* =========================
+   TABELAS E LISTAGENS
+========================= */
 .MuiTableContainer-root {
   width: 100%;
   overflow-x: auto;
@@ -57,29 +71,20 @@
   min-width: max-content;
 }
 
-/* =====================================================
+/* =========================
    MODAIS
-===================================================== */
-
+========================= */
 .MuiDialog-paper {
   max-width: calc(100vw - 24px) !important;
 }
 
-/* =====================================================
-   MAPAS
-===================================================== */
-
-.leaflet-container {
-  max-width: 100%;
-}
-
-/* =====================================================
+/* =========================
    FORMULÁRIOS
-===================================================== */
-
+========================= */
 .MuiTextField-root,
 .MuiFormControl-root,
 .MuiAutocomplete-root,
+.MuiInputBase-root,
 .MuiSelect-root {
   max-width: 100%;
 }
@@ -93,33 +98,48 @@
   min-width: 0;
 }
 
-/* =====================================================
-   ÍCONES
-===================================================== */
+/* =========================
+   MAPAS
+========================= */
+.leaflet-container {
+  max-width: 100%;
+}
 
+/* =========================
+   ÍCONES
+========================= */
 .MuiSvgIcon-root {
   font-size: 1.35rem;
 }
 
-/* =====================================================
-   TELAS DE PERFIL E CONFIGURAÇÕES
-===================================================== */
+/* Lucide icons geralmente são SVGs diretos dentro de botões/adornos */
+.MuiIconButton-root svg,
+.MuiButton-root svg,
+.MuiInputAdornment-root svg,
+.MuiListItemIcon-root svg {
+  flex-shrink: 0;
+}
 
+/* =========================
+   CLASSES PADRÃO PARA TELAS
+========================= */
+.responsive-page,
 .configuracoes-perfil,
 .perfil-container,
 .form-container,
-.responsive-page {
+.dashboard-page,
+.financeiro-page,
+.agenda-page,
+.cadastro-page {
   width: 100%;
   max-width: 100%;
   min-width: 0;
 }
 
 /* =====================================================
-   TABLETS
+   TABLETS E CELULARES
 ===================================================== */
-
 @media (max-width: 900px) {
-
   html,
   body,
   #root {
@@ -149,29 +169,104 @@
     overflow-y: visible !important;
   }
 
-  .MuiGrid-container {
+  /* Centralização profissional das telas internas */
+  .app-main > *,
+  .responsive-page,
+  .configuracoes-perfil,
+  .perfil-container,
+  .form-container,
+  .dashboard-page,
+  .financeiro-page,
+  .agenda-page {
     width: 100%;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  /* Containers de formulário ficam centralizados e com largura confortável */
+  .responsive-page .MuiGrid-container,
+  .configuracoes-perfil .MuiGrid-container,
+  .perfil-container .MuiGrid-container,
+  .form-container .MuiGrid-container,
+  .cadastro-page .MuiGrid-container {
+    justify-content: center !important;
+    align-items: center;
+    width: 100% !important;
     margin-left: 0 !important;
   }
 
-  .MuiGrid-item {
+  .responsive-page .MuiGrid-item,
+  .configuracoes-perfil .MuiGrid-item,
+  .perfil-container .MuiGrid-item,
+  .form-container .MuiGrid-item,
+  .cadastro-page .MuiGrid-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding-left: 0 !important;
+    max-width: 100%;
+  }
+
+  /* Campos centralizados sem ficarem gigantes no celular/tablet */
+  .responsive-page .MuiTextField-root,
+  .responsive-page .MuiFormControl-root,
+  .responsive-page .MuiAutocomplete-root,
+  .configuracoes-perfil .MuiTextField-root,
+  .configuracoes-perfil .MuiFormControl-root,
+  .configuracoes-perfil .MuiAutocomplete-root,
+  .perfil-container .MuiTextField-root,
+  .perfil-container .MuiFormControl-root,
+  .form-container .MuiTextField-root,
+  .form-container .MuiFormControl-root,
+  .cadastro-page .MuiTextField-root,
+  .cadastro-page .MuiFormControl-root {
+    width: 100%;
+    max-width: 430px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+
+  /* Box/Stack internos ficam centralizados quando empilhados */
+  .responsive-page .MuiStack-root,
+  .configuracoes-perfil .MuiStack-root,
+  .perfil-container .MuiStack-root,
+  .form-container .MuiStack-root {
+    justify-content: center;
+    max-width: 100%;
+  }
+
+  /* Mantém textos longos e alerts legíveis */
+  .MuiAlert-root,
+  .MuiTableContainer-root,
+  .MuiDialog-root,
+  .MuiSnackbar-root {
+    text-align: left;
+  }
+
+  /* Tabs não cortam no mobile */
+  .MuiTabs-root {
+    max-width: 100%;
+  }
+
+  .MuiTabs-scroller {
+    overflow-x: auto !important;
   }
 }
 
 /* =====================================================
    CELULARES
 ===================================================== */
-
 @media (max-width: 600px) {
+  .app-main {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 
-  /* Cards */
   .MuiPaper-root,
   .MuiCard-root {
     border-radius: 18px !important;
   }
 
-  /* Botões */
   .MuiButton-root {
     min-height: 44px;
   }
@@ -181,12 +276,18 @@
     height: 44px;
   }
 
-  /* Ícones */
   .MuiSvgIcon-root {
     font-size: 1.6rem !important;
   }
 
-  /* Tipografia */
+  .MuiIconButton-root svg,
+  .MuiButton-root svg,
+  .MuiInputAdornment-root svg,
+  .MuiListItemIcon-root svg {
+    width: 22px;
+    height: 22px;
+  }
+
   .MuiTypography-h4 {
     font-size: 1.65rem !important;
   }
@@ -199,41 +300,45 @@
     font-size: 1.05rem !important;
   }
 
-  /* Tabs */
   .MuiTabs-flexContainer {
     overflow-x: auto;
   }
 
-  /* Grid vira coluna */
   .MuiGrid-item {
     flex-basis: 100% !important;
     max-width: 100% !important;
   }
 
-  /* Stacks do MUI */
   .MuiStack-root {
     flex-wrap: wrap;
     max-width: 100%;
   }
 
-  /* Inputs */
   .MuiTextField-root,
   .MuiFormControl-root {
     width: 100%;
   }
 
-  /* Tabelas */
   .MuiTableContainer-root {
     overflow-x: auto;
+  }
+
+  .MuiDialog-paper {
+    margin: 12px !important;
+    width: calc(100vw - 24px) !important;
+  }
+
+  .MuiSnackbar-root {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 12px !important;
   }
 }
 
 /* =====================================================
    TELAS MUITO PEQUENAS
 ===================================================== */
-
 @media (max-width: 400px) {
-
   .MuiTypography-h4 {
     font-size: 1.4rem !important;
   }
@@ -248,5 +353,13 @@
 
   .MuiSvgIcon-root {
     font-size: 1.4rem !important;
+  }
+
+  .MuiIconButton-root svg,
+  .MuiButton-root svg,
+  .MuiInputAdornment-root svg,
+  .MuiListItemIcon-root svg {
+    width: 20px;
+    height: 20px;
   }
 }

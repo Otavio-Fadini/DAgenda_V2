@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  IconButton, Divider, Tooltip, Drawer
+  IconButton, Tooltip, Drawer
 } from '@mui/material';
 import {
   LayoutDashboard, CalendarDays, Wallet, LogOut,
@@ -87,7 +87,6 @@ const Sidebar = ({ onLogout, userType, mobileOpen = false, onMobileClose, isMobi
         )}
       </Box>
 
-      <Divider sx={{ bgcolor: 'rgba(255,255,255,0.06)', mx: 2 }} />
 
       <List sx={{ mt: 2, flexGrow: 1, px: 1.5, overflowY: 'auto', overflowX: 'hidden' }}>
         {menuItems.map((item) => {
@@ -126,8 +125,7 @@ const Sidebar = ({ onLogout, userType, mobileOpen = false, onMobileClose, isMobi
         })}
       </List>
 
-      <Box sx={{ p: 1.5 }}>
-        <Divider sx={{ bgcolor: 'rgba(255,255,255,0.06)', mb: 1.5 }} />
+      <Box sx={{ p: 1.5, pt: 2 }}>
         <ListItemButton
           onClick={handleLogout}
           sx={{

@@ -28,7 +28,13 @@ const AtendimentoMedico = () => {
     const [segundos, setSegundos] = useState(0);
 
     // Variável para saber se está apenas a "Ver Resumo"
-    const isConcluido = state && (state.status === 'Concluido' || state.status === 'Finalizado');
+    const statusNormalizado = (state?.status || '')
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
+    const isConcluido = ['concluido', 'finalizado'].includes(statusNormalizado);
 
     // 1. Efeito para carregar o Prontuário Antigo se estiver concluído
     useEffect(() => {
@@ -108,6 +114,47 @@ const AtendimentoMedico = () => {
 
     // Estilo Moderno para o Input (Muda visualmente se for Modo Leitura)
     const modernInputStyle = {};
+
+    const ReadOnlyClinicalBlock = ({ title, description, icon, value, emptyMessage }) => (
+        <Paper
+            elevation={0}
+            sx={{
+                p: { xs: 2.5, md: 3 },
+                borderRadius: '24px',
+                border: '1px solid #E2E8F0',
+                bgcolor: '#FFFFFF',
+                boxShadow: '0 18px 40px -28px rgba(15, 23, 42, 0.35)'
+            }}
+        >
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'center', sm: 'flex-start' }} sx={{ mb: 2.5, textAlign: { xs: 'center', sm: 'left' } }}>
+                <Box sx={{ width: 46, height: 46, borderRadius: '16px', bgcolor: '#F0F9FF', color: '#32B5FE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {icon}
+                </Box>
+                <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="h6" fontWeight={900} color="#0F172A">{title}</Typography>
+                    <Typography variant="body2" color="#64748B" fontWeight={600}>{description}</Typography>
+                </Box>
+            </Stack>
+
+            <Box
+                sx={{
+                    p: { xs: 2, md: 2.5 },
+                    borderRadius: '18px',
+                    bgcolor: '#F8FAFC',
+                    border: '1px solid #E2E8F0',
+                    minHeight: 260,
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    textAlign: 'left',
+                    color: value?.trim() ? '#0F172A' : '#94A3B8',
+                    fontWeight: value?.trim() ? 600 : 500,
+                    lineHeight: 1.8
+                }}
+            >
+                {value?.trim() || emptyMessage}
+            </Box>
+        </Paper>
+    );
 
     return (
         <Fade in={true} timeout={600}>
@@ -194,17 +241,29 @@ const AtendimentoMedico = () => {
                                 {abaAtiva === 0 && (
                                     <Fade in={true}>
                                         <Box>
-                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 1 }}>Evolução Clínica</Typography>
-                                            <Typography variant="body2" color="#64748B" sx={{ mb: 3 }}>
-                                                {isConcluido ? 'Registro clínico definitivo da consulta.' : 'Registe as queixas principais, histórico de doenças e o exame físico objetivo.'}
-                                            </Typography>
-                                            <TextField
-                                                multiline fullWidth minRows={15} 
-                                                value={evolucao} onChange={(e) => setEvolucao(e.target.value)}
-                                                placeholder="S (Subjetivo): Paciente relata dor...&#10;O (Objetivo): PA 120x80, corado...&#10;A (Avaliação): Hipótese diagnóstica...&#10;P (Plano): ..."
-                                                sx={modernInputStyle}
-                                                InputProps={{ readOnly: isConcluido }}
-                                            />
+                                            {isConcluido ? (
+                                                <ReadOnlyClinicalBlock
+                                                    title="Evolução Clínica"
+                                                    description="Registro clínico definitivo da consulta. Este conteúdo está bloqueado para edição."
+                                                    icon={<ClipboardList size={22} />}
+                                                    value={evolucao}
+                                                    emptyMessage="Nenhum registro de evolução clínica foi encontrado para este atendimento."
+                                                />
+                                            ) : (
+                                                <>
+                                                    <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 1 }}>Evolução Clínica</Typography>
+                                                    <Typography variant="body2" color="#64748B" sx={{ mb: 3 }}>
+                                                        Registe as queixas principais, histórico de doenças e o exame físico objetivo.
+                                                    </Typography>
+                                                    <TextField
+                                                        multiline fullWidth minRows={15}
+                                                        value={evolucao}
+                                                        onChange={(e) => setEvolucao(e.target.value)}
+                                                        placeholder="S (Subjetivo): Paciente relata dor...&#10;O (Objetivo): PA 120x80, corado...&#10;A (Avaliação): Hipótese diagnóstica...&#10;P (Plano): ..."
+                                                        sx={modernInputStyle}
+                                                    />
+                                                </>
+                                            )}
                                         </Box>
                                     </Fade>
                                 )}
@@ -213,17 +272,29 @@ const AtendimentoMedico = () => {
                                 {abaAtiva === 1 && (
                                     <Fade in={true}>
                                         <Box>
-                                            <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 1 }}>Receituário e Conduta</Typography>
-                                            <Typography variant="body2" color="#64748B" sx={{ mb: 3 }}>
-                                                {isConcluido ? 'Prescrição emitida durante a consulta.' : 'Prescreva os medicamentos, dosagens e orientações para casa.'}
-                                            </Typography>
-                                            <TextField
-                                                multiline fullWidth minRows={15} 
-                                                value={prescricao} onChange={(e) => setPrescricao(e.target.value)}
-                                                placeholder="1. Dipirona 500mg ------ 1 cx&#10;Tomar 1 comprimido de 8/8h em caso de dor.&#10;&#10;2. Repouso absoluto por 3 dias."
-                                                sx={modernInputStyle}
-                                                InputProps={{ readOnly: isConcluido }}
-                                            />
+                                            {isConcluido ? (
+                                                <ReadOnlyClinicalBlock
+                                                    title="Receituário e Conduta"
+                                                    description="Prescrição emitida durante a consulta. Este conteúdo está bloqueado para edição."
+                                                    icon={<Pill size={22} />}
+                                                    value={prescricao}
+                                                    emptyMessage="Nenhuma prescrição foi registrada para este atendimento."
+                                                />
+                                            ) : (
+                                                <>
+                                                    <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 1 }}>Receituário e Conduta</Typography>
+                                                    <Typography variant="body2" color="#64748B" sx={{ mb: 3 }}>
+                                                        Prescreva os medicamentos, dosagens e orientações para casa.
+                                                    </Typography>
+                                                    <TextField
+                                                        multiline fullWidth minRows={15}
+                                                        value={prescricao}
+                                                        onChange={(e) => setPrescricao(e.target.value)}
+                                                        placeholder="1. Dipirona 500mg ------ 1 cx&#10;Tomar 1 comprimido de 8/8h em caso de dor.&#10;&#10;2. Repouso absoluto por 3 dias."
+                                                        sx={modernInputStyle}
+                                                    />
+                                                </>
+                                            )}
                                         </Box>
                                     </Fade>
                                 )}

@@ -387,3 +387,15 @@
     text-align: left !important;
   }
 }
+
+/* Ajustes finos dos cards de agenda no mobile */
+@media (max-width: 600px) {
+  .MuiChip-root .MuiChip-label {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+    line-height: 1.2;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}

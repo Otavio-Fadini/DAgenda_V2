@@ -227,20 +227,20 @@ const DashboardPaciente = () => {
                                                 }}
                                             >
                                                 {/* BLOCO ESQUERDO: Avatar + Info Médico */}
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flex: 1 }}>
+                                                <Box sx={{ display: 'flex', alignItems: { xs: 'center', sm: 'center' }, gap: { xs: 2, sm: 3 }, flex: 1, width: '100%', minWidth: 0, flexDirection: { xs: 'column', sm: 'row' }, textAlign: { xs: 'center', sm: 'left' } }}>
                                                     <Avatar 
                                                         src={c.foto_medico} // Tenta carregar a imagem do médico
-                                                        sx={{ width: 64, height: 64, bgcolor: '#0F172A', color: '#FFF', fontWeight: 900, border: '2px solid #F1F5F9', fontSize: '1.2rem' }}
+                                                        sx={{ width: { xs: 72, sm: 64 }, height: { xs: 72, sm: 64 }, bgcolor: '#0F172A', color: '#FFF', fontWeight: 900, border: '2px solid #F1F5F9', fontSize: '1.2rem', flexShrink: 0 }}
                                                     >
                                                         {!c.foto_medico && nomeMedico[0].toUpperCase()}
                                                     </Avatar>
-                                                    <Box>
-                                                        <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', color: '#0F172A', mb: 0.5 }}>
+                                                    <Box sx={{ minWidth: 0, width: { xs: '100%', sm: 'auto' } }}>
+                                                        <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', color: '#0F172A', mb: 0.5, wordBreak: 'break-word' }}>
                                                             {nomeMedico}
                                                         </Typography>
                                                         
                                                         {/* Especialidade e CRM */}
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 0.5 }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', sm: 'flex-start' }, gap: 1, flexWrap: 'wrap', mb: 0.5 }}>
                                                             <Typography variant="body2" sx={{ color: '#32B5FE', fontWeight: 700 }}>
                                                                 {c.especialidade}
                                                             </Typography>
@@ -256,7 +256,7 @@ const DashboardPaciente = () => {
                                                         
                                                         {/* Clínica (só mostra se o nome da clínica existir) */}
                                                         {c.nome_clinica && (
-                                                            <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B', fontWeight: 600 }}>
+                                                            <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', sm: 'flex-start' }, gap: 0.5, color: '#64748B', fontWeight: 600, wordBreak: 'break-word' }}>
                                                                 <MapPin size={12} /> {c.nome_clinica}
                                                             </Typography>
                                                         )}
@@ -264,10 +264,10 @@ const DashboardPaciente = () => {
                                                 </Box>
 
                                                 {/* BLOCO DIREITO: Data, Hora e Status */}
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: { xs: '100%', md: 'auto' }, justifyContent: { xs: 'space-between', md: 'flex-end' } }}>
-                                                    <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 3 }, width: { xs: '100%', md: 'auto' }, justifyContent: { xs: 'center', md: 'flex-end' }, flexDirection: { xs: 'column', sm: 'row' }, pt: { xs: 1, md: 0 }, borderTop: { xs: '1px solid #F1F5F9', md: 'none' } }}>
+                                                    <Box sx={{ textAlign: { xs: 'center', md: 'right' } }}>
                                                         <Typography sx={{ fontWeight: 900, color: '#0F172A' }}>{c.data_agendamento}</Typography>
-                                                        <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: { xs: 'flex-start', md: 'flex-end' }, gap: 0.5 }}>
+                                                        <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', md: 'flex-end' }, gap: 0.5 }}>
                                                             <Clock size={12} /> {c.horario}
                                                         </Typography>
                                                     </Box>
@@ -275,7 +275,7 @@ const DashboardPaciente = () => {
                                                     <Chip 
                                                         label={c.status.toUpperCase()} 
                                                         sx={{ 
-                                                            fontWeight: 800, fontSize: '0.75rem', height: 28, px: 1, borderRadius: '8px',
+                                                            fontWeight: 800, fontSize: { xs: '0.68rem', sm: '0.75rem' }, minHeight: 28, height: 'auto', px: { xs: 1.2, sm: 1 }, py: 0.35, borderRadius: '8px', maxWidth: '100%', whiteSpace: 'normal', textAlign: 'center',
                                                             bgcolor: statusStyle.bg,
                                                             color: statusStyle.color,
                                                             border: '1px solid',

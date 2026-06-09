@@ -132,12 +132,12 @@ const DashboardProfissional = () => {
                                 borderBottom: index !== dados.proximasConsultas.length - 1 ? '1px solid #F8FAFC' : 'none', 
                                 transition: 'all 0.2s', '&:hover': { bgcolor: '#F8FAFC' } 
                             }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                                    <Avatar src={c.foto_perfil} sx={{ width: 56, height: 56, bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 900, border: '2px solid #E2E8F0', fontSize: '1.2rem' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, sm: 3 }, width: { xs: '100%', md: 'auto' }, minWidth: 0 }}>
+                                    <Avatar src={c.foto_perfil} sx={{ width: 56, height: 56, bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 900, border: '2px solid #E2E8F0', fontSize: '1.2rem', flexShrink: 0 }}>
                                         {c.paciente ? c.paciente[0].toUpperCase() : 'P'}
                                     </Avatar>
-                                    <Box>
-                                        <Typography variant="subtitle1" fontWeight={900} color="#0F172A" sx={{ mb: 0.5 }}>
+                                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                                        <Typography variant="subtitle1" fontWeight={900} color="#0F172A" sx={{ mb: 0.5, wordBreak: 'break-word' }}>
                                             {c.paciente || 'Paciente N/I'}
                                         </Typography>
                                         <Typography variant="caption" color="#64748B" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1, letterSpacing: '0.5px' }}>
@@ -150,19 +150,19 @@ const DashboardProfissional = () => {
                                     </Box>
                                 </Box>
                                 
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: { xs: '100%', md: 'auto' }, justifyContent: { xs: 'space-between', md: 'flex-end' } }}>
+                                <Box sx={{ display: 'flex', alignItems: { xs: 'stretch', sm: 'center' }, gap: { xs: 1.5, sm: 3 }, width: { xs: '100%', md: 'auto' }, justifyContent: { xs: 'center', md: 'flex-end' }, flexDirection: { xs: 'column', sm: 'row' }, pt: { xs: 1.5, md: 0 }, borderTop: { xs: '1px solid #F1F5F9', md: 'none' } }}>
                                     <Chip 
                                         label={(c.status || 'Pendente').toUpperCase()} 
                                         size="small" 
-                                        sx={{ fontWeight: 800, fontSize: '0.7rem', height: 28, px: 1, borderRadius: '8px', letterSpacing: '0.5px', bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border }} 
+                                        sx={{ fontWeight: 800, fontSize: { xs: '0.68rem', sm: '0.7rem' }, minHeight: 28, height: 'auto', px: 1, py: 0.35, borderRadius: '8px', letterSpacing: '0.3px', bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border, maxWidth: '100%', whiteSpace: 'normal', textAlign: 'center' }} 
                                     />
                                     
                                     {c.status === 'Pendente pagamento' || c.status === 'Pendente' ? (
-                                        <Typography variant="body2" color="#94A3B8" fontWeight={700} sx={{ textAlign: 'center', minWidth: 120 }}>
+                                        <Typography variant="body2" color="#94A3B8" fontWeight={700} sx={{ textAlign: 'center', width: { xs: '100%', sm: 'auto' }, minWidth: { sm: 120 }, whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.25 }}>
                                             Aguardando pagamento
                                         </Typography>
                                     ) : c.status === 'Cancelado' ? (
-                                        <Typography variant="body2" color="#EF4444" fontWeight={700} sx={{ textAlign: 'center', minWidth: 120 }}>
+                                        <Typography variant="body2" color="#EF4444" fontWeight={700} sx={{ textAlign: 'center', width: { xs: '100%', sm: 'auto' }, minWidth: { sm: 120 }, whiteSpace: 'normal', lineHeight: 1.25 }}>
                                             Consulta Cancelada
                                         </Typography>
                                     ) : c.status === 'Concluido' || c.status === 'Finalizado' ? (

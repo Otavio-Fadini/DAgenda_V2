@@ -112,20 +112,22 @@ const CadastroProfissional = () => {
     };
 
     return (
-        <Box sx={{ 
-            minHeight: '100vh',
-            width: '100vw',
-            maxWidth: '100vw',
-            ml: 'calc(50% - 50vw)',
-            mr: 'calc(50% - 50vw)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #F0F4F8 0%, #D9E2EC 100%)',
-            p: { xs: 2, sm: 3, md: 4 },
-            boxSizing: 'border-box',
-            overflowX: 'hidden'
-        }}>
+        <Box
+            sx={{
+                position: 'fixed',
+                inset: 0,
+                width: '100vw',
+                height: '100vh',
+                overflowY: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #F0F4F8 0%, #D9E2EC 100%)',
+                p: 2,
+                boxSizing: 'border-box',
+                zIndex: 1,
+            }}
+        >
             <Fade in={true} timeout={800}>
                 {/* CONTAINER PRINCIPAL QUE DIVIDE A TELA */}
                 <Grid

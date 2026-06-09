@@ -32,14 +32,41 @@ const MeusAgendamentos = () => {
         carregarAgendamentos();
     }, []);
 
+    const converterDataConsulta = (dataStr, horaStr = '00:00') => {
+        if (!dataStr) return new Date(0);
+
+        try {
+            let ano, mes, dia;
+
+            if (dataStr.includes('/')) {
+                [dia, mes, ano] = dataStr.split('/');
+            } else {
+                [ano, mes, dia] = dataStr.split('-');
+            }
+
+            const [hora = '00', min = '00'] = (horaStr || '00:00').split(':');
+            return new Date(Number(ano), Number(mes) - 1, Number(dia), Number(hora), Number(min));
+        } catch (e) {
+            return new Date(0);
+        }
+    };
+
+    const ordenarPorDataConsulta = (lista) => {
+        return [...lista].sort((a, b) => {
+            const dataA = converterDataConsulta(a.data_agendamento, a.horario);
+            const dataB = converterDataConsulta(b.data_agendamento, b.horario);
+            return dataA - dataB;
+        });
+    };
+
     const carregarAgendamentos = async () => {
         setLoading(true);
         try {
             const response = await api.get('/paciente/meus-agendamentos');
             
-            // Filtro de segurança para remover duplicatas
+            // Remove duplicatas, mantém consultas passadas e ordena pela data/hora da consulta
             const agendamentosUnicos = response.data.filter((v, i, a) => a.findIndex(t => (t.id === v.id)) === i);
-            setAgendamentos(agendamentosUnicos);
+            setAgendamentos(ordenarPorDataConsulta(agendamentosUnicos));
         } catch (error) {
             console.error("Erro ao carregar agendamentos:", error);
         } finally {
@@ -96,13 +123,7 @@ const MeusAgendamentos = () => {
     };
 
     const agendamentosFiltrados = agendamentos.filter((agendamento) => {
-        const s = (agendamento.status || '').toLowerCase();
-        const isPendenteOuAgendado = s === 'agendado' || s === 'pendente pagamento' || s === 'pendente';
-        
-        // Remove da lista consultas que já passaram da data/hora e não foram finalizadas/canceladas
-        if (isPendenteOuAgendado && !isConsultaValidaNoTempo(agendamento.data_agendamento, agendamento.horario)) {
-            return false;
-        }
+        // Mantém todos os agendamentos, inclusive consultas com data/hora já passada.
 
         // 1. Filtro por Texto 
         const termoBusca = buscaTexto.toLowerCase();
@@ -121,6 +142,10 @@ const MeusAgendamentos = () => {
         const matchStatus = filtroStatus === 'Todos' || agendamento.status === filtroStatus;
 
         return matchNome && matchData && matchStatus;
+    }).sort((a, b) => {
+        const dataA = converterDataConsulta(a.data_agendamento, a.horario);
+        const dataB = converterDataConsulta(b.data_agendamento, b.horario);
+        return dataA - dataB;
     });
 
     // ==========================================
@@ -295,7 +320,7 @@ const MeusAgendamentos = () => {
                 <Paper elevation={0} sx={{ p: 6, textAlign: 'center', borderRadius: '24px', border: '2px dashed #E2E8F0', bgcolor: 'transparent' }}>
                     <Calendar size={48} color="#CBD5E1" style={{ marginBottom: 16 }} />
                     <Typography variant="h6" fontWeight={800} color="#64748B">Nenhum agendamento encontrado.</Typography>
-                    <Typography variant="body2" color="#94A3B8" fontWeight={500}>Tente alterar os filtros de busca ou verifique se as consultas agendadas já não expiraram.</Typography>
+                    <Typography variant="body2" color="#94A3B8" fontWeight={500}>Tente alterar os filtros de busca. As consultas antigas também são exibidas nesta tela.</Typography>
                 </Paper>
             ) : (
                 <Grid container spacing={3}>

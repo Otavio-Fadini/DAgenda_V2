@@ -211,8 +211,8 @@ const CadastroClinica = () => {
                                         <Button variant="outlined" type="button" onClick={() => setTabValue(0)} sx={{ py: 1.5, px: 2, borderRadius: '10px', fontWeight: 800, color: '#64748b', borderColor: '#E2E8F0', minWidth: 60, '&:hover': { bgcolor: '#F1F5F9', borderColor: '#CBD5E1' } }}>
                                             <ChevronLeft size={20} />
                                         </Button>
-                                        <Button fullWidth variant="contained" type="submit" disabled={salvando} sx={{ py: 1.5, borderRadius: '10px', fontWeight: 800, fontSize: '1rem', bgcolor: '#32B5FE', color: '#FFFFFF', textTransform: 'none', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)', transition: 'all 0.3s ease', '&:hover': { bgcolor: '#29A3E5', transform: 'translateY(-2px)' } }}>
-                                            {salvando ? <CircularProgress size={24} color="inherit" /> : 'Registrar Clínica'}
+                                        <Button fullWidth variant="contained" type="submit" disabled={salvando} sx={{ py: 1.5, borderRadius: '10px', fontWeight: 800, fontSize: '1rem', bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, textTransform: 'none', boxShadow: '0 10px 20px -10px rgba(50, 181, 254, 0.5)', transition: 'all 0.3s ease' }}>
+                                            {salvando ? <CircularProgress size={24} color="inherit" /> : 'Finalizar Cadastro'}
                                         </Button>
                                     </Box>
                                 </Box>

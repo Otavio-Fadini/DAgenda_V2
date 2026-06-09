@@ -1,4 +1,8 @@
-/* RESPONSIVIDADE GLOBAL DO SISTEMA */
+/* =====================================================
+   RESPONSIVIDADE GLOBAL DO SISTEMA
+===================================================== */
+
+/* Layout principal */
 .app-shell {
   width: 100%;
   height: 100vh;
@@ -8,8 +12,8 @@
 }
 
 .app-content {
-  min-width: 0;
   flex: 1;
+  min-width: 0;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -20,19 +24,28 @@
   flex: 1;
   width: 100%;
   min-width: 0;
-  height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
   background: #f8fafc;
 }
 
-/* Componentes MUI */
+/* =====================================================
+   COMPONENTES GLOBAIS
+===================================================== */
+
 .MuiContainer-root,
-.MuiBox-root,
 .MuiPaper-root,
 .MuiCard-root {
   max-width: 100%;
 }
+
+.MuiBox-root {
+  min-width: 0;
+}
+
+/* =====================================================
+   TABELAS
+===================================================== */
 
 .MuiTableContainer-root {
   width: 100%;
@@ -41,19 +54,72 @@
 }
 
 .MuiTable-root {
-  white-space: nowrap;
+  min-width: max-content;
 }
+
+/* =====================================================
+   MODAIS
+===================================================== */
 
 .MuiDialog-paper {
   max-width: calc(100vw - 24px) !important;
 }
 
+/* =====================================================
+   MAPAS
+===================================================== */
+
 .leaflet-container {
   max-width: 100%;
 }
 
-/* Tablets e celulares */
+/* =====================================================
+   FORMULÁRIOS
+===================================================== */
+
+.MuiTextField-root,
+.MuiFormControl-root,
+.MuiAutocomplete-root,
+.MuiSelect-root {
+  max-width: 100%;
+}
+
+.MuiGrid-container {
+  width: 100%;
+  margin-left: 0 !important;
+}
+
+.MuiGrid-item {
+  min-width: 0;
+}
+
+/* =====================================================
+   ÍCONES
+===================================================== */
+
+.MuiSvgIcon-root {
+  font-size: 1.35rem;
+}
+
+/* =====================================================
+   TELAS DE PERFIL E CONFIGURAÇÕES
+===================================================== */
+
+.configuracoes-perfil,
+.perfil-container,
+.form-container,
+.responsive-page {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* =====================================================
+   TABLETS
+===================================================== */
+
 @media (max-width: 900px) {
+
   html,
   body,
   #root {
@@ -93,20 +159,34 @@
   }
 }
 
+/* =====================================================
+   CELULARES
+===================================================== */
+
 @media (max-width: 600px) {
+
+  /* Cards */
   .MuiPaper-root,
   .MuiCard-root {
     border-radius: 18px !important;
   }
 
+  /* Botões */
   .MuiButton-root {
-    min-height: 42px;
+    min-height: 44px;
   }
 
-  .MuiTabs-flexContainer {
-    overflow-x: auto;
+  .MuiIconButton-root {
+    width: 44px;
+    height: 44px;
   }
 
+  /* Ícones */
+  .MuiSvgIcon-root {
+    font-size: 1.6rem !important;
+  }
+
+  /* Tipografia */
   .MuiTypography-h4 {
     font-size: 1.65rem !important;
   }
@@ -117,5 +197,56 @@
 
   .MuiTypography-h6 {
     font-size: 1.05rem !important;
+  }
+
+  /* Tabs */
+  .MuiTabs-flexContainer {
+    overflow-x: auto;
+  }
+
+  /* Grid vira coluna */
+  .MuiGrid-item {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Stacks do MUI */
+  .MuiStack-root {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  /* Inputs */
+  .MuiTextField-root,
+  .MuiFormControl-root {
+    width: 100%;
+  }
+
+  /* Tabelas */
+  .MuiTableContainer-root {
+    overflow-x: auto;
+  }
+}
+
+/* =====================================================
+   TELAS MUITO PEQUENAS
+===================================================== */
+
+@media (max-width: 400px) {
+
+  .MuiTypography-h4 {
+    font-size: 1.4rem !important;
+  }
+
+  .MuiTypography-h5 {
+    font-size: 1.2rem !important;
+  }
+
+  .MuiButton-root {
+    font-size: 0.85rem !important;
+  }
+
+  .MuiSvgIcon-root {
+    font-size: 1.4rem !important;
   }
 }

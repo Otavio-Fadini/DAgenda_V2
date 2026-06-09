@@ -189,10 +189,33 @@ const ConfiguracoesPerfil = () => {
     );
 
     return (
-        <Box sx={{ height: 'calc(100vh - 64px)', overflow: 'hidden', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC', p: { xs: 2, md: 4 }, boxSizing: 'border-box' }}>
+        <Box
+            className="configuracoes-perfil responsive-page"
+            sx={{
+                height: { xs: 'auto', md: 'calc(100vh - 64px)' },
+                minHeight: { xs: '100dvh', md: 'auto' },
+                overflow: { xs: 'visible', md: 'hidden' },
+                display: 'flex',
+                flexDirection: 'column',
+                bgcolor: '#F8FAFC',
+                p: { xs: 2, sm: 3, md: 4 },
+                boxSizing: 'border-box',
+                minWidth: 0
+            }}
+        >
             
             {/* TOPO FIXO */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'flex-start', sm: 'center' },
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    gap: 2,
+                    mb: 3,
+                    minWidth: 0
+                }}
+            >
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>Configurações</Typography>
                     <Typography variant="body1" sx={{ color: '#64748B', mt: 0.5 }}>Gerencie sua identidade, agenda institucional e regras de negócio.</Typography>
@@ -200,7 +223,7 @@ const ConfiguracoesPerfil = () => {
                 <Button 
                     variant="contained" onClick={handleSubmit} disabled={saving}
                     startIcon={saving ? <CircularProgress size={18} color="inherit" /> : <Save size={18} />}
-                    sx={{ bgcolor: '#0F172A', borderRadius: '12px', fontWeight: 800, px: 4, py: 1.5, textTransform: 'none', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' } }}
+                    sx={{ bgcolor: '#0F172A', borderRadius: '12px', fontWeight: 800, px: 4, py: 1.5, textTransform: 'none', color: '#FFFFFF', width: { xs: '100%', sm: 'auto' }, '&:hover': { bgcolor: '#32B5FE' } }}
                 >
                     Salvar Alterações
                 </Button>
@@ -208,8 +231,12 @@ const ConfiguracoesPerfil = () => {
 
             {/* ABAS */}
             <Tabs 
-                value={tabValue} onChange={(e, v) => setTabValue(v)} 
-                sx={{ mb: 3, borderBottom: '1px solid #E2E8F0', '& .MuiTab-root': { fontWeight: 800, textTransform: 'none', fontSize: '1rem', color: '#64748B' }, '& .Mui-selected': { color: '#32B5FE !important' }, '& .MuiTabs-indicator': { backgroundColor: '#32B5FE', height: 3, borderRadius: '3px 3px 0 0' } }}
+                value={tabValue}
+                onChange={(e, v) => setTabValue(v)}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+                sx={{ mb: 3, borderBottom: '1px solid #E2E8F0', maxWidth: '100%', '& .MuiTab-root': { fontWeight: 800, textTransform: 'none', fontSize: { xs: '0.85rem', sm: '1rem' }, color: '#64748B', minHeight: 48 }, '& .Mui-selected': { color: '#32B5FE !important' }, '& .MuiTabs-indicator': { backgroundColor: '#32B5FE', height: 3, borderRadius: '3px 3px 0 0' } }}
             >
                 <Tab icon={<User size={18}/>} iconPosition="start" label="Perfil Profissional" />
                 <Tab icon={<Calendar size={18}/>} iconPosition="start" label="Grade de Atendimento" />
@@ -218,7 +245,20 @@ const ConfiguracoesPerfil = () => {
             </Tabs>
 
             {/* PAINEL INTERNO AUTO-CONTAINER (EVITA SCROLL GLOBAL) */}
-            <Paper elevation={0} sx={{ flexGrow: 1, borderRadius: '24px', border: '1px solid #E2E8F0', p: 4, overflowY: 'auto', bgcolor: 'white', boxSizing: 'border-box' }}>
+            <Paper
+                elevation={0}
+                sx={{
+                    flexGrow: 1,
+                    borderRadius: { xs: '18px', md: '24px' },
+                    border: '1px solid #E2E8F0',
+                    p: { xs: 2, sm: 3, md: 4 },
+                    overflowY: { xs: 'visible', md: 'auto' },
+                    overflowX: 'hidden',
+                    bgcolor: 'white',
+                    boxSizing: 'border-box',
+                    minWidth: 0
+                }}
+            >
                 
                 {/* ABA 0: IDENTIDADE VISUAL E DADOS */}
                 {tabValue === 0 && (
@@ -248,8 +288,9 @@ const ConfiguracoesPerfil = () => {
 
                             <Box sx={{
                                 display: 'grid',
-                                gap: 3,
-                                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }
+                                gap: { xs: 2, sm: 3 },
+                                gridTemplateColumns: { xs: '1fr', sm: 'minmax(0, 1fr) minmax(0, 1fr)' },
+                                minWidth: 0
                             }}>
                                 
                                 {/* LINHA 1 (Nome ocupa tudo) */}
@@ -348,17 +389,33 @@ const ConfiguracoesPerfil = () => {
 
                 {/* ABA 1: DISPONIBILIDADE CALENDLY STYLE */}
                 {tabValue === 1 && (
-                    <Box sx={{ maxWidth: 720, mx: 'auto' }}>
+                    <Box sx={{ width: '100%', maxWidth: 720, mx: 'auto', minWidth: 0 }}>
                         <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>Dias e Janelas de Atendimento</Typography>
                         {horarios.map((h, index) => (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, mb: 1.5, borderRadius: '16px', border: h.ativo ? '1px solid #32B5FE' : '1px solid #E2E8F0', bgcolor: h.ativo ? 'rgba(50, 181, 254, 0.02)' : '#F8FAFC', transition: 'all 0.2s' }}>
-                                <Stack direction="row" spacing={2} alignItems="center" sx={{ width: 160 }}>
+                            <Box
+                                key={index}
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: { xs: 'flex-start', sm: 'center' },
+                                    justifyContent: 'space-between',
+                                    flexDirection: { xs: 'column', sm: 'row' },
+                                    gap: 2,
+                                    p: 2,
+                                    mb: 1.5,
+                                    borderRadius: '16px',
+                                    border: h.ativo ? '1px solid #32B5FE' : '1px solid #E2E8F0',
+                                    bgcolor: h.ativo ? 'rgba(50, 181, 254, 0.02)' : '#F8FAFC',
+                                    transition: 'all 0.2s',
+                                    minWidth: 0
+                                }}
+                            >
+                                <Stack direction="row" spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 160 }, minWidth: 0 }}>
                                     <Switch checked={h.ativo} onChange={(e) => handleHorarioChange(index, 'ativo', e.target.checked)} sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#32B5FE' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#32B5FE' } }} />
                                     <Typography fontWeight={800} color={h.ativo ? '#0F172A' : '#94A3B8'}>{h.dia}</Typography>
                                 </Stack>
                                 
                                 {h.ativo ? (
-                                    <Stack direction="row" spacing={2} alignItems="center">
+                                    <Stack direction="row" spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' }, flexWrap: 'wrap', rowGap: 1 }}>
                                         <TextField size="small" value={h.inicio} onChange={(e) => handleHorarioChange(index, 'inicio', e.target.value)} sx={{ width: 110, '& .MuiOutlinedInput-root': { bgcolor: 'white', borderRadius: '10px' } }} />
                                         <Typography color="#94A3B8" fontWeight={800} variant="caption">ATÉ</Typography>
                                         <TextField size="small" value={h.fim} onChange={(e) => handleHorarioChange(index, 'fim', e.target.value)} sx={{ width: 110, '& .MuiOutlinedInput-root': { bgcolor: 'white', borderRadius: '10px' } }} />
@@ -373,7 +430,7 @@ const ConfiguracoesPerfil = () => {
 
                 {/* ABA 2: REGRA DE NEGÓCIO FINANCEIRO */}
                 {tabValue === 2 && (
-                    <Grid container spacing={3} sx={{ maxWidth: 720, mx: 'auto' }}>
+                    <Grid container spacing={3} sx={{ width: '100%', maxWidth: 720, mx: 'auto', minWidth: 0 }}>
                         <Grid item xs={12} md={6}>
                             <Typography variant="subtitle2" fontWeight={800} color="#64748B" sx={{ mb: 1 }}>Preço Comercial da Consulta</Typography>
                             <TextField fullWidth value={formData.valor_consulta} onChange={(e) => setFormData({...formData, valor_consulta: e.target.value})} InputProps={{ startAdornment: <InputAdornment position="start"><DollarSign size={18} color="#32B5FE"/></InputAdornment> }} sx={inputStyle} />
@@ -383,7 +440,7 @@ const ConfiguracoesPerfil = () => {
                             <TextField fullWidth value={formData.duracao_sessao} onChange={(e) => setFormData({...formData, duracao_sessao: e.target.value})} InputProps={{ startAdornment: <InputAdornment position="start"><Clock size={18} color="#32B5FE"/></InputAdornment> }} sx={inputStyle} />
                         </Grid>
                         <Grid item xs={12}>
-                            <Box sx={{ mt: 2, p: 3, borderRadius: '20px', bgcolor: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box sx={{ mt: 2, p: 3, borderRadius: '20px', bgcolor: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
                                 <Stack direction="row" spacing={2} alignItems="center">
                                     <Box sx={{ p: 1, bgcolor: '#DCFCE7', borderRadius: '10px', color: '#16A34A', display: 'flex' }}><Shield size={20} /></Box>
                                     <Box>
@@ -396,7 +453,7 @@ const ConfiguracoesPerfil = () => {
                         </Grid>
                         {/* O NOVO BLOCO DE PRIVACIDADE ENTRA AQUI */}
                         <Grid item xs={12}>
-                            <Box sx={{ mt: 2, p: 3, borderRadius: '20px', bgcolor: formData.aceita_convites ? '#F0FDF4' : '#FEF2F2', border: '1px solid', borderColor: formData.aceita_convites ? '#BBF7D0' : '#FECACA', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.3s' }}>
+                            <Box sx={{ mt: 2, p: 3, borderRadius: '20px', bgcolor: formData.aceita_convites ? '#F0FDF4' : '#FEF2F2', border: '1px solid', borderColor: formData.aceita_convites ? '#BBF7D0' : '#FECACA', display: 'flex', alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, transition: 'all 0.3s' }}>
                                 <Stack direction="row" spacing={2} alignItems="center">
                                     <Box sx={{ p: 1, bgcolor: formData.aceita_convites ? '#DCFCE7' : '#FEE2E2', borderRadius: '10px', color: formData.aceita_convites ? '#16A34A' : '#EF4444', display: 'flex' }}>
                                         <Building2 size={20} />
@@ -421,7 +478,7 @@ const ConfiguracoesPerfil = () => {
                 )}
                 {/* ABA 3: ENDEREÇO */}
                 {tabValue === 3 && (
-                    <Box sx={{ maxWidth: 720, mx: 'auto' }}>
+                    <Box sx={{ width: '100%', maxWidth: 720, mx: 'auto', minWidth: 0 }}>
                         <Alert icon={<EyeOff size={22} />} severity="info" sx={{ mb: 4, borderRadius: '16px', '& .MuiAlert-message': { width: '100%' }, bgcolor: '#F0F9FF', color: '#0369A1', border: '1px solid #BAE6FD' }}>
                             <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 0.5 }}>Privacidade Garantida</Typography>
                             <Typography variant="body2" fontWeight={500}>O seu endereço não será exibido no seu perfil público nem para clínicas ou pacientes. Ele é utilizado <strong>exclusivamente</strong> pelo nosso algoritmo para conectar o seu perfil a oportunidades em clínicas próximas de si.</Typography>

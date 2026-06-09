@@ -13,6 +13,8 @@ const DashboardPaciente = () => {
     const [consultas, setConsultas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [totalDebito, setTotalDebito] = useState(0);
+    const [paginaAtual, setPaginaAtual] = useState(1);
+    const consultasPorPagina = 3;
 
     const fetchConsultas = async () => {
         setLoading(true);
@@ -42,6 +44,10 @@ const DashboardPaciente = () => {
     };
 
     useEffect(() => { fetchConsultas(); fetchDebitos(); }, []);
+
+    useEffect(() => {
+        setPaginaAtual(1);
+    }, [consultas.length]);
 
     // Função de Cores Padronizada do DAGENDA
     const getStatusStyle = (status) => {
@@ -122,26 +128,46 @@ const DashboardPaciente = () => {
         </Paper>
     );
 
-    const proximaConsulta = [...consultasAtivas]
-        .sort((a, b) => {
-            const dataA = new Date(a.data_agendamento.includes('/') ? a.data_agendamento.split('/').reverse().join('-') : a.data_agendamento + 'T' + a.horario);
-            const dataB = new Date(b.data_agendamento.includes('/') ? b.data_agendamento.split('/').reverse().join('-') : b.data_agendamento + 'T' + b.horario);
-            return dataA - dataB;
-        })[0];
+    const consultasOrdenadas = [...consultasAtivas].sort((a, b) => {
+        const dataA = new Date(
+            a.data_agendamento.includes('/')
+                ? `${a.data_agendamento.split('/').reverse().join('-')}T${a.horario || '23:59'}`
+                : `${a.data_agendamento}T${a.horario || '23:59'}`
+        );
+
+        const dataB = new Date(
+            b.data_agendamento.includes('/')
+                ? `${b.data_agendamento.split('/').reverse().join('-')}T${b.horario || '23:59'}`
+                : `${b.data_agendamento}T${b.horario || '23:59'}`
+        );
+
+        return dataA - dataB;
+    });
+
+    const totalPaginas = Math.max(1, Math.ceil(consultasOrdenadas.length / consultasPorPagina));
+
+    const consultasPaginadas = consultasOrdenadas.slice(
+        (paginaAtual - 1) * consultasPorPagina,
+        paginaAtual * consultasPorPagina
+    );
+
+    const proximaConsulta = consultasOrdenadas[0];
 
     return (
         <Fade in={true} timeout={600}>
             <Box className="responsive-page" sx={{ 
                 width: '100%', 
-                minHeight: { xs: '100dvh', md: '100%' }, 
-                p: { xs: 2, md: 4 },
+                height: { xs: 'auto', md: 'calc(100vh - 64px)' },
+                minHeight: { xs: '100dvh', md: 'auto' }, 
+                p: { xs: 2, md: 3 },
                 display: 'flex',
                 flexDirection: 'column',
                 boxSizing: 'border-box',
-                bgcolor: '#F8FAFC'
+                bgcolor: '#F8FAFC',
+                overflow: { xs: 'visible', md: 'hidden' }
             }}>
                 {/* CABEÇALHO */}
-                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2, mb: 4 }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2, mb: { xs: 3, md: 2.5 } }}>
                     <Box>
                         <Typography variant="h4" sx={{ fontWeight: 900, color: '#0F172A', letterSpacing: '-1px' }}>
                             Painel do Paciente
@@ -163,14 +189,14 @@ const DashboardPaciente = () => {
                 </Box>
 
                 {/* INDICADORES */}
-                <Box className="paciente-stats" sx={{ display: 'flex', gap: { xs: 2, md: 3 }, mb: 4, width: '100%', flexDirection: { xs: 'column', sm: 'row' }, flexWrap: { xs: 'nowrap', sm: 'wrap', lg: 'nowrap' } }}>
+                <Box className="paciente-stats" sx={{ display: 'flex', gap: { xs: 2, md: 3 }, mb: { xs: 3, md: 2.5 }, width: '100%', flexDirection: { xs: 'column', sm: 'row' }, flexWrap: { xs: 'nowrap', sm: 'wrap', lg: 'nowrap' } }}>
                     <StatCard icon={Calendar} title="Próximas Consultas" value={consultasAtivas.length} color="primary" />
                     <StatCard icon={ClipboardList} title="Histórico Total" value={consultas.length} color="success" />
                     <StatCard icon={CreditCard} title="Débitos Pendentes" value={Number(totalDebito || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} color="error" />
                 </Box>
 
                 {/* CONTEÚDO PRINCIPAL */}
-                <Box sx={{ display: 'flex', gap: 3, flexGrow: 1, minHeight: 0, width: '100%', flexDirection: { xs: 'column', lg: 'row' } }}>
+                <Box sx={{ display: 'flex', gap: 3, flexGrow: 1, minHeight: 0, width: '100%', flexDirection: { xs: 'column', lg: 'row' }, overflow: { xs: 'visible', md: 'hidden' } }}>
                     
                     {/* LISTA DE AGENDAMENTOS */}
                     <Paper elevation={0} sx={{ 
@@ -181,27 +207,24 @@ const DashboardPaciente = () => {
                         border: '1px solid #F1F5F9',
                         bgcolor: 'white',
                         overflow: 'hidden',
-                        boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.05)'
+                        boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.05)',
+                        minHeight: 0,
+                        height: { xs: 'auto', md: '100%' }
                     }}>
-                        <Box sx={{ p: 3.5, borderBottom: '1px solid #F8FAFC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box sx={{ p: { xs: 2.5, md: 3 }, borderBottom: '1px solid #F8FAFC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A' }}>Agenda de Consultas</Typography>
                             <Chip label={`${consultasAtivas.length} registros`} size="small" sx={{ fontWeight: 700, bgcolor: '#F1F5F9', color: '#64748B' }} />
                         </Box>
 
-                        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 3 }}>
+                        <Box sx={{ flexGrow: 1, overflowY: { xs: 'visible', md: 'hidden' }, p: { xs: 2, md: 2.5 }, minHeight: 0 }}>
                             {loading ? (
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     {[1, 2, 3].map(i => <Skeleton key={i} variant="rounded" height={100} sx={{ borderRadius: '16px' }} />)}
                                 </Box>
                             ) : consultasAtivas.length > 0 ? (
+                                <>
                                 <List sx={{ p: 0 }}>
-                                    {consultasAtivas
-                                        .sort((a, b) => {
-                                            const dataA = new Date(a.data_agendamento.includes('/') ? a.data_agendamento.split('/').reverse().join('-') : a.data_agendamento + 'T' + a.horario);
-                                            const dataB = new Date(b.data_agendamento.includes('/') ? b.data_agendamento.split('/').reverse().join('-') : b.data_agendamento + 'T' + b.horario);
-                                            return dataA - dataB;
-                                        })
-                                        .map((c) => {
+                                    {consultasPaginadas.map((c) => {
                                             const statusStyle = getStatusStyle(c.status);
                                             const nomeMedico = c.nome_medico || 'Médico N/I';
                                             
@@ -209,10 +232,10 @@ const DashboardPaciente = () => {
                                             <ListItem 
                                                 key={c.id} 
                                                 sx={{ 
-                                                    mb: 2, 
+                                                    mb: { xs: 2, md: 1.5 }, 
                                                     border: '1px solid #F1F5F9', 
                                                     borderRadius: '16px', 
-                                                    p: { xs: 2.5, md: 3.5 },
+                                                    p: { xs: 2.2, md: 2.4 },
                                                     display: 'flex',
                                                     flexDirection: { xs: 'column', md: 'row' },
                                                     alignItems: { xs: 'flex-start', md: 'center' },
@@ -286,6 +309,46 @@ const DashboardPaciente = () => {
                                             </ListItem>
                                         )})}
                                 </List>
+
+                                {totalPaginas > 1 && (
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                            mt: { xs: 2, md: 1.5 },
+                                            flexWrap: 'wrap'
+                                        }}
+                                    >
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            disabled={paginaAtual === 1}
+                                            onClick={() => setPaginaAtual((p) => Math.max(1, p - 1))}
+                                            sx={{ borderRadius: '10px', fontWeight: 800, textTransform: 'none' }}
+                                        >
+                                            Anterior
+                                        </Button>
+
+                                        <Chip
+                                            label={`${paginaAtual} / ${totalPaginas}`}
+                                            size="small"
+                                            sx={{ fontWeight: 800, bgcolor: '#F1F5F9', color: '#64748B' }}
+                                        />
+
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            disabled={paginaAtual === totalPaginas}
+                                            onClick={() => setPaginaAtual((p) => Math.min(totalPaginas, p + 1))}
+                                            sx={{ borderRadius: '10px', fontWeight: 800, textTransform: 'none' }}
+                                        >
+                                            Próxima
+                                        </Button>
+                                    </Box>
+                                )}
+                                </>
                             ) : (
                                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.6 }}>
                                     <Activity size={70} color="#CBD5E1" />
@@ -297,19 +360,19 @@ const DashboardPaciente = () => {
                     </Paper>
 
                     {/* COLUNA DIREITA */}
-                    <Box sx={{ flex: { xs: 'none', lg: 1 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <Box sx={{ flex: { xs: 'none', lg: 1 }, display: 'flex', flexDirection: 'column', gap: { xs: 3, md: 2.5 }, minHeight: 0, height: { xs: 'auto', md: '100%' } }}>
                         
                         {/* PRÓXIMO ATENDIMENTO */}
                         <Paper elevation={0} sx={{ 
-                            p: 3.5, borderRadius: '24px', border: '1px solid #F1F5F9', bgcolor: 'white',
+                            p: { xs: 3, md: 2.5 }, borderRadius: '24px', border: '1px solid #F1F5F9', bgcolor: 'white',
                             boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.05)'
                         }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#32B5FE', textTransform: 'uppercase', mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#32B5FE', textTransform: 'uppercase', mb: { xs: 3, md: 2 }, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <Clock size={18} /> Próximo Atendimento
                             </Typography>
                             {proximaConsulta ? (
                                 <Box>
-                                    <Box sx={{ p: 2.5, bgcolor: '#F8FAFC', borderRadius: '16px', mb: 3, border: '1px solid #F1F5F9' }}>
+                                    <Box sx={{ p: { xs: 2.5, md: 2 }, bgcolor: '#F8FAFC', borderRadius: '16px', mb: 3, border: '1px solid #F1F5F9' }}>
                                         <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A' }}>{proximaConsulta.nome_medico}</Typography>
                                         <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 600 }}>{proximaConsulta.especialidade}</Typography>
                                     </Box>
@@ -333,11 +396,12 @@ const DashboardPaciente = () => {
 
                        {/* SUPORTE PREMIUM */}
                         <Paper elevation={0} sx={{ 
-                            p: 4, 
+                            p: { xs: 3, md: 2.5 }, 
                             borderRadius: '24px', 
                             bgcolor: '#0F172A', 
                             color: 'white', 
-                            flexGrow: 1, 
+                            flexGrow: { xs: 0, md: 1 }, 
+                            minHeight: { md: 0 },
                             display: 'flex', 
                             flexDirection: 'column', 
                             justifyContent: 'center',
@@ -351,8 +415,8 @@ const DashboardPaciente = () => {
                             }} />
 
                             <Box sx={{ position: 'relative', zIndex: 1 }}>
-                                <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.5, letterSpacing: '-0.5px', color: 'white' }}>Central de Ajuda</Typography>
-                                <Typography variant="body2" sx={{ color: '#94A3B8', lineHeight: 1.6, fontSize: '0.95rem' }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.5px', color: 'white' }}>Central de Ajuda</Typography>
+                                <Typography variant="body2" sx={{ color: '#94A3B8', lineHeight: 1.5, fontSize: '0.86rem' }}>
                                     Precisa de assistência com seus agendamentos ou pagamentos?
                                 </Typography>
                             </Box>
@@ -361,12 +425,12 @@ const DashboardPaciente = () => {
                                 variant="contained" 
                                 startIcon={<HeadphonesIcon size={20} />}
                                 sx={{ 
-                                    mt: 4,
+                                    mt: { xs: 3, md: 2 },
                                     bgcolor: '#32B5FE', 
                                     borderRadius: '12px', 
                                     fontWeight: 800, 
-                                    py: 1.8,
-                                    fontSize: '1rem',
+                                    py: { xs: 1.5, md: 1.1 },
+                                    fontSize: '0.9rem',
                                     textTransform: 'none',
                                     position: 'relative',
                                     zIndex: 1,

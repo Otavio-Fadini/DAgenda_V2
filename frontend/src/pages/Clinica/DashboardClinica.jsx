@@ -28,6 +28,18 @@ const DashboardClinica = () => {
         return { bgcolor: '#F1F5F9', color: '#64748B', borderColor: '#E2E8F0' };
     };
 
+    const formatarHora = (hora) => {
+        if (!hora) return '--:--';
+
+        const horaString = String(hora);
+
+        if (horaString.includes(':')) {
+            return horaString.substring(0, 5);
+        }
+
+        return horaString;
+    };
+
     const buscarAgendaCompleta = async (data) => {
         setLoadingAgenda(true);
         try {
@@ -215,7 +227,9 @@ const DashboardClinica = () => {
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, md: 4 } }}>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '70px' }}>
                                         <Clock size={16} color="#64748B" style={{ marginBottom: '4px' }} />
-                                        <Typography variant="h6" fontWeight={900} color="#0F172A">{item.horario}</Typography>
+                                        <Typography fontWeight={900} color="#0F172A">
+                                            {formatarHora(item.horario || item.hora)}
+                                        </Typography>
                                     </Box>
                                     
                                     <Divider orientation="vertical" flexItem sx={{ borderStyle: 'dashed' }} />
@@ -308,13 +322,20 @@ const DashboardClinica = () => {
                                             return (
                                                 <ListItem key={item.id} sx={{ borderBottom: '1px solid #F1F5F9', py: 2, px: 0, display: 'flex', gap: 2, alignItems: 'center' }}>
                                                     <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: '12px', minWidth: 60, textAlign: 'center', flexShrink: 0 }}>
-                                                        <Typography fontWeight={900} color="#0F172A">{item.horario || item.hora}</Typography>
+                                                        <Typography fontWeight={900} color="#0F172A">
+                                                            {formatarHora(item.horario || item.hora)}
+                                                        </Typography>
                                                     </Box>
 
                                                     <Box sx={{ flex: 1, minWidth: 0 }}>
                                                         <Typography fontWeight={800} color="#0F172A" sx={{ wordBreak: 'break-word' }}>{item.nome_paciente || 'Paciente'}</Typography>
-                                                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ display: 'block' }}>
-                                                            Médico: {item.nome_medico || 'Não informado'}
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="#64748B"
+                                                            fontWeight={600}
+                                                            sx={{ display: 'block' }}
+                                                        >
+                                                            Médico: {item.nome_medico || 'Não informado'} • {formatarHora(item.horario || item.hora)}
                                                         </Typography>
                                                     </Box>
 

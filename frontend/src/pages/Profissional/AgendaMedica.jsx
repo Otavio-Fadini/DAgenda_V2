@@ -44,7 +44,7 @@ const AgendaMedica = () => {
     const [agendaCompleta, setAgendaCompleta] = useState([]);
     const [loadingAgendaCompleta, setLoadingAgendaCompleta] = useState(false);
     const [paginaAgendaCompleta, setPaginaAgendaCompleta] = useState(1);
-    const itensPorPaginaAgenda = 4;
+    const itensPorPaginaAgenda = 5;
 
     // ==========================================
     // RELÓGIO AUTOMÁTICO (Atualiza a cada 1 minuto)

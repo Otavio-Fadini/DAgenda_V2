@@ -252,93 +252,120 @@ const DashboardClinica = () => {
                         </Box>
                     )}
                 </Paper>
-                <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 2 } }}>
-                    <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Dialog
+                    open={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{ sx: { borderRadius: '24px', p: 2 } }}
+                >
+                    <DialogTitle sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2 }}>
                         <Typography variant="h6" fontWeight={900}>Agenda Completa da Clínica</Typography>
                         <IconButton onClick={() => setModalOpen(false)}><X /></IconButton>
                     </DialogTitle>
-                    <DialogContent>
+
+                    <DialogContent sx={{ maxHeight: { xs: '70vh', sm: '68vh' }, overflowY: 'auto' }}>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, p: 2, bgcolor: '#F8FAFC', borderRadius: '16px' }}>
-                            <IconButton onClick={() => alterarDia(-1)}><ChevronLeft /></IconButton>
-                            <TextField fullWidth type="date" value={dataFiltro} onChange={(e) => { setDataFiltro(e.target.value); setPaginaAtual(1); buscarAgendaCompleta(e.target.value); }} />
-                            <IconButton onClick={() => alterarDia(1)}><ChevronRight /></IconButton>
+                            <IconButton onClick={() => alterarDia(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}>
+                                <ChevronLeft size={20} />
+                            </IconButton>
+
+                            <TextField
+                                fullWidth
+                                type="date"
+                                size="small"
+                                value={dataFiltro}
+                                onChange={(e) => {
+                                    setDataFiltro(e.target.value);
+                                    setPaginaAtual(1);
+                                    buscarAgendaCompleta(e.target.value);
+                                }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: 'white' } }}
+                            />
+
+                            <IconButton onClick={() => alterarDia(1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}>
+                                <ChevronRight size={20} />
+                            </IconButton>
                         </Box>
 
-                        {loadingAgenda ? <CircularProgress /> : (
-                            <List>
-                                {agendaCompleta.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina).map(item => (
-                                    <ListItem key={item.id} sx={{ borderBottom: '1px solid #eee', py: 2 }}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                            <Box>
-                                                <Typography fontWeight={800}>{item.nome_paciente}</Typography>
-                                                <Typography variant="caption" color="text.secondary">Médico: {item.nome_medico} • {item.horario}</Typography>
-                                            </Box>
-                                            <Chip 
-                                                label={item.status.toUpperCase()} 
-                                                sx={{ 
-                                                    ...getStatusStyle(item.status),
-                                                    fontWeight: 800, 
-                                                    fontSize: '0.75rem', 
-                                                    height: 28, 
-                                                    px: 1, 
-                                                    borderRadius: '8px' 
-                                                }} 
-                                            />
-                                        </Box>
-                                    </ListItem>
-                                ))}
-                            </List>
-                        )}
-                        {agendaCompleta.length > itensPorPagina && (
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    gap: 2,
-                                    mt: 3,
-                                    pt: 2,
-                                    borderTop: '1px solid #F1F5F9'
-                                }}
-                            >
-                                <Button
-                                    size="small"
-                                    disabled={paginaAtual === 1}
-                                    onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
-                                    sx={{
-                                        borderRadius: '10px',
-                                        fontWeight: 800,
-                                        textTransform: 'none',
-                                        color: '#64748B'
-                                    }}
-                                >
-                                    Anterior
-                                </Button>
+                        {loadingAgenda ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                <CircularProgress size={30} sx={{ color: '#32B5FE' }} />
+                            </Box>
+                        ) : agendaCompleta.length === 0 ? (
+                            <Box sx={{ textAlign: 'center', p: 4, opacity: 0.6 }}>
+                                <Calendar size={40} color="#CBD5E1" style={{ marginBottom: '16px' }} />
+                                <Typography variant="subtitle1" fontWeight={800} color="#64748B">Agenda Livre</Typography>
+                                <Typography variant="body2" color="#94A3B8" fontWeight={500}>Nenhum paciente agendado para este dia.</Typography>
+                            </Box>
+                        ) : (
+                            <Box>
+                                <List sx={{ pt: 0 }}>
+                                    {agendaCompleta
+                                        .slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina)
+                                        .map((item) => {
+                                            const style = getStatusStyle(item.status);
+                                            return (
+                                                <ListItem key={item.id} sx={{ borderBottom: '1px solid #F1F5F9', py: 2, px: 0, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                    <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: '12px', minWidth: 60, textAlign: 'center', flexShrink: 0 }}>
+                                                        <Typography fontWeight={900} color="#0F172A">{item.horario || item.hora}</Typography>
+                                                    </Box>
 
-                                <Typography
-                                    sx={{
-                                        fontWeight: 900,
-                                        minWidth: 70,
-                                        textAlign: 'center',
-                                        color: '#0F172A'
-                                    }}
-                                >
-                                    {paginaAtual} / {Math.ceil(agendaCompleta.length / itensPorPagina)}
-                                </Typography>
+                                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                        <Typography fontWeight={800} color="#0F172A" sx={{ wordBreak: 'break-word' }}>{item.nome_paciente || 'Paciente'}</Typography>
+                                                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ display: 'block' }}>
+                                                            Médico: {item.nome_medico || 'Não informado'}
+                                                        </Typography>
+                                                    </Box>
 
-                                <Button
-                                    size="small"
-                                    disabled={paginaAtual === Math.ceil(agendaCompleta.length / itensPorPagina)}
-                                    onClick={() => setPaginaAtual(p => Math.min(Math.ceil(agendaCompleta.length / itensPorPagina), p + 1))}
-                                    sx={{
-                                        borderRadius: '10px',
-                                        fontWeight: 800,
-                                        textTransform: 'none',
-                                        color: '#64748B'
-                                    }}
-                                >
-                                    Próxima
-                                </Button>
+                                                    <Chip
+                                                        label={(item.status || 'Confirmado').toUpperCase()}
+                                                        size="small"
+                                                        sx={{
+                                                            fontWeight: 800,
+                                                            fontSize: '0.65rem',
+                                                            bgcolor: style.bgcolor,
+                                                            color: style.color,
+                                                            border: '1px solid',
+                                                            borderColor: style.borderColor,
+                                                            borderRadius: '6px',
+                                                            flexShrink: 0
+                                                        }}
+                                                    />
+                                                </ListItem>
+                                            );
+                                        })}
+                                </List>
+
+                                {agendaCompleta.length > itensPorPagina && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mt: 2, pt: 2, borderTop: '1px solid #F1F5F9' }}>
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            disabled={paginaAtual === 1}
+                                            onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
+                                            startIcon={<ChevronLeft size={16} />}
+                                            sx={{ borderRadius: '10px', fontWeight: 800, textTransform: 'none' }}
+                                        >
+                                            Anterior
+                                        </Button>
+
+                                        <Typography variant="body2" fontWeight={800} color="#64748B">
+                                            Página {paginaAtual} de {Math.ceil(agendaCompleta.length / itensPorPagina)}
+                                        </Typography>
+
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            disabled={paginaAtual === Math.ceil(agendaCompleta.length / itensPorPagina)}
+                                            onClick={() => setPaginaAtual(p => Math.min(Math.ceil(agendaCompleta.length / itensPorPagina), p + 1))}
+                                            endIcon={<ChevronRight size={16} />}
+                                            sx={{ borderRadius: '10px', fontWeight: 800, textTransform: 'none' }}
+                                        >
+                                            Próxima
+                                        </Button>
+                                    </Box>
+                                )}
                             </Box>
                         )}
                     </DialogContent>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Box, Typography, Grid, Paper, Avatar, Button, Fade, Chip, Divider, Stack, CircularProgress,
-    Dialog, DialogTitle, DialogContent, TextField, IconButton, InputAdornment, List, ListItem, Pagination
+    Dialog, DialogTitle, DialogContent, TextField, IconButton, InputAdornment, List, ListItem
 } from '@mui/material';
 import { 
     Stethoscope, ShieldCheck, CalendarClock, AlertCircle, UserPlus, Search, X, Send, Calendar,
@@ -281,136 +281,139 @@ const MedicosUnidade = () => {
                     </DialogContent>
                 </Dialog>
 
-                {/* NOVO MODAL: VER AGENDA DO MÉDICO COM PAGINAÇÃO */}
-                <Dialog 
-                    open={modalAgendaOpen} 
+                {/* MODAL: VER AGENDA DO MÉDICO */}
+                <Dialog
+                    open={modalAgendaOpen}
                     onClose={handleCloseAgenda}
-                    maxWidth="md"
+                    maxWidth="sm"
                     fullWidth
-                    PaperProps={{ sx: { borderRadius: '24px', p: { xs: 2, md: 4 }, minHeight: '60vh' } }} 
+                    PaperProps={{ sx: { borderRadius: '24px', p: 2 } }}
                 >
-                    <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pb: 3 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                            <Avatar src={medicoSelecionado?.foto_perfil} sx={{ width: 64, height: 64, bgcolor: '#F1F5F9', color: '#32B5FE', fontSize: '1.5rem', fontWeight: 800 }}>
+                    <DialogTitle sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'center', sm: 'center' }, textAlign: { xs: 'center', sm: 'left' }, gap: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
+                            <Avatar
+                                src={medicoSelecionado?.foto_perfil}
+                                sx={{ width: 48, height: 48, bgcolor: '#F1F5F9', color: '#32B5FE', fontWeight: 900, flexShrink: 0 }}
+                            >
                                 {medicoSelecionado?.nome?.[0]}
                             </Avatar>
-                            <Box>
-                                <Typography variant="h5" fontWeight={900} color="#0F172A" lineHeight={1.2}>
+
+                            <Box sx={{ minWidth: 0 }}>
+                                <Typography variant="h6" fontWeight={900} color="#0F172A" sx={{ lineHeight: 1.2, wordBreak: 'break-word' }}>
                                     Agenda: {medicoSelecionado?.nome}
                                 </Typography>
-                                <Typography variant="body1" color="#32B5FE" fontWeight={700} sx={{ mt: 0.5 }}>
+                                <Typography variant="body2" color="#64748B" fontWeight={700} sx={{ mt: 0.25 }}>
                                     {medicoSelecionado?.especialidade}
                                 </Typography>
                             </Box>
                         </Box>
-                        <IconButton onClick={handleCloseAgenda} sx={{ bgcolor: '#F8FAFC', width: 40, height: 40, '&:hover': { bgcolor: '#F1F5F9' } }}>
-                            <X size={24} color="#64748B" />
-                        </IconButton>
+
+                        <IconButton onClick={handleCloseAgenda}><X /></IconButton>
                     </DialogTitle>
 
-                    <DialogContent sx={{ pt: 1, pb: 2 }}>
-                        
-                        {/* --- NAVEGAÇÃO DE DIAS --- */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4, bgcolor: '#F8FAFC', p: 2, borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                            <IconButton 
-                                onClick={() => alterarDia(-1)} 
-                                sx={{ bgcolor: 'white', border: '1px solid #E2E8F0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', '&:hover': { bgcolor: '#F1F5F9' } }}
-                            >
-                                <ChevronLeft size={20} color="#0F172A" />
+                    <DialogContent sx={{ maxHeight: { xs: '70vh', sm: '68vh' }, overflowY: 'auto' }}>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, p: 2, bgcolor: '#F8FAFC', borderRadius: '16px' }}>
+                            <IconButton onClick={() => alterarDia(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}>
+                                <ChevronLeft size={20} />
                             </IconButton>
 
                             <TextField
                                 fullWidth
                                 type="date"
+                                size="small"
                                 value={dataFiltro}
                                 onChange={handleDataChange}
-                                sx={{ 
-                                    '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#FFFFFF', transition: 'all 0.2s', '&:hover fieldset': { borderColor: '#32B5FE' }, '&.Mui-focused fieldset': { borderColor: '#32B5FE', borderWidth: '2px' } },
-                                    '& input': { textAlign: 'center', fontWeight: 700, color: '#0F172A' }
-                                }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: 'white' } }}
                             />
 
-                            <IconButton 
-                                onClick={() => alterarDia(1)} 
-                                sx={{ bgcolor: 'white', border: '1px solid #E2E8F0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', '&:hover': { bgcolor: '#F1F5F9' } }}
-                            >
-                                <ChevronRight size={20} color="#0F172A" />
+                            <IconButton onClick={() => alterarDia(1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}>
+                                <ChevronRight size={20} />
                             </IconButton>
                         </Box>
 
-                        {/* --- LISTAGEM DE CONSULTAS --- */}
                         {loadingAgenda ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '20vh' }}>
-                                <CircularProgress size={40} sx={{ color: '#32B5FE' }} />
+                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                <CircularProgress size={30} sx={{ color: '#32B5FE' }} />
                             </Box>
                         ) : agendaLista.length === 0 ? (
-                            <Box sx={{ textAlign: 'center', py: 8, px: 2, bgcolor: '#F8FAFC', borderRadius: '16px', border: '2px dashed #E2E8F0' }}>
-                                <Calendar size={50} color="#CBD5E1" style={{ margin: '0 auto 16px auto' }} strokeWidth={1.5} />
-                                <Typography variant="h6" fontWeight={800} color="#64748B" sx={{ mb: 1 }}>Dia livre!</Typography>
-                                <Typography variant="body1" color="#94A3B8">Nenhum paciente agendado para esta data.</Typography>
+                            <Box sx={{ textAlign: 'center', p: 4, opacity: 0.6 }}>
+                                <Calendar size={40} color="#CBD5E1" style={{ marginBottom: '16px' }} />
+                                <Typography variant="subtitle1" fontWeight={800} color="#64748B">Agenda Livre</Typography>
+                                <Typography variant="body2" color="#94A3B8" fontWeight={500}>Nenhum paciente agendado para este dia.</Typography>
                             </Box>
                         ) : (
                             <Box>
-                                {/* Renderizamos a "agendaPaginada" */}
-                                <List sx={{ p: 0 }}>
-                                    {agendaPaginada.map((consulta) => (
-                                        <ListItem 
-                                            key={consulta.id}
-                                            sx={{ 
-                                                border: '1px solid #F1F5F9', borderRadius: '16px', mb: 2, p: 3, 
-                                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                                bgcolor: 'white', '&:hover': { borderColor: '#32B5FE', boxShadow: '0 8px 20px rgba(50, 181, 254, 0.1)', transform: 'translateY(-2px)' },
-                                                transition: 'all 0.2s ease'
-                                            }}
-                                        >
-                                            <Box>
-                                                <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 0.5 }}>
-                                                    {consulta.nome_paciente}
-                                                </Typography>
-                                                <Typography variant="body1" color="#64748B" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 500 }}>
-                                                    <CalendarClock size={16} /> Horário: <strong style={{ color: '#0F172A' }}>{consulta.horario.substring(0, 5)}</strong>
-                                                </Typography>
-                                            </Box>
-                                            
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-                                                <Chip 
-                                                    label={consulta.status.toUpperCase()} 
-                                                    sx={{ 
-                                                        fontWeight: 800, fontSize: '0.75rem', height: 28, px: 1,
-                                                        bgcolor: getStatusStyle(consulta.status).bgcolor,
-                                                        color: getStatusStyle(consulta.status).color,
-                                                        border: '1px solid', 
-                                                        borderColor: getStatusStyle(consulta.status).borderColor
-                                                    }} 
+                                <List sx={{ pt: 0 }}>
+                                    {agendaPaginada.map((consulta) => {
+                                        const style = getStatusStyle(consulta.status);
+                                        return (
+                                            <ListItem key={consulta.id} sx={{ borderBottom: '1px solid #F1F5F9', py: 2, px: 0, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: '12px', minWidth: 60, textAlign: 'center', flexShrink: 0 }}>
+                                                    <Typography fontWeight={900} color="#0F172A">{consulta.horario?.substring(0, 5)}</Typography>
+                                                </Box>
+
+                                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                    <Typography fontWeight={800} color="#0F172A" sx={{ wordBreak: 'break-word' }}>
+                                                        {consulta.nome_paciente || 'Paciente'}
+                                                    </Typography>
+                                                    <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <CalendarClock size={12} /> {consulta.tipo_agendamento || 'Consulta'}
+                                                    </Typography>
+                                                </Box>
+
+                                                <Chip
+                                                    label={(consulta.status || 'Confirmado').toUpperCase()}
+                                                    size="small"
+                                                    sx={{
+                                                        fontWeight: 800,
+                                                        fontSize: '0.65rem',
+                                                        bgcolor: style.bgcolor,
+                                                        color: style.color,
+                                                        border: '1px solid',
+                                                        borderColor: style.borderColor,
+                                                        borderRadius: '6px',
+                                                        flexShrink: 0
+                                                    }}
                                                 />
-                                                <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, bgcolor: '#F8FAFC', px: 1, py: 0.5, borderRadius: '6px' }}>
-                                                    {consulta.tipo_agendamento || 'Consulta'}
-                                                </Typography>
-                                            </Box>
-                                        </ListItem>
-                                    ))}
+                                            </ListItem>
+                                        );
+                                    })}
                                 </List>
 
-                                {/* --- PAGINAÇÃO (Só aparece se tiver mais de 1 página) --- */}
                                 {totalPaginas > 1 && (
-                                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3, pt: 2, borderTop: '1px dashed #E2E8F0' }}>
-                                        <Pagination 
-                                            count={totalPaginas} 
-                                            page={paginaAtual} 
-                                            onChange={(e, value) => setPaginaAtual(value)} 
-                                            color="primary" 
-                                            shape="rounded"
-                                            sx={{ 
-                                                '& .MuiPaginationItem-root': { fontWeight: 800, color: '#64748B' },
-                                                '& .Mui-selected': { bgcolor: '#32B5FE !important', color: 'white' }
-                                            }}
-                                        />
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mt: 2, pt: 2, borderTop: '1px solid #F1F5F9' }}>
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            disabled={paginaAtual === 1}
+                                            onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
+                                            startIcon={<ChevronLeft size={16} />}
+                                            sx={{ borderRadius: '10px', fontWeight: 800, textTransform: 'none' }}
+                                        >
+                                            Anterior
+                                        </Button>
+
+                                        <Typography variant="body2" fontWeight={800} color="#64748B">
+                                            Página {paginaAtual} de {totalPaginas}
+                                        </Typography>
+
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            disabled={paginaAtual === totalPaginas}
+                                            onClick={() => setPaginaAtual(p => Math.min(totalPaginas, p + 1))}
+                                            endIcon={<ChevronRight size={16} />}
+                                            sx={{ borderRadius: '10px', fontWeight: 800, textTransform: 'none' }}
+                                        >
+                                            Próxima
+                                        </Button>
                                     </Box>
                                 )}
                             </Box>
                         )}
                     </DialogContent>
                 </Dialog>
+
 
             </Box>
         </Fade>

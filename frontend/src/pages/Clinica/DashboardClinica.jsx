@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Chip, Button, LinearProgress, Divider, Fade, CircularProgress, Dialog, DialogTitle, DialogContent, IconButton, List, ListItem, TextField, Pagination } from '@mui/material';
+import { Box, Typography, Grid, Paper, Chip, Button, LinearProgress, Divider, Fade, CircularProgress, Dialog, DialogTitle, DialogContent, IconButton, List, ListItem, TextField } from '@mui/material';
 import { Users, Calendar, Activity, Clock, ChevronRight, ChevronLeft, TrendingUp, AlertCircle, X } from 'lucide-react';
 import api from '../../services/api';
 
@@ -16,7 +16,7 @@ const DashboardClinica = () => {
     const [dataFiltro, setDataFiltro] = useState(new Date().toISOString().split('T')[0]);
     const [loadingAgenda, setLoadingAgenda] = useState(false);
     const [paginaAtual, setPaginaAtual] = useState(1);
-    const itensPorPagina = 6;
+    const itensPorPagina = 4;
 
     // --- LÓGICA VISUAL DOS STATUS (PADRONIZADA) ---
     const getStatusStyle = (status) => {
@@ -186,7 +186,7 @@ const DashboardClinica = () => {
                         Fluxo de Atendimento (Próximas 2h)
                     </Typography>
                     <Button 
-                        onClick={() => { setModalOpen(true); buscarAgendaCompleta(dataFiltro); }}
+                        onClick={() => { setPaginaAtual(1); setModalOpen(true); buscarAgendaCompleta(dataFiltro); }}
                         endIcon={<ChevronRight size={16} />} 
                         sx={{ fontWeight: 800, bgcolor: '#0F172A', color: '#FFFFFF', '&:hover': { bgcolor: '#32B5FE' }, textTransform: 'none' }}
                     >
@@ -260,7 +260,7 @@ const DashboardClinica = () => {
                     <DialogContent>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, p: 2, bgcolor: '#F8FAFC', borderRadius: '16px' }}>
                             <IconButton onClick={() => alterarDia(-1)}><ChevronLeft /></IconButton>
-                            <TextField fullWidth type="date" value={dataFiltro} onChange={(e) => { setDataFiltro(e.target.value); buscarAgendaCompleta(e.target.value); }} />
+                            <TextField fullWidth type="date" value={dataFiltro} onChange={(e) => { setDataFiltro(e.target.value); setPaginaAtual(1); buscarAgendaCompleta(e.target.value); }} />
                             <IconButton onClick={() => alterarDia(1)}><ChevronRight /></IconButton>
                         </Box>
 
@@ -290,7 +290,56 @@ const DashboardClinica = () => {
                             </List>
                         )}
                         {agendaCompleta.length > itensPorPagina && (
-                            <Pagination count={Math.ceil(agendaCompleta.length / itensPorPagina)} page={paginaAtual} onChange={(_, v) => setPaginaAtual(v)} sx={{ mt: 3, display: 'flex', justifyContent: 'center' }} />
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    mt: 3,
+                                    pt: 2,
+                                    borderTop: '1px solid #F1F5F9'
+                                }}
+                            >
+                                <Button
+                                    size="small"
+                                    disabled={paginaAtual === 1}
+                                    onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
+                                    sx={{
+                                        borderRadius: '10px',
+                                        fontWeight: 800,
+                                        textTransform: 'none',
+                                        color: '#64748B'
+                                    }}
+                                >
+                                    Anterior
+                                </Button>
+
+                                <Typography
+                                    sx={{
+                                        fontWeight: 900,
+                                        minWidth: 70,
+                                        textAlign: 'center',
+                                        color: '#0F172A'
+                                    }}
+                                >
+                                    {paginaAtual} / {Math.ceil(agendaCompleta.length / itensPorPagina)}
+                                </Typography>
+
+                                <Button
+                                    size="small"
+                                    disabled={paginaAtual === Math.ceil(agendaCompleta.length / itensPorPagina)}
+                                    onClick={() => setPaginaAtual(p => Math.min(Math.ceil(agendaCompleta.length / itensPorPagina), p + 1))}
+                                    sx={{
+                                        borderRadius: '10px',
+                                        fontWeight: 800,
+                                        textTransform: 'none',
+                                        color: '#64748B'
+                                    }}
+                                >
+                                    Próxima
+                                </Button>
+                            </Box>
                         )}
                     </DialogContent>
                 </Dialog>

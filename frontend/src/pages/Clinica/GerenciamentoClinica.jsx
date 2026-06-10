@@ -253,14 +253,29 @@ const GerenciamentoClinica = () => {
                                 </Grid>
 
                                 {/* === LADO DIREITO: DADOS + COMODIDADES === */}
-                                <Grid item xs={12} md={9}>
+                                <Grid item xs={12} md={9} sx={{ minWidth: 0 }}>
                                     <Grid
                                         container
                                         spacing={{ xs: 3, md: 4 }}
                                         alignItems="flex-start"
+                                        sx={{
+                                            width: '100%',
+                                            maxWidth: { lg: 980 },
+                                            flexWrap: 'wrap',
+                                            '& > .MuiGrid-item': { minWidth: 0 }
+                                        }}
                                     >
                                         {/* DADOS PRINCIPAIS */}
-                                        <Grid item xs={12} lg={7}>
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            lg={5}
+                                            sx={{
+                                                minWidth: 0,
+                                                flexBasis: { lg: '430px !important' },
+                                                maxWidth: { lg: '430px !important' }
+                                            }}
+                                        >
                                             <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>
                                                 Dados Principais
                                             </Typography>
@@ -329,7 +344,16 @@ const GerenciamentoClinica = () => {
                                         </Grid>
 
                                         {/* COMODIDADES */}
-                                        <Grid item xs={12} lg={5}>
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            lg={7}
+                                            sx={{
+                                                minWidth: 0,
+                                                flexBasis: { lg: '520px !important' },
+                                                maxWidth: { lg: '520px !important' }
+                                            }}
+                                        >
                                             <Paper
                                                 elevation={0}
                                                 sx={{
@@ -341,6 +365,9 @@ const GerenciamentoClinica = () => {
                                                     minHeight: { lg: 320 },
                                                     display: 'flex',
                                                     flexDirection: 'column',
+                                                    width: '100%',
+                                                    maxWidth: '100%',
+                                                    overflow: 'hidden',
                                                 }}
                                             >
                                                 <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 1 }}>
@@ -383,6 +410,10 @@ const GerenciamentoClinica = () => {
                                                         alignContent: 'flex-start',
                                                         flexWrap: 'wrap',
                                                         gap: 1.2,
+                                                        width: '100%',
+                                                        maxWidth: '100%',
+                                                        boxSizing: 'border-box',
+                                                        overflowX: 'hidden',
                                                         bgcolor: '#FFFFFF',
                                                         borderRadius: '16px',
                                                         border: '1px dashed #CBD5E1'
@@ -400,6 +431,13 @@ const GerenciamentoClinica = () => {
                                                                     color: '#0F172A',
                                                                     border: '1px solid #E2E8F0',
                                                                     fontSize: '0.85rem',
+                                                                    maxWidth: '100%',
+                                                                    '& .MuiChip-label': {
+                                                                        maxWidth: 140,
+                                                                        overflow: 'hidden',
+                                                                        textOverflow: 'ellipsis',
+                                                                        display: 'block'
+                                                                    },
                                                                     boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
                                                                     '& .MuiChip-deleteIcon': {
                                                                         color: '#EF4444',

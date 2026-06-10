@@ -43,6 +43,8 @@ const AgendaMedica = () => {
     const [dataAgendaFiltro, setDataAgendaFiltro] = useState(new Date().toISOString().split('T')[0]);
     const [agendaCompleta, setAgendaCompleta] = useState([]);
     const [loadingAgendaCompleta, setLoadingAgendaCompleta] = useState(false);
+    const [paginaAgendaCompleta, setPaginaAgendaCompleta] = useState(1);
+    const itensPorPaginaAgenda = 5;
 
     // ==========================================
     // RELÓGIO AUTOMÁTICO (Atualiza a cada 1 minuto)
@@ -86,6 +88,7 @@ const AgendaMedica = () => {
                 return horaA.localeCompare(horaB);
             });
             setAgendaCompleta(ordenada);
+            setPaginaAgendaCompleta(1);
         } catch (error) {
             console.error("Erro ao carregar agenda completa:", error);
         } finally {
@@ -166,6 +169,20 @@ const AgendaMedica = () => {
         const horaB = b.horario || b.hora || '00:00';
         return horaA.localeCompare(horaB);
     });
+
+    const totalPaginasAgendaCompleta = Math.max(1, Math.ceil(agendaCompleta.length / itensPorPaginaAgenda));
+    const agendaCompletaPaginada = agendaCompleta.slice(
+        (paginaAgendaCompleta - 1) * itensPorPaginaAgenda,
+        paginaAgendaCompleta * itensPorPaginaAgenda
+    );
+
+    const irPaginaAnteriorAgenda = () => {
+        setPaginaAgendaCompleta((pagina) => Math.max(1, pagina - 1));
+    };
+
+    const irProximaPaginaAgenda = () => {
+        setPaginaAgendaCompleta((pagina) => Math.min(totalPaginasAgendaCompleta, pagina + 1));
+    };
 
     return (
         <Fade in={true} timeout={600}>
@@ -426,7 +443,7 @@ const AgendaMedica = () => {
                         <Typography variant="h6" fontWeight={900}>Navegador de Agenda</Typography>
                         <IconButton onClick={() => setModalAgendaOpen(false)}><X /></IconButton>
                     </DialogTitle>
-                    <DialogContent>
+                    <DialogContent sx={{ maxHeight: { xs: '70vh', sm: '68vh' }, overflowY: 'auto' }}>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, p: 2, bgcolor: '#F8FAFC', borderRadius: '16px' }}>
                             <IconButton onClick={() => alterarDiaAgenda(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}><ChevronLeft size={20} /></IconButton>
                             <TextField 
@@ -451,30 +468,72 @@ const AgendaMedica = () => {
                                 <Typography variant="body2" color="#94A3B8" fontWeight={500}>Nenhum paciente agendado para este dia.</Typography>
                             </Box>
                         ) : (
-                            <List sx={{ pt: 0 }}>
-                                {agendaCompleta.map((item) => {
-                                    const style = getStatusStyle(item.status);
-                                    const nomePac = item.paciente || item.paciente_nome || 'Paciente';
-                                    return (
-                                        <ListItem key={item.id} sx={{ borderBottom: '1px solid #F1F5F9', py: 2, px: 0, display: 'flex', gap: 2 }}>
-                                            <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: '12px', minWidth: 60, textAlign: 'center' }}>
-                                                <Typography fontWeight={900} color="#0F172A">{item.horario || item.hora}</Typography>
-                                            </Box>
-                                            <Box sx={{ flex: 1 }}>
-                                                <Typography fontWeight={800} color="#0F172A">{nomePac}</Typography>
-                                                <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                    <MapPin size={12} /> {item.clinica || item.clinica_nome || 'Unidade Padrão'}
-                                                </Typography>
-                                            </Box>
-                                            <Chip 
-                                                label={(item.status || 'Confirmado').toUpperCase()} 
-                                                size="small" 
-                                                sx={{ fontWeight: 800, fontSize: '0.65rem', bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border, borderRadius: '6px' }} 
-                                            />
-                                        </ListItem>
-                                    );
-                                })}
-                            </List>
+                            <Box>
+                                <List sx={{ pt: 0 }}>
+                                    {agendaCompletaPaginada.map((item) => {
+                                        const style = getStatusStyle(item.status);
+                                        const nomePac = item.paciente || item.paciente_nome || 'Paciente';
+                                        return (
+                                            <ListItem key={item.id} sx={{ borderBottom: '1px solid #F1F5F9', py: 2, px: 0, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                                <Box sx={{ bgcolor: '#F8FAFC', p: 1.5, borderRadius: '12px', minWidth: 60, textAlign: 'center', flexShrink: 0 }}>
+                                                    <Typography fontWeight={900} color="#0F172A">{item.horario || item.hora}</Typography>
+                                                </Box>
+                                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                    <Typography fontWeight={800} color="#0F172A" sx={{ wordBreak: 'break-word' }}>{nomePac}</Typography>
+                                                    <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        <MapPin size={12} /> {item.clinica || item.clinica_nome || 'Unidade Padrão'}
+                                                    </Typography>
+                                                </Box>
+                                                <Chip 
+                                                    label={(item.status || 'Confirmado').toUpperCase()} 
+                                                    size="small" 
+                                                    sx={{ fontWeight: 800, fontSize: '0.65rem', bgcolor: style.bg, color: style.color, border: '1px solid', borderColor: style.border, borderRadius: '6px', flexShrink: 0 }} 
+                                                />
+                                            </ListItem>
+                                        );
+                                    })}
+                                </List>
+
+                                {agendaCompleta.length > itensPorPaginaAgenda && (
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            gap: 2,
+                                            mt: 2,
+                                            pt: 2,
+                                            borderTop: '1px solid #F1F5F9'
+                                        }}
+                                    >
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={irPaginaAnteriorAgenda}
+                                            disabled={paginaAgendaCompleta === 1}
+                                            startIcon={<ChevronLeft size={16} />}
+                                            sx={{ borderRadius: '10px', fontWeight: 800, textTransform: 'none' }}
+                                        >
+                                            Anterior
+                                        </Button>
+
+                                        <Typography variant="body2" fontWeight={800} color="#64748B">
+                                            Página {paginaAgendaCompleta} de {totalPaginasAgendaCompleta}
+                                        </Typography>
+
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={irProximaPaginaAgenda}
+                                            disabled={paginaAgendaCompleta === totalPaginasAgendaCompleta}
+                                            endIcon={<ChevronRight size={16} />}
+                                            sx={{ borderRadius: '10px', fontWeight: 800, textTransform: 'none' }}
+                                        >
+                                            Próxima
+                                        </Button>
+                                    </Box>
+                                )}
+                            </Box>
                         )}
                     </DialogContent>
                 </Dialog>
@@ -537,7 +596,7 @@ const AgendaMedica = () => {
                     <DialogTitle sx={{ pb: 1 }}>
                         <Typography variant="h6" fontWeight={900} color="#0F172A">Consulta Cancelada</Typography>
                     </DialogTitle>
-                    <DialogContent>
+                    <DialogContent sx={{ maxHeight: { xs: '70vh', sm: '68vh' }, overflowY: 'auto' }}>
                         <Alert severity="error" icon={<XCircle size={24} />} sx={{ mt: 2, borderRadius: '12px', '& .MuiAlert-message': { width: '100%' } }}>
                             <AlertTitle sx={{ fontWeight: 800 }}>Motivo informado pelo paciente:</AlertTitle>
                             <Typography variant="body1" fontWeight={500} sx={{ mt: 1, fontStyle: 'italic' }}>

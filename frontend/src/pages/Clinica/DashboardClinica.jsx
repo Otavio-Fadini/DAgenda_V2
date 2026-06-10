@@ -335,7 +335,7 @@ const DashboardClinica = () => {
                                                             fontWeight={600}
                                                             sx={{ display: 'block' }}
                                                         >
-                                                            Médico: {item.nome_medico || 'Não informado'} • {formatarHora(item.horario || item.hora)}
+                                                            Médico: {item.nome_medico || 'Não informado'}
                                                         </Typography>
                                                     </Box>
 

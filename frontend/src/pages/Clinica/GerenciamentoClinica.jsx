@@ -254,28 +254,27 @@ const GerenciamentoClinica = () => {
 
                                 {/* === LADO DIREITO: DADOS + COMODIDADES === */}
                                 <Grid item xs={12} md={9} sx={{ minWidth: 0 }}>
-                                    <Grid
-                                        container
-                                        spacing={{ xs: 3, md: 4 }}
-                                        alignItems="flex-start"
+                                    <Box
                                         sx={{
                                             width: '100%',
-                                            maxWidth: { lg: 980 },
-                                            flexWrap: 'wrap',
-                                            '& > .MuiGrid-item': { minWidth: 0 }
+                                            maxWidth: { lg: 990 },
+                                            display: 'grid',
+                                            gridTemplateColumns: {
+                                                xs: '1fr',
+                                                lg: '430px minmax(0, 520px)'
+                                            },
+                                            gap: { xs: 3, md: 4 },
+                                            alignItems: 'flex-start',
+                                            justifyContent: { xs: 'center', lg: 'flex-start' },
+                                            '& > *': {
+                                                minWidth: 0,
+                                                maxWidth: '100%',
+                                                width: '100%'
+                                            }
                                         }}
                                     >
                                         {/* DADOS PRINCIPAIS */}
-                                        <Grid
-                                            item
-                                            xs={12}
-                                            lg={5}
-                                            sx={{
-                                                minWidth: 0,
-                                                flexBasis: { lg: '430px !important' },
-                                                maxWidth: { lg: '430px !important' }
-                                            }}
-                                        >
+                                        <Box sx={{ minWidth: 0, width: '100%', maxWidth: '100%' }}>
                                             <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 3 }}>
                                                 Dados Principais
                                             </Typography>
@@ -341,19 +340,10 @@ const GerenciamentoClinica = () => {
                                                     sx={modernInputStyle}
                                                 />
                                             </Box>
-                                        </Grid>
+                                        </Box>
 
                                         {/* COMODIDADES */}
-                                        <Grid
-                                            item
-                                            xs={12}
-                                            lg={7}
-                                            sx={{
-                                                minWidth: 0,
-                                                flexBasis: { lg: '520px !important' },
-                                                maxWidth: { lg: '520px !important' }
-                                            }}
-                                        >
+                                        <Box sx={{ minWidth: 0, width: '100%', maxWidth: '100%' }}>
                                             <Paper
                                                 elevation={0}
                                                 sx={{
@@ -458,8 +448,8 @@ const GerenciamentoClinica = () => {
                                                     )}
                                                 </Box>
                                             </Paper>
-                                        </Grid>
-                                    </Grid>
+                                        </Box>
+                                    </Box>
                                 </Grid>
                             </Grid>
                         )}

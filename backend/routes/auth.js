@@ -68,7 +68,7 @@ router.post('/login', async (req, res) => {
 // --- ROTA DE CADASTRO DE PACIENTE ---
 router.post('/cadastro-paciente', async (req, res) => {
     const { 
-        nome, email, senha, cpf, telefone,
+        nome, email, senha, cpf, telefone, data_nascimento,
         foto_perfil, cep, rua, numero, complemento, bairro, cidade, estado 
     } = req.body;
     
@@ -76,9 +76,9 @@ router.post('/cadastro-paciente', async (req, res) => {
         const senhaHash = await bcrypt.hash(senha, saltRounds);
         
         const query = `INSERT INTO usuarios_cpf (
-                        nome, email, senha, cpf, telefone,
+                        nome, email, senha, cpf, telefone, data_nascimento,
                         foto_perfil, cep, rua, numero, complemento, bairro, cidade, estado
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         
         const values = [
             nome || null, 
@@ -86,6 +86,7 @@ router.post('/cadastro-paciente', async (req, res) => {
             senhaHash, 
             cpf || null, 
             telefone || null,
+            data_nascimento || null,
             foto_perfil || null,
             cep || null,
             rua || null,
@@ -111,7 +112,7 @@ router.post('/cadastro-paciente', async (req, res) => {
 // --- ROTA DE CADASTRO DE PROFISSIONAL ---
 router.post('/cadastro-profissional', async (req, res) => {
     const { 
-        nome, email, senha, cpf, telefone, registro_conselho, crm, especialidade, duracao_sessao,
+        nome, email, senha, cpf, telefone, data_nascimento, registro_conselho, crm, especialidade, duracao_sessao,
         foto_perfil, cep, rua, numero, complemento, bairro, cidade, estado 
     } = req.body; 
     
@@ -122,9 +123,9 @@ router.post('/cadastro-profissional', async (req, res) => {
         const conselhoValue = registro_conselho || crm || null; 
         
         const query = `INSERT INTO profissionais (
-                        nome, email, senha, cpf, telefone, conselho, especialidade, duracao_sessao,
+                        nome, email, senha, cpf, telefone, data_nascimento, conselho, especialidade, duracao_sessao,
                         foto_perfil, cep, rua, numero, complemento, bairro, cidade, estado
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         
         const values = [
             nome || null, 
@@ -132,6 +133,7 @@ router.post('/cadastro-profissional', async (req, res) => {
             senhaHash, 
             cpf || null,
             telefone || null,
+            data_nascimento || null,
             conselhoValue, 
             especialidade || null,
             duracao_sessao || null,

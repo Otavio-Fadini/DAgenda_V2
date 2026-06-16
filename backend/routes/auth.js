@@ -163,7 +163,7 @@ router.post('/cadastro-profissional', async (req, res) => {
 router.post('/cadastro-clinica', async (req, res) => {
     const { 
         nome_fantasia, razao_social, email, senha, cnpj, telefone,
-        foto_perfil, cep, rua, numero, bairro, cidade, estado 
+        foto_perfil, cep, rua, numero, bairro, complemento, cidade, estado 
     } = req.body;
     
     try {

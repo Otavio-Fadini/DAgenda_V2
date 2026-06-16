@@ -53,6 +53,29 @@ const formatarComodidades = (comodidadesData) => {
     }
 };
 
+
+// Retorna a data local no formato AAAA-MM-DD, evitando problemas de fuso horário com toISOString()
+const getDataHojeLocal = () => {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+};
+
+// Verifica se a combinação data + horário ainda é futura
+const horarioEhFuturo = (dataSelecionada, horario) => {
+    if (!dataSelecionada || !horario) return false;
+
+    const agora = new Date();
+    const [hora, minuto] = horario.split(':').map(Number);
+
+    const [ano, mes, dia] = dataSelecionada.split('-').map(Number);
+    const dataHoraConsulta = new Date(ano, mes - 1, dia, hora, minuto, 0, 0);
+
+    return dataHoraConsulta > agora;
+};
+
 const NovoAgendamento = () => {
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
@@ -164,38 +187,37 @@ const NovoAgendamento = () => {
 
     const handleDataChange = async (e) => {
         const dataSelecionada = e.target.value; // Formato AAAA-MM-DD
+        const hojeLocal = getDataHojeLocal();
+
+        // Bloqueia qualquer tentativa de selecionar data anterior à data atual
+        if (dataSelecionada && dataSelecionada < hojeLocal) {
+            alert('Não é possível selecionar uma data anterior à data atual.');
+            setAgendamento({ ...agendamento, data_agendamento: '', horario: '' });
+            setHorariosDisponiveis([]);
+            return;
+        }
+
         setAgendamento({ ...agendamento, data_agendamento: dataSelecionada, horario: '' });
-        
+
         if (!dataSelecionada) {
             setHorariosDisponiveis([]);
             return;
         }
 
         setLoadingHorarios(true);
+
         try {
             const res = await api.get(`/agendamentos/horarios-disponiveis?id_profissional=${agendamento.id_profissional}&data=${dataSelecionada}`);
-            
-            // --- NOVA LÓGICA DE FILTRAGEM ---
-            const agora = new Date();
-            const dataHojeStr = agora.toISOString().split('T')[0]; // AAAA-MM-DD
-            
-            let horariosFiltrados = res.data;
 
-            // Se a data selecionada for hoje, filtra horários anteriores
-            if (dataSelecionada === dataHojeStr) {
-                const horaAtual = agora.getHours();
-                const minAtual = agora.getMinutes();
-                
-                horariosFiltrados = res.data.filter(horario => {
-                    const [horaH, minM] = horario.split(':').map(Number);
-                    // Se a hora do horário for maior que a atual, ou se for a mesma hora e minutos futuros
-                    return horaH > horaAtual || (horaH === horaAtual && minM > minAtual);
-                });
-            }
-            
+            // Filtra todos os horários que já passaram.
+            // Se for hoje, remove horários anteriores ao horário atual.
+            // Se for uma data futura, mantém os horários normalmente.
+            const horariosFiltrados = res.data.filter((horario) =>
+                horarioEhFuturo(dataSelecionada, horario)
+            );
+
             setHorariosDisponiveis(horariosFiltrados);
-            // --------------------------------
-            
+
         } catch (err) {
             console.error("Erro ao buscar horários", err);
         } finally {
@@ -446,7 +468,7 @@ const NovoAgendamento = () => {
                                                 fullWidth type="date" variant="outlined" sx={modernInputStyle} 
                                                 value={agendamento.data_agendamento} 
                                                 onChange={handleDataChange} 
-                                                inputProps={{ min: new Date().toISOString().split('T')[0] }}
+                                                inputProps={{ min: getDataHojeLocal() }}
                                             />
                                         </Box>
                                         <Box>

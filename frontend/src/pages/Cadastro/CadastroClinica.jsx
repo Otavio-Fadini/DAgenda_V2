@@ -13,7 +13,7 @@ const CadastroClinica = () => {
     const [formData, setFormData] = useState({ 
         nome_fantasia: '', razao_social: '', cnpj: '', email: '', senha: '', telefone: '', foto_perfil: '',
         cep: '', rua: '', numero: '', bairro: '', complemento: '', cidade: '', estado: ''
-    });''
+    });
     
     const [preview, setPreview] = useState(null);
     const [buscandoCep, setBuscandoCep] = useState(false);

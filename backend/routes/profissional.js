@@ -352,11 +352,18 @@ router.get('/dashboard', verifyToken, async (req, res) => {
         );
 
         const [resFaturamento] = await pool.query(
-            `SELECT SUM(CAST(valor AS DECIMAL(10,2))) AS total 
-             FROM agendamentos 
-             WHERE id_profissional = ? 
-               AND data_agendamento = CURDATE() 
-               AND status IN ('Agendado', 'Concluido')`,
+            `SELECT 
+                COALESCE(
+                    SUM(
+                        CAST(a.valor AS DECIMAL(10,2)) * (COALESCE(c.repasse, 100) / 100)
+                    ), 
+                    0
+                ) AS total
+             FROM agendamentos a
+             LEFT JOIN usuarios_cnpj c ON a.id_clinica = c.id
+             WHERE a.id_profissional = ? 
+               AND a.data_agendamento = CURDATE() 
+               AND a.status IN ('Agendado', 'Concluido')`,
             [id_profissional]
         );
 

@@ -11,9 +11,9 @@ import logoImg from '../../assets/logo.png';
 const CadastroClinica = () => {
     const [tabValue, setTabValue] = useState(0); // Controle das Abas
     const [formData, setFormData] = useState({ 
-        nome_fantasia: '', razao_social: '', cnpj: '', email: '', senha: '', telefone: '',
-        logo: '', cep: '', rua: '', numero: '', bairro: '', cidade: '', estado: ''
-    });
+        nome_fantasia: '', razao_social: '', cnpj: '', email: '', senha: '', telefone: '', foto_perfil: '',
+        cep: '', rua: '', numero: '', bairro: '', complemento: '', cidade: '', estado: ''
+    });''
     
     const [preview, setPreview] = useState(null);
     const [buscandoCep, setBuscandoCep] = useState(false);
@@ -27,7 +27,7 @@ const CadastroClinica = () => {
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64String = reader.result;
-                setFormData(prev => ({ ...prev, logo: base64String }));
+                setFormData(prev => ({ ...prev, foto_perfil: base64String }));
                 setPreview(base64String);
             };
             reader.readAsDataURL(file);

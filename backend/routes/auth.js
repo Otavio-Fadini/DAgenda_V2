@@ -170,8 +170,8 @@ router.post('/cadastro-clinica', async (req, res) => {
         const senhaHash = await bcrypt.hash(senha, saltRounds);
         
         const query = `INSERT INTO usuarios_cnpj (nome_fantasia, razao_social, email, senha, cnpj, telefone,
-                        foto_perfil, cep, rua, numero, bairro, cidade, estado
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                        foto_perfil, cep, rua, numero, bairro, complemento, cidade, estado
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         
         const values = [
             nome_fantasia || null, 
@@ -185,6 +185,7 @@ router.post('/cadastro-clinica', async (req, res) => {
             rua || null, 
             numero || null, 
             bairro || null, 
+            complemento || null, 
             cidade || null, 
             estado || null
         ];
